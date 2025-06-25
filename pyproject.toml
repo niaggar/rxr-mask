@@ -3,5 +3,5 @@ requires = ["setuptools>=61.0", "wheel", "cython>=3.0.0", "numpy>=1.26"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rxt-mask"
+name = "rxr-mask"
 version = "0.1"
