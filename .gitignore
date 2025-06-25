@@ -1,0 +1,5 @@
+/.venv/
+/libs/rxr_mask.egg-info/
+/build/
+/libs/Pythonreflectivity.cpp
+/.idea/
