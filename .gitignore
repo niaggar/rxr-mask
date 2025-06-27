@@ -3,3 +3,5 @@
 /build/
 /libs/Pythonreflectivity.cpp
 /.idea/
+/.ropeproject/
+**/__pycache__/

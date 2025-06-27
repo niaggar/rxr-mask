@@ -1,10 +1,10 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from backends import pr_backend, udkm_backend
-from core.atom import Atom
-from core.layer import Layer
-from core.structure import Structure
+from source.backends import pr_backend, udkm_backend
+from source.core.atom import Atom
+from source.core.layer import Layer
+from source.core.structure import Structure
 
 
 
@@ -43,5 +43,3 @@ plt.xlabel(r"$q_z$ (Å$^{-1}$)")
 plt.ylabel("Reflectividad")
 plt.title("PythonReflectivity – Cr/Si")
 plt.legend(); plt.tight_layout(); plt.show()
-
-
