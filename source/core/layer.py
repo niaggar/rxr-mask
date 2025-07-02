@@ -1,24 +1,18 @@
 from dataclasses import dataclass
 import numpy as np
 from .atom import Atom
-import pint
+from source.pint_init import ureg, Q_
 
-u = pint.UnitRegistry()
-r_e = 2.8179403262e-15 * u.m
+r_e = 2.8179403262e-15 * ureg.m
 
 @dataclass
 class Layer:
     id: str
     thickness: float
     density: float
+    atom: Atom
 
     def get_n(self, energy_eV: float):
-        if self.n_complex is not None:
-            return self.n_complex
-
-        if self.atom is None:
-            raise ValueError("Se necesita atom o n_complex en la capa")
-
         f1, f2 = self.atom.f1f2(energy_eV)
 
         h = 4.135667696e-15  # Plank's Constant [eV s]

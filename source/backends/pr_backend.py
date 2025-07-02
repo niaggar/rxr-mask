@@ -7,13 +7,18 @@ HC_EV_ANGSTROM = 12398.41984
 
 
 def _to_pr_structure(stack: Structure, E_eV: float):
-    S = pr.Generate_structure(len(stack.layers))
-    for i, L in enumerate(stack.layers):
-        n = L.get_n(E_eV)
-        S[i].seteps(n ** 2)
-        S[i].setd(L.get_thickness_angstrom())
-    return S
+    total_layers = sum(comp.n_layers for comp in stack.compounds)
+    S = pr.Generate_structure(total_layers)
 
+    for compound in stack.compounds:
+        for i_layer in range(compound.n_layers):
+            n = compound.get_n_layer(E_eV, i_layer)
+            thickness = compound.get_thickness_layer(i_layer)
+            layer_index = sum(comp.n_layers for comp in stack.compounds[:stack.compounds.index(compound)]) + i_layer
+            S[layer_index].seteps(n ** 2)
+            S[layer_index].setd(thickness)
+
+    return S
 
 def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float):
     S = _to_pr_structure(stack, E_eV)
@@ -22,3 +27,4 @@ def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float):
 
     R_sigma, R_pi = pr.Reflectivity(S, theta_deg, wavelength)
     return R_sigma, R_pi
+

@@ -1,7 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
-from .atom import Atom
-import pint
+from .atom import Atom, get_atom
 
 from .layer import Layer
 
@@ -10,13 +9,61 @@ from .layer import Layer
 class Compound:
     id: str
     name: str
-    thickness: float          # en u.nm
-    density: float            # en u.kg/u.m**3
-    atoms: list[Atom] | None = None
-    layers: list[Layer] | None = None
+    thickness: float
+    density: float
+    atoms: list[Atom]
+    layers: list[list[Layer]] = field(default_factory=list)
+    n_layers: int = 1
 
     def create_layer(self, n_layers:int=1):
+        self.n_layers = n_layers
         layers = []
-        for _ in range(n_layers):
-            layers.append(Layer())
+        delta_thickness = self.thickness / n_layers
 
+        for i in range(n_layers):
+            levels = []
+            thickness = delta_thickness
+
+            for atom in self.atoms:
+                layer = Layer(
+                    id=f"{self.id}_{atom.symbol}_{i}",
+                    thickness=thickness,
+                    density=self.density,
+                    atom=atom,
+                )
+                levels.append(layer)
+
+            layers.append(levels)
+
+        self.layers = layers
+    
+    def get_n_layer(self, energy_eV: float, layer_index: int):
+        if layer_index < 0 or layer_index >= len(self.layers):
+            raise IndexError("Layer index out of range.")
+
+        n_complex = 0 + 0j
+        for l in self.layers[layer_index]:
+            n_complex += l.get_n(energy_eV) 
+
+        return n_complex
+    
+    def get_thickness_layer(self, layer_index: int):
+        if layer_index < 0 or layer_index >= len(self.layers):
+            raise IndexError("Layer index out of range.")
+
+        return self.layers[layer_index][0].get_thickness_angstrom()
+
+
+def create_compound(id: str, name: str, thickness: float, density: float, formula: str, n_layers: int = 1) -> Compound:
+    atoms = []
+    for atom_info in formula.split(","):
+        symbol, count = atom_info.strip().split(":")
+        count = int(count)
+
+        atom = get_atom(symbol)
+        atoms.extend([atom] * count)
+
+    compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms)
+    compound.create_layer(n_layers=n_layers)
+
+    return compound
