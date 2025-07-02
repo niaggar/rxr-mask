@@ -55,6 +55,20 @@ class Compound:
 
 
 def create_compound(id: str, name: str, thickness: float, density: float, formula: str, n_layers: int = 1) -> Compound:
+    """
+    Create a Compound instance from the given parameters.
+
+    Parameters:
+        id (str): Identifier for the compound.
+        name (str): Name of the compound.
+        thickness (float): Total thickness of the compound in angstroms.
+        density (float): Density of the compound.
+        formula (str): Chemical formula in the format 'Symbol:Count,Symbol:Count', e.g., 'C:2,O:1'.
+        n_layers (int, optional): Number of layers to divide the compound into. Defaults to 1.
+
+    Returns:
+        Compound: The created Compound instance.
+    """
     atoms = []
     for atom_info in formula.split(","):
         symbol, count = atom_info.strip().split(":")

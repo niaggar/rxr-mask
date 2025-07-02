@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import numpy as np
 from .atom import Atom
-from source.pint_init import ureg, Q_
+from source.pint_init import ureg
 
 r_e = 2.8179403262e-15 * ureg.m
 

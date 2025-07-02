@@ -10,13 +10,15 @@ def _to_pr_structure(stack: Structure, E_eV: float):
     total_layers = sum(comp.n_layers for comp in stack.compounds)
     S = pr.Generate_structure(total_layers)
 
+    layer_offset = 0
     for compound in stack.compounds:
         for i_layer in range(compound.n_layers):
             n = compound.get_n_layer(E_eV, i_layer)
             thickness = compound.get_thickness_layer(i_layer)
-            layer_index = sum(comp.n_layers for comp in stack.compounds[:stack.compounds.index(compound)]) + i_layer
+            layer_index = layer_offset + i_layer
             S[layer_index].seteps(n ** 2)
             S[layer_index].setd(thickness)
+        layer_offset += compound.n_layers
 
     return S
 

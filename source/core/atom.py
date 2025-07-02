@@ -45,12 +45,17 @@ class Atom:
 
 
 def get_atom(symbol: str) -> Atom:
+    """
+    Returns an Atom instance for the given symbol.
+    NOTE: This is a stub implementation that always returns Z=1 and mass=1.
+    Replace with a lookup for real atomic numbers and masses as needed.
+    """
     symbol = symbol.capitalize()
     file = FORM_FACTOR_DIR / f"{symbol}.txt"
 
     if not file.exists():
         raise FileNotFoundError(f"No hay tabla f1/f2 para '{symbol}' en {file}")
 
-    Z = 1
-    mass = 1
+    Z = 1  # TODO: Replace with actual atomic number lookup
+    mass = 1  # TODO: Replace with actual atomic mass lookup
     return Atom(Z=Z, symbol=symbol, mass=mass)
