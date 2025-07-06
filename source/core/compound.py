@@ -26,7 +26,7 @@ class Compound:
 
             for atom in self.atoms:
                 layer = Layer(
-                    id=f"{self.id}_{atom.symbol}_{i}",
+                    id=f"{self.id}_{atom.name}_{i}",
                     thickness=thickness,
                     density=self.density,
                     atom=atom,
@@ -54,7 +54,7 @@ class Compound:
         return self.layers[layer_index][0].get_thickness_angstrom()
 
 
-def create_compound(id: str, name: str, thickness: float, density: float, formula: str, n_layers: int = 1) -> Compound:
+def create_compound(id: str, name: str, thickness: float, density: float, formula: str, atoms_prov: list[Atom], n_layers: int = 1) -> Compound:
     """
     Create a Compound instance from the given parameters.
 
@@ -64,6 +64,7 @@ def create_compound(id: str, name: str, thickness: float, density: float, formul
         thickness (float): Total thickness of the compound in angstroms.
         density (float): Density of the compound.
         formula (str): Chemical formula in the format 'Symbol:Count,Symbol:Count', e.g., 'C:2,O:1'.
+        atoms (list[Atom]): List of Atom instances that make up the compound.
         n_layers (int, optional): Number of layers to divide the compound into. Defaults to 1.
 
     Returns:
@@ -73,8 +74,11 @@ def create_compound(id: str, name: str, thickness: float, density: float, formul
     for atom_info in formula.split(","):
         symbol, count = atom_info.strip().split(":")
         count = int(count)
-
-        atom = get_atom(symbol)
+        
+        atom = get_atom(symbol, atoms_prov)
+        if atom is None:
+            raise ValueError(f"Atom with symbol '{symbol}' not found in the provided atoms list.")
+        
         atoms.extend([atom] * count)
 
     compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms)

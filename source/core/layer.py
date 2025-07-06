@@ -13,7 +13,7 @@ class Layer:
     atom: Atom
 
     def get_n(self, energy_eV: float):
-        f1, f2 = self.atom.f1f2(energy_eV)
+        f1, f2 = self.atom.ff.get_f1f2(energy_eV)
 
         h = 4.135667696e-15  # Plank's Constant [eV s]
         c = 2.99792450e10  # Speed of light in vacuum [cm/s]
