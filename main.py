@@ -53,127 +53,86 @@ class FormFactorData(FormFactorModel):
             raise ValueError("Form factor data has not been loaded.")
         
         return self.ff_data
+    
 
 
 
-# la_ff = FormFactorData(ff_path="./source/materials/form_factor/La.txt")
-# mn_ff = FormFactorData(ff_path="./source/materials/form_factor/Mn.txt")
-# o_ff = FormFactorData(ff_path="./source/materials/form_factor/O.txt")
-# c_ff = FormFactorData(ff_path="./source/materials/form_factor/C.txt")
-# la_atom = Atom(
-#     Z=57,
-#     name="La",
-#     symbol="La",
-#     ff=la_ff,
-# )
-# mn_atom = Atom(
-#     Z=25,
-#     name="Mn",
-#     symbol="Mn",
-#     ff=mn_ff,
-# )
-# o_atom = Atom(
-#     Z=8,
-#     name="O",
-#     symbol="O",
-#     ff=o_ff,
-# )
-# c_atom = Atom(
-#     Z=6,
-#     name="C",
-#     symbol="C",
-#     ff=c_ff,
-# )
 
+def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
+    plt.figure(figsize=(8, 6))
+    plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
+    plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
+    plt.xlabel(r"$q_z$ (Å$^{-1}$)")
+    plt.ylabel(r"Reflectivity")
+    plt.title(rf"Reflectivity for {model_name} at {energy_eV} eV")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-# comp_LaMnO = create_compound(
-#     id="LaMnO3",
-#     name="LaMnO:3",
-#     thickness=50.0,
-#     density=6.52,
-#     formula="La:1,Mn:1,O:3",
-#     n_layers=1,
-#     atoms_prov=[la_atom, mn_atom, o_atom],
-# )
-# comp_CCO = create_compound(
-#     id="CCO",
-#     name="CCO",
-#     thickness=9,
-#     density=5,
-#     formula="C:1,O:1",
-#     n_layers=1,
-#     atoms_prov=[c_atom, o_atom],
-# )
+def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
+    plt.figure(figsize=(8, 6))
+    plt.plot(e_pr, R_phi_pr, label=r"$\sigma$-pol")
+    plt.plot(e_pr, R_pi_pr, "--", label=r"$\pi$-pol")
+    plt.xlabel("Energy (eV)")
+    plt.ylabel("Reflectivity")
+    plt.title(rf"Energy Scan for {model_name} at {theta_deg}°")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 
 
 
 
 
+cr_ff = FormFactorData(ff_path="./source/materials/form_factor/Cr.txt")
+si_ff = FormFactorData(ff_path="./source/materials/form_factor/Si.txt")
+cr_atom = Atom(
+    Z=24,
+    name="Cr",
+    symbol="Cr",
+    ff=cr_ff,
+)
+si_atom = Atom(
+    Z=14,
+    name="Si",
+    symbol="Si",
+    ff=si_ff,
+)
 
 
-# cr_ff = FormFactorData(ff_path="./source/materials/form_factor/Cr.txt")
-# si_ff = FormFactorData(ff_path="./source/materials/form_factor/Si.txt")
-# cr_atom = Atom(
-#     Z=24,
-#     name="Cr",
-#     symbol="Cr",
-#     ff=cr_ff,
-# )
-# si_atom = Atom(
-#     Z=14,
-#     name="Si",
-#     symbol="Si",
-#     ff=si_ff,
-# )
+comp_cr = create_compound(
+    id="Cr",
+    name="Cr",
+    thickness=10,
+    density=5,
+    formula="Cr:1",
+    n_layers=1,
+    atoms_prov=[cr_atom],
+)
+comp_si = create_compound(
+    id="Si",
+    name="Si",
+    thickness=10,
+    density=5,
+    formula="Si:1",
+    n_layers=1,
+    atoms_prov=[si_atom],
+)
 
 
-# comp_cr = create_compound(
-#     id="Cr",
-#     name="Cr",
-#     thickness=10,
-#     density=5,
-#     formula="Cr:1",
-#     n_layers=1,
-#     atoms_prov=[cr_atom],
-# )
-# comp_si = create_compound(
-#     id="Si",
-#     name="Si",
-#     thickness=10,
-#     density=5,
-#     formula="Si:1",
-#     n_layers=1,
-#     atoms_prov=[si_atom],
-# )
+struc = Structure(name="Cr/Si", n_compounds=2)
+struc.add_compound(1, comp_si)
+struc.add_compound(0, comp_cr)
 
+E_eV = 1000.0
+Theta = np.linspace(0.1, 89.1, num=1000)
+qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
-# struc = Structure(name="Cr/Si", n_compounds=2)
-# struc.add_compound(1, comp_si)
-# struc.add_compound(0, comp_cr)
+qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
+qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
 
-
-
-
-# def plot_reflectivity(qz, R_phi, R_pi):
-#     plt.figure(figsize=(8, 6))
-#     plt.semilogy(qz, R_phi, label="σ-pol")
-#     plt.semilogy(qz, R_pi, "--", label="π-pol")
-#     plt.xlabel(r"$q_z$ (Å$^{-1}$)")
-#     plt.ylabel("Reflectividad")
-#     plt.title("Reflectividad de Cr/Si a 708 eV")
-#     plt.legend()
-#     plt.grid(True)
-#     plt.tight_layout()
-#     plt.show()
-
-
-# E_eV = 1000.0
-# Theta = np.linspace(0.1, 89.1, num=1000)
-# qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
-
-# qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
-# qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
-
-# plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr)
-# plot_reflectivity(qz_ud, R_phi_ud, R_pi_ud)
+# plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr, E_eV, "Cr/Si (PR)")
+# plot_reflectivity(qz_ud, R_phi_ud, R_pi_ud, E_eV, "Cr/Si (UDKM)")

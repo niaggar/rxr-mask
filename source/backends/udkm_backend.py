@@ -4,6 +4,8 @@ from source.core.structure import Structure
 from source.core.compound import Compound
 from source.pint_init import ureg
 
+from dask.distributed import Client
+
 def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
     ud_layers = []
 
@@ -54,10 +56,7 @@ def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndar
     ud_structure = _to_ud_structure(stack)
     # ud_structure.visualize()
 
-    dyn_mag = ud.XrayDynMag(ud_structure, True)
-    dyn_mag.disp_messages = False
-    dyn_mag.save_data = False
-
+    dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)
     dyn_mag.energy = np.r_[E_eV] * ureg.eV
     dyn_mag.qz = qz / ureg.angstrom
 
@@ -69,14 +68,24 @@ def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndar
 
     return dyn_mag.qz[0, :], R_hom_sigma[0, :], R_hom_pi[0, :]
 
+# TODO: Think how to implement this function
+# def reflectivity_parallel(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+#     ud_structure = _to_ud_structure(stack)
+#     # ud_structure.visualize()
+
+#     dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)
+#     dyn_mag.energy = np.r_[E_eV] * ureg.eV
+#     dyn_mag.qz = qz / ureg.angstrom
+
+#     dclient = Client()
+#     dyn_mag.set_polarization(0, 3)
+#     R_hom_sigma, _, _, _ = dyn_mag.homogeneous_reflectivity(calc_type="parallel", client=dclient)
+
 def energy_scan(stack: Structure, E_eVs: list[float], theta_deg: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     ud_structure = _to_ud_structure(stack)
     # ud_structure.visualize()
 
-    dyn_mag = ud.XrayDynMag(ud_structure, True)
-    dyn_mag.disp_messages = False
-    dyn_mag.save_data = False
-
+    dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)
     dyn_mag.energy = np.array(E_eVs) * ureg.eV
     dyn_mag.qz = np.sin(np.radians(theta_deg)) * (E_eVs[0] * 0.001013546143) / ureg.angstrom
 
