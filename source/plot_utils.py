@@ -1,0 +1,60 @@
+from matplotlib.patches import Rectangle
+from matplotlib import cm
+from matplotlib import pyplot as plt
+import numpy as np
+
+def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
+    plt.figure(figsize=(8, 6), dpi=300)
+    plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
+    plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
+    plt.xlabel(r"$q_z$ (Å$^{-1}$)")
+    plt.ylabel(r"Reflectivity")
+    plt.title(rf"Reflectivity for {model_name} at {energy_eV} eV")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
+    plt.figure(figsize=(8, 6), dpi=300)
+    plt.plot(e_pr, R_phi_pr, label=r"$\sigma$-pol")
+    plt.plot(e_pr, R_pi_pr, "--", label=r"$\pi$-pol")
+    plt.xlabel("Energy (eV)")
+    plt.ylabel("Reflectivity")
+    plt.title(rf"Energy Scan for {model_name} at {theta_deg}°")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+def plot_slab_model(structure, figsize=(10,4), cmap_name='tab10'):
+    thicknesses = [comp.thickness for comp in structure.compounds]
+    densities = [comp.density for comp in structure.compounds]
+    names = [comp.id for comp in structure.compounds]
+    
+    x0 = np.concatenate([[0], np.cumsum(thicknesses)])
+    cmap = cm.get_cmap(cmap_name, structure.n_compounds)
+
+    fig, ax = plt.subplots(figsize=figsize, dpi=300)
+    for i, comp in enumerate(structure.compounds):
+        rect = Rectangle((x0[i], 0), width=thicknesses[i], height=densities[i], facecolor=cmap(i), edgecolor='k')
+        ax.add_patch(rect)
+        ax.text(x0[i] + thicknesses[i]/2,
+                densities[i]/2,
+                names[i],
+                ha='center', va='center',
+                color='white', fontsize=10, weight='bold')
+    
+    for j, x in enumerate(x0):
+        ax.axvline(x, linestyle='--', color='k')
+        y_text = max(densities) * 1.02
+        ax.text(x, y_text, f'[{j}]', ha='center', va='bottom', fontsize=10)
+    
+    ax.set_xlim(x0[0], x0[-1])
+    ax.set_ylim(0, max(densities)*1.1)
+    ax.set_xlabel('Thickness (Å)')
+    ax.set_ylabel('Density (g/cm³)')
+    ax.set_title(f"{structure.name}")
+    plt.tight_layout()
+    plt.show()
+

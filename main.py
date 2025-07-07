@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 import numpy as np
-from matplotlib import pyplot as plt
 import pandas as pd
 
 from source.backends import udkm_backend, pr_backend
@@ -9,6 +8,7 @@ from source.core.atom import Atom
 from source.core.formfactor import FormFactorModel
 from source.core.structure import Structure
 from source.core.compound import create_compound
+from source.plot_utils import plot_slab_model
 
 
 
@@ -58,29 +58,7 @@ class FormFactorData(FormFactorModel):
 
 
 
-def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
-    plt.figure(figsize=(8, 6))
-    plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
-    plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
-    plt.xlabel(r"$q_z$ (Å$^{-1}$)")
-    plt.ylabel(r"Reflectivity")
-    plt.title(rf"Reflectivity for {model_name} at {energy_eV} eV")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
 
-def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
-    plt.figure(figsize=(8, 6))
-    plt.plot(e_pr, R_phi_pr, label=r"$\sigma$-pol")
-    plt.plot(e_pr, R_pi_pr, "--", label=r"$\pi$-pol")
-    plt.xlabel("Energy (eV)")
-    plt.ylabel("Reflectivity")
-    plt.title(rf"Energy Scan for {model_name} at {theta_deg}°")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
 
 
 
@@ -170,6 +148,11 @@ E_eV = 1000.0
 Theta = np.linspace(0.1, 89.1, num=1000)
 qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
+
+plot_slab_model(struc)
+
+
+
 # qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
 # qz_pr_para, R_phi_pr_para, R_pi_pr_para  = pr_backend.reflectivity_parallel(struc, qz, E_eV)
 # qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
@@ -180,11 +163,11 @@ qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
 
 
-e_evs = np.linspace(630, 670, num=500).tolist()
-theta_deg = 15
+# e_evs = np.linspace(630, 670, num=500).tolist()
+# theta_deg = 15
 
-e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
-e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
+# e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
+# e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
 
-plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
-plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")
+# plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
+# plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")
