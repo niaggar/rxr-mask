@@ -87,52 +87,104 @@ def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
 
 
 
-cr_ff = FormFactorData(ff_path="./source/materials/form_factor/Cr.txt")
-si_ff = FormFactorData(ff_path="./source/materials/form_factor/Si.txt")
-cr_atom = Atom(
-    Z=24,
-    name="Cr",
-    symbol="Cr",
-    ff=cr_ff,
+la_ff = FormFactorData(ff_path="./source/materials/form_factor/La.txt")
+mn_ff = FormFactorData(ff_path="./source/materials/form_factor/Mn.txt")
+o_ff = FormFactorData(ff_path="./source/materials/form_factor/O.txt")
+sr_ff = FormFactorData(ff_path="./source/materials/form_factor/Sr.txt")
+ti_ff = FormFactorData(ff_path="./source/materials/form_factor/Ti.txt")
+c_ff = FormFactorData(ff_path="./source/materials/form_factor/C.txt")
+
+la_atom = Atom(
+    Z=57,
+    name="La",
+    symbol="La",
+    ff=la_ff,
 )
-si_atom = Atom(
-    Z=14,
-    name="Si",
-    symbol="Si",
-    ff=si_ff,
+mn_atom = Atom(
+    Z=25,
+    name="Mn",
+    symbol="Mn",
+    ff=mn_ff,
+)
+o_atom = Atom(
+    Z=8,
+    name="O",
+    symbol="O",
+    ff=o_ff,
+)
+sr_atom = Atom(
+    Z=38,
+    name="Sr",
+    symbol="Sr",
+    ff=sr_ff,
+)
+ti_atom = Atom(
+    Z=22,
+    name="Ti",
+    symbol="Ti",
+    ff=ti_ff,
+)
+c_atom = Atom(
+    Z=6,
+    name="C",
+    symbol="C",
+    ff=c_ff,
 )
 
 
-comp_cr = create_compound(
-    id="Cr",
-    name="Cr",
+
+comp_LaMnO3 = create_compound(
+    id="LaMnO3",
+    name="LaMnO:3",
+    thickness=50.0,
+    density=6.52,
+    formula="La:1,Mn:1,O:3",
+    n_layers=10,
+    atoms_prov=[la_atom, mn_atom, o_atom],
+)
+comp_SrTiO3 = create_compound(
+    id="SrTiO3",
+    name="SrTiO:3",
+    thickness=50.0,
+    density=5.0,
+    formula="Sr:1,Ti:1,O:3",
+    n_layers=10,
+    atoms_prov=[sr_atom, ti_atom, o_atom],
+)
+comp_CCO = create_compound(
+    id="CCO",
+    name="CCO",
     thickness=10,
     density=5,
-    formula="Cr:1",
-    n_layers=1,
-    atoms_prov=[cr_atom],
-)
-comp_si = create_compound(
-    id="Si",
-    name="Si",
-    thickness=10,
-    density=5,
-    formula="Si:1",
-    n_layers=1,
-    atoms_prov=[si_atom],
+    formula="C:1,O:1",
+    n_layers=10,
+    atoms_prov=[c_atom, o_atom],
 )
 
-
-struc = Structure(name="Cr/Si", n_compounds=2)
-struc.add_compound(1, comp_si)
-struc.add_compound(0, comp_cr)
+struc = Structure(name=f"Test Stack {10}", n_compounds=3)
+struc.add_compound(2, comp_CCO)
+struc.add_compound(1, comp_SrTiO3)
+struc.add_compound(0, comp_LaMnO3)
 
 E_eV = 1000.0
 Theta = np.linspace(0.1, 89.1, num=1000)
 qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
-qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
-qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
+# qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
+# qz_pr_para, R_phi_pr_para, R_pi_pr_para  = pr_backend.reflectivity_parallel(struc, qz, E_eV)
+# qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
 
 # plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr, E_eV, "Cr/Si (PR)")
+# plot_reflectivity(qz_pr_para, R_phi_pr_para, R_pi_pr_para, E_eV, "Cr/Si (PR)")
 # plot_reflectivity(qz_ud, R_phi_ud, R_pi_ud, E_eV, "Cr/Si (UDKM)")
+
+
+
+e_evs = np.linspace(630, 670, num=500).tolist()
+theta_deg = 15
+
+e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
+e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
+
+plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
+plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")
