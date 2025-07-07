@@ -4,6 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pandas as pd
 
+from source.backends import udkm_backend, pr_backend
 from source.core.atom import Atom
 from source.core.formfactor import FormFactorModel
 from source.core.structure import Structure
@@ -30,7 +31,7 @@ class FormFactorData(FormFactorModel):
         
         self.ff_data = pd.read_csv(
             file,
-            delimiter="\t",
+            sep="\s+",
             header=None,
             index_col=False,
             names=["E", "f1", "f2"],
@@ -55,6 +56,61 @@ class FormFactorData(FormFactorModel):
 
 
 
+# la_ff = FormFactorData(ff_path="./source/materials/form_factor/La.txt")
+# mn_ff = FormFactorData(ff_path="./source/materials/form_factor/Mn.txt")
+# o_ff = FormFactorData(ff_path="./source/materials/form_factor/O.txt")
+# c_ff = FormFactorData(ff_path="./source/materials/form_factor/C.txt")
+# la_atom = Atom(
+#     Z=57,
+#     name="La",
+#     symbol="La",
+#     ff=la_ff,
+# )
+# mn_atom = Atom(
+#     Z=25,
+#     name="Mn",
+#     symbol="Mn",
+#     ff=mn_ff,
+# )
+# o_atom = Atom(
+#     Z=8,
+#     name="O",
+#     symbol="O",
+#     ff=o_ff,
+# )
+# c_atom = Atom(
+#     Z=6,
+#     name="C",
+#     symbol="C",
+#     ff=c_ff,
+# )
+
+
+# comp_LaMnO = create_compound(
+#     id="LaMnO3",
+#     name="LaMnO:3",
+#     thickness=50.0,
+#     density=6.52,
+#     formula="La:1,Mn:1,O:3",
+#     n_layers=1,
+#     atoms_prov=[la_atom, mn_atom, o_atom],
+# )
+# comp_CCO = create_compound(
+#     id="CCO",
+#     name="CCO",
+#     thickness=9,
+#     density=5,
+#     formula="C:1,O:1",
+#     n_layers=1,
+#     atoms_prov=[c_atom, o_atom],
+# )
+
+
+
+
+
+
+
 
 cr_ff = FormFactorData(ff_path="./source/materials/form_factor/Cr.txt")
 si_ff = FormFactorData(ff_path="./source/materials/form_factor/Si.txt")
@@ -62,14 +118,12 @@ cr_atom = Atom(
     Z=24,
     name="Cr",
     symbol="Cr",
-    mass=51.9961,
     ff=cr_ff,
 )
 si_atom = Atom(
     Z=14,
     name="Si",
     symbol="Si",
-    mass=28.0855,
     ff=si_ff,
 )
 
@@ -77,8 +131,8 @@ si_atom = Atom(
 comp_cr = create_compound(
     id="Cr",
     name="Cr",
-    thickness=10.0,
-    density=7140,
+    thickness=10,
+    density=5,
     formula="Cr:1",
     n_layers=1,
     atoms_prov=[cr_atom],
@@ -86,33 +140,40 @@ comp_cr = create_compound(
 comp_si = create_compound(
     id="Si",
     name="Si",
-    thickness=200,
-    density=2336,
+    thickness=10,
+    density=5,
     formula="Si:1",
     n_layers=1,
     atoms_prov=[si_atom],
 )
 
 
-struc = Structure(name="Cr/Si")
-struc.add(comp_cr, repeat=1)
-struc.add(comp_si, repeat=1)
+struc = Structure(name="Cr/Si", n_compounds=2)
+struc.add_compound(1, comp_si)
+struc.add_compound(0, comp_cr)
 
 
-import source.backends.pr_backend as pr_backend
 
 
-E_eV = 708.0
-qz = np.linspace(0.01, 5.0, 1500)
-R_phi, R_pi = pr_backend.reflectivity(struc, qz, E_eV)
+def plot_reflectivity(qz, R_phi, R_pi):
+    plt.figure(figsize=(8, 6))
+    plt.semilogy(qz, R_phi, label="σ-pol")
+    plt.semilogy(qz, R_pi, "--", label="π-pol")
+    plt.xlabel(r"$q_z$ (Å$^{-1}$)")
+    plt.ylabel("Reflectividad")
+    plt.title("Reflectividad de Cr/Si a 708 eV")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 
-plt.semilogy(qz, R_phi, label="σ-pol")
-plt.semilogy(qz, R_pi, "--", label="π-pol")
-plt.xlabel(r"$q_z$ (Å$^{-1}$)")
-plt.ylabel("Reflectividad")
-plt.title("PythonReflectivity – Cr/Si")
-plt.legend()
-plt.tight_layout()
-plt.show()
+E_eV = 1000.0
+Theta = np.linspace(0.1, 89.1, num=1000)
+qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
+qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
+qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
+
+plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr)
+plot_reflectivity(qz_ud, R_phi_ud, R_pi_ud)

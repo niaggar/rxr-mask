@@ -5,12 +5,23 @@ from .atom import Atom, get_atom
 from .layer import Layer
 
 
+h = 4.135667696e-15  # Plank's Constant [eV s]
+c = 2.99792450e10  # Speed of light in vacuum [cm/s]
+re = 2.817940322719e-13  # Classical electron radius (Thompson scattering length) [cm]
+avocado = 6.02214076e23  # avagoadro's number
+re = 2.817940322719e-13 # Classical electron radius (Thompson scattering length) [cm]
+pihc = 2 * np.pi / (h * c)  # To calculate the photon wavenumber in vacuum [1/cm]
+pireav = 2 * np.pi * re * avocado  # To calculate the electron density in cm^-3
+
+
 @dataclass
 class Compound:
     id: str
     name: str
+    formula: str
     thickness: float
-    density: float
+    # TODO: density should depend on the atoms and their counts 
+    density: float # in g/cm^3
     atoms: list[Atom]
     layers: list[list[Layer]] = field(default_factory=list)
     n_layers: int = 1
@@ -19,6 +30,8 @@ class Compound:
         self.n_layers = n_layers
         layers = []
         delta_thickness = self.thickness / n_layers
+
+        total_mass = sum(atom.mass * atom.stochiometric_fraction for atom in self.atoms) # type: ignore
 
         for i in range(n_layers):
             levels = []
@@ -31,6 +44,7 @@ class Compound:
                     density=self.density,
                     atom=atom,
                 )
+                layer.set_density_gcm(self.density, total_mass)
                 levels.append(layer)
 
             layers.append(levels)
@@ -41,9 +55,20 @@ class Compound:
         if layer_index < 0 or layer_index >= len(self.layers):
             raise IndexError("Layer index out of range.")
 
-        n_complex = 0 + 0j
+        f1_layer = 0.0
+        f2_layer = 0.0
         for l in self.layers[layer_index]:
-            n_complex += l.get_n(energy_eV) 
+            f1, f2 = l.get_f1f2(energy_eV)
+            f1_layer += f1 * l.density
+            f2_layer += f2 * l.density
+
+
+        k0 = energy_eV * pihc
+        constant = pireav / (k0 ** 2)  # constant for density sum
+        
+        delta = constant * f1_layer
+        beta  = constant * f2_layer
+        n_complex = 1 - delta + 1j * beta
 
         return n_complex
     
@@ -55,21 +80,6 @@ class Compound:
 
 
 def create_compound(id: str, name: str, thickness: float, density: float, formula: str, atoms_prov: list[Atom], n_layers: int = 1) -> Compound:
-    """
-    Create a Compound instance from the given parameters.
-
-    Parameters:
-        id (str): Identifier for the compound.
-        name (str): Name of the compound.
-        thickness (float): Total thickness of the compound in angstroms.
-        density (float): Density of the compound.
-        formula (str): Chemical formula in the format 'Symbol:Count,Symbol:Count', e.g., 'C:2,O:1'.
-        atoms (list[Atom]): List of Atom instances that make up the compound.
-        n_layers (int, optional): Number of layers to divide the compound into. Defaults to 1.
-
-    Returns:
-        Compound: The created Compound instance.
-    """
     atoms = []
     for atom_info in formula.split(","):
         symbol, count = atom_info.strip().split(":")
@@ -81,7 +91,9 @@ def create_compound(id: str, name: str, thickness: float, density: float, formul
         
         atoms.extend([atom] * count)
 
-    compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms)
+    compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms, formula=formula)
+    
+    # TODO: The layers shold be created using adaptative layer segmentation
     compound.create_layer(n_layers=n_layers)
 
     return compound
