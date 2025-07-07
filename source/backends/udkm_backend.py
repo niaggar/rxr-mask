@@ -4,10 +4,9 @@ from source.core.structure import Structure
 from source.core.compound import Compound
 from source.pint_init import ureg
 
-def _compound_to_ud(compound: Compound, E_eV: float) -> list[ud.AmorphousLayer]:
+def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
     ud_layers = []
 
-    # Recorre las capas internas en orden inverso
     for i in reversed(range(len(compound.layers))):
         level_layer = compound.layers[i]
         atom_mixed = ud.AtomMixed(compound.formula)
@@ -33,16 +32,15 @@ def _compound_to_ud(compound: Compound, E_eV: float) -> list[ud.AmorphousLayer]:
     return ud_layers
 
 
-def _to_ud_structure(stack: Structure, E_eV: float) -> ud.Structure:
+def _to_ud_structure(stack: Structure) -> ud.Structure:
     ud_stack = ud.Structure(stack.name)
     
-    # Recorre los compounds en orden inverso (substrato al final)
     for comp in reversed(stack.compounds):
         if not isinstance(comp, Compound):
             raise TypeError("Expected a Compound instance in the stack.")
 
         sub_structure = ud.Structure(comp.name)
-        layers = _compound_to_ud(comp, E_eV)
+        layers = _compound_to_ud(comp)
         
         for layer in layers:
             sub_structure.add_sub_structure(layer)
@@ -53,10 +51,13 @@ def _to_ud_structure(stack: Structure, E_eV: float) -> ud.Structure:
 
 
 def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    ud_structure = _to_ud_structure(stack, E_eV)
+    ud_structure = _to_ud_structure(stack)
     # ud_structure.visualize()
 
     dyn_mag = ud.XrayDynMag(ud_structure, True)
+    dyn_mag.disp_messages = False
+    dyn_mag.save_data = False
+
     dyn_mag.energy = np.r_[E_eV] * ureg.eV
     dyn_mag.qz = qz / ureg.angstrom
 
@@ -67,3 +68,22 @@ def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndar
     R_hom_pi, _, _, _ = dyn_mag.homogeneous_reflectivity()
 
     return dyn_mag.qz[0, :], R_hom_sigma[0, :], R_hom_pi[0, :]
+
+def energy_scan(stack: Structure, E_eVs: list[float], theta_deg: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ud_structure = _to_ud_structure(stack)
+    # ud_structure.visualize()
+
+    dyn_mag = ud.XrayDynMag(ud_structure, True)
+    dyn_mag.disp_messages = False
+    dyn_mag.save_data = False
+
+    dyn_mag.energy = np.array(E_eVs) * ureg.eV
+    dyn_mag.qz = np.sin(np.radians(theta_deg)) * (E_eVs[0] * 0.001013546143) / ureg.angstrom
+
+    dyn_mag.set_polarization(0, 3)
+    R_hom_sigma, _, _, _ = dyn_mag.homogeneous_reflectivity()
+
+    dyn_mag.set_polarization(0, 4)
+    R_hom_pi, _, _, _ = dyn_mag.homogeneous_reflectivity()
+
+    return np.array(E_eVs), R_hom_sigma, R_hom_pi

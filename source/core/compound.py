@@ -89,7 +89,8 @@ def create_compound(id: str, name: str, thickness: float, density: float, formul
         if atom is None:
             raise ValueError(f"Atom with symbol '{symbol}' not found in the provided atoms list.")
         
-        atoms.extend([atom] * count)
+        atom.stochiometric_fraction = count
+        atoms.extend([atom])
 
     compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms, formula=formula)
     
