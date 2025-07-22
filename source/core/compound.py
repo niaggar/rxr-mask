@@ -20,9 +20,12 @@ class Compound:
     name: str
     formula: str
     thickness: float
-    # TODO: density should depend on the atoms and their counts 
-    density: float # in g/cm^3
     atoms: list[Atom]
+    
+    # TODO: density should depend on the atoms and their counts 
+    base_density: float # in g/cm^3
+    base_roughness: float = 0.0  # in Angstrom
+
     layers: list[list[Layer]] = field(default_factory=list)
     n_layers: int = 1
 
@@ -41,10 +44,10 @@ class Compound:
                 layer = Layer(
                     id=f"{self.id}_{atom.name}_{i}",
                     thickness=thickness,
-                    density=self.density,
+                    density=self.base_density,
                     atom=atom,
                 )
-                layer.set_density_gcm(self.density, total_mass)
+                layer.set_density_gcm(self.base_density, total_mass)
                 levels.append(layer)
 
             layers.append(levels)
@@ -92,7 +95,7 @@ def create_compound(id: str, name: str, thickness: float, density: float, formul
         atom.stochiometric_fraction = count
         atoms.extend([atom])
 
-    compound = Compound(id=id, name=name, thickness=thickness, density=density, atoms=atoms, formula=formula)
+    compound = Compound(id=id, name=name, thickness=thickness, base_density=density, atoms=atoms, formula=formula)
     
     # TODO: The layers shold be created using adaptative layer segmentation
     compound.create_layer(n_layers=n_layers)

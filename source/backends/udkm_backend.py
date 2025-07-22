@@ -25,7 +25,7 @@ def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
             compound.id,
             f"{compound.name} layer",
             compound.get_thickness_layer(i) * ureg.angstrom,
-            compound.density * ureg.g / ureg.cm**3,
+            compound.base_density * ureg.g / ureg.cm**3,
             atom=atom_mixed,
         )
 
