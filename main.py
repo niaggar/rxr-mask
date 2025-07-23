@@ -106,38 +106,6 @@ c_atom = Atom(
 
 
 
-# comp_LaMnO3 = create_compound(
-#     id="LaMnO3",
-#     name="LaMnO:3",
-#     thickness=50.0,
-#     density=6.52,
-#     formula="La:1,Mn:1,O:3",
-#     n_layers=10,
-#     atoms_prov=[la_atom, mn_atom, o_atom],
-# )
-# comp_SrTiO3 = create_compound(
-#     id="SrTiO3",
-#     name="SrTiO:3",
-#     thickness=50.0,
-#     density=5.0,
-#     formula="Sr:1,Ti:1,O:3",
-#     n_layers=10,
-#     atoms_prov=[sr_atom, ti_atom, o_atom],
-# )
-# comp_CCO = create_compound(
-#     id="CCO",
-#     name="CCO",
-#     thickness=10,
-#     density=5,
-#     formula="C:1,O:1",
-#     n_layers=10,
-#     atoms_prov=[c_atom, o_atom],
-# )
-
-# struc = Structure(name=f"Test Stack {10}", n_compounds=3)
-# struc.add_compound(2, comp_CCO)
-# struc.add_compound(1, comp_SrTiO3)
-# struc.add_compound(0, comp_LaMnO3)
 
 
 comp_SrTiO3 = create_compound(
@@ -167,7 +135,7 @@ struc.create_layers(step=1)
 # z, dens, m_dens, atoms = struc.get_density_profile(step=0.1)
 # plt.figure(figsize=(8,4))
 # for name, profile in dens.items():
-#     plt.plot(z, profile, "-o", label=name)
+#     plt.plot(z, profile, "-", label=name)
 # plt.xlabel('Profundidad $z$')
 # plt.ylabel('Densidad $\\rho(z)$')
 # plt.ylim(bottom=0)  # Fija el mínimo en y a 0

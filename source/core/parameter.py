@@ -12,7 +12,7 @@ class Parameter:
         if not isinstance(self.value, (int, float, str, complex)):
             raise TypeError("Parameter value must be an int, float, str, or complex number.")
         
-    def get(self) -> None:
+    def get(self, prray=None) -> None:
         if self.value is None:
             raise ValueError("Parameter value has not been set.")
         return self.value
@@ -26,7 +26,6 @@ class Parameter:
 
 @dataclass
 class FitParameter(Parameter):
-    fit: bool = True
     init_value: None = None
     min_value: None = None
     max_value: None = None
@@ -42,27 +41,33 @@ class FitParameter(Parameter):
     def set_fit_range(self, init_value: None, min_value: None, max_value: None) -> None:
         if init_value is not None and not isinstance(init_value, (int, float)):
             raise TypeError("Initial value must be an int or float.")
-        if min_value is not None and not isinstance(min_value, (int, float)):
-            raise TypeError("Minimum value must be an int or float.")
-        if max_value is not None and not isinstance(max_value, (int, float)):
-            raise TypeError("Maximum value must be an int or float.")
         
         self.init_value = init_value
         self.min_value = min_value
         self.max_value = max_value
         self.value = init_value
 
+    def get(self, prray=None) -> None:
+        return prray[self.id] # type: ignore
+
 @dataclass
 class ParametersContainer:
+    parameters: list[Parameter] = field(default_factory=list)
     fit_parameters: list[FitParameter] = field(default_factory=list)
 
-    def new_fit_parameter(self, name: str, fit: bool = True, init_value: None = None, min_value: None = None, max_value: None = None) -> FitParameter:
+    def new_fit_parameter(self, name: str, init_value: None = None, min_value: None = None, max_value: None = None) -> FitParameter:
         id = len(self.fit_parameters)
 
-        param = FitParameter(id=id, name=name, value=init_value, fit=fit)
+        param = FitParameter(id=id, name=name, value=init_value)
         param.set_fit_range(init_value, min_value, max_value)
         self.fit_parameters.append(param)
         return param
     
+    def new_parameter(self, name: str, value: None) -> Parameter:
+        id = len(self.fit_parameters)
+        param = Parameter(id=id, name=name, value=value)
+        self.parameters.append(param)
+        return param
+    
     def get_vector(self) -> list[None]:
-        return [param.get() for param in self.fit_parameters if param.fit]
+        return [param.init_value for param in self.fit_parameters if param.fit]

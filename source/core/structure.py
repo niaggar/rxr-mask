@@ -87,33 +87,6 @@ class Structure:
         return z, dens, m_dens, atoms
 
 
-    # def create_layer(self, n_layers:int=1):
-    #     self.n_layers = n_layers
-    #     layers = []
-    #     delta_thickness = self.thickness / n_layers
-
-    #     total_mass = sum(atom.mass * self.formula_struct.get(atom.name, 0) for atom in self.atoms) # type: ignore
-
-    #     for i in range(n_layers):
-    #         levels = []
-
-    #         for atom in self.atoms:
-    #             molar_density = self.base_density * self.formula_dict.get(atom.name, 0) / total_mass
-
-    #             layer = Layer(
-    #                 id=f"{self.id}_{atom.name}_{i}",
-    #                 thickness=delta_thickness,
-    #                 molar_density=molar_density,
-    #                 atom=atom,
-    #             )
-
-    #             levels.append(layer)
-
-    #         layers.append(levels)
-
-    #     self.layers = layers
-
-
 
 
     def __repr__(self) -> str:

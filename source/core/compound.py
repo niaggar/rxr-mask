@@ -36,7 +36,7 @@ class Compound:
     formula_struct: list[AtomLayerStructure] = field(default_factory=list)
 
     magnetic: bool = False
-    magnetic_direction: Literal["x", "y", "z"] = "x"
+    magnetic_direction: Literal["x", "y", "z", "0"] = "0"
 
 
 
