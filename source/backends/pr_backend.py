@@ -2,6 +2,7 @@ import numpy as np
 import Pythonreflectivity as pr
 from source.core.compound import Compound
 from source.core.structure import Structure
+from source.core.layer import Layer
 
 from joblib import Parallel, delayed, parallel_backend
 
@@ -15,21 +16,13 @@ HC_EV_ANGSTROM = 12398.41984
 def _to_pr_structure(stack: Structure, E_eV: float):
     S = pr.Generate_structure(stack.n_layers)
 
-    layer_offset = 0
-    for compound in stack.compounds:
-        if not isinstance(compound, Compound):
-            raise TypeError("Expected a Compound instance in the stack.")
-        
-        for i_layer in range(compound.n_layers):
-            n = compound.get_n_layer(E_eV, i_layer)
-            thickness = compound.get_thickness_layer(i_layer)
+    for i, layer in enumerate(stack.layers):
+        if not isinstance(layer, Layer):
+            raise TypeError(f"Expected a Layer instance at index {i} in the stack.")
 
-            layer_index = layer_offset + i_layer
-            
-            S[layer_index].seteps(n ** 2)
-            S[layer_index].setd(thickness)
-
-        layer_offset += compound.n_layers
+        n = layer.get_index_of_refraction(E_eV)
+        S[i].seteps(n ** 2)
+        S[i].setd(layer.thickness)
 
     return S
 

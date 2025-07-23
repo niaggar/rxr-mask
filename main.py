@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -8,7 +9,7 @@ from source.core.atom import Atom
 from source.core.formfactor import FormFactorModel
 from source.core.structure import Structure
 from source.core.compound import create_compound
-from source.plot_utils import plot_slab_model
+from source.plot_utils import plot_slab_model, plot_reflectivity, plot_energy_scan
 
 
 
@@ -39,7 +40,7 @@ class FormFactorData(FormFactorModel):
             comment="#",
         )
 
-    def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
+    def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         
@@ -48,7 +49,7 @@ class FormFactorData(FormFactorModel):
         
         return f1, f2
     
-    def get_all_f1f2(self, *args) -> pd.DataFrame:
+    def get_all_formfactors(self, *args) -> pd.DataFrame:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         
@@ -75,81 +76,113 @@ c_ff = FormFactorData(ff_path="./source/materials/form_factor/C.txt")
 la_atom = Atom(
     Z=57,
     name="La",
-    symbol="La",
     ff=la_ff,
 )
 mn_atom = Atom(
     Z=25,
     name="Mn",
-    symbol="Mn",
     ff=mn_ff,
 )
 o_atom = Atom(
     Z=8,
     name="O",
-    symbol="O",
     ff=o_ff,
 )
 sr_atom = Atom(
     Z=38,
     name="Sr",
-    symbol="Sr",
     ff=sr_ff,
 )
 ti_atom = Atom(
     Z=22,
     name="Ti",
-    symbol="Ti",
     ff=ti_ff,
 )
 c_atom = Atom(
     Z=6,
     name="C",
-    symbol="C",
     ff=c_ff,
 )
 
 
 
-comp_LaMnO3 = create_compound(
-    id="LaMnO3",
-    name="LaMnO:3",
-    thickness=50.0,
-    density=6.52,
-    formula="La:1,Mn:1,O:3",
-    n_layers=10,
-    atoms_prov=[la_atom, mn_atom, o_atom],
-)
+# comp_LaMnO3 = create_compound(
+#     id="LaMnO3",
+#     name="LaMnO:3",
+#     thickness=50.0,
+#     density=6.52,
+#     formula="La:1,Mn:1,O:3",
+#     n_layers=10,
+#     atoms_prov=[la_atom, mn_atom, o_atom],
+# )
+# comp_SrTiO3 = create_compound(
+#     id="SrTiO3",
+#     name="SrTiO:3",
+#     thickness=50.0,
+#     density=5.0,
+#     formula="Sr:1,Ti:1,O:3",
+#     n_layers=10,
+#     atoms_prov=[sr_atom, ti_atom, o_atom],
+# )
+# comp_CCO = create_compound(
+#     id="CCO",
+#     name="CCO",
+#     thickness=10,
+#     density=5,
+#     formula="C:1,O:1",
+#     n_layers=10,
+#     atoms_prov=[c_atom, o_atom],
+# )
+
+# struc = Structure(name=f"Test Stack {10}", n_compounds=3)
+# struc.add_compound(2, comp_CCO)
+# struc.add_compound(1, comp_SrTiO3)
+# struc.add_compound(0, comp_LaMnO3)
+
+
 comp_SrTiO3 = create_compound(
     id="SrTiO3",
-    name="SrTiO:3",
+    name="SrTiO3",
     thickness=50.0,
-    density=5.0,
+    density=5.12,
     formula="Sr:1,Ti:1,O:3",
-    n_layers=10,
     atoms_prov=[sr_atom, ti_atom, o_atom],
 )
-comp_CCO = create_compound(
-    id="CCO",
-    name="CCO",
-    thickness=10,
-    density=5,
-    formula="C:1,O:1",
-    n_layers=10,
-    atoms_prov=[c_atom, o_atom],
+comp_LaMnO3 = create_compound(
+    id="LaMnO3",
+    name="LaMnO3",
+    thickness=10.0,
+    density=6.52,
+    formula="La:1,Mn:1,O:3",
+    atoms_prov=[la_atom, mn_atom, o_atom],
+    roughness=2.0,
 )
 
-struc = Structure(name=f"Test Stack {10}", n_compounds=3)
-struc.add_compound(2, comp_CCO)
-struc.add_compound(1, comp_SrTiO3)
-struc.add_compound(0, comp_LaMnO3)
+struc = Structure(name=f"Test Stack {10}", n_compounds=2)
+struc.add_compound(0, comp_SrTiO3)
+struc.add_compound(1, comp_LaMnO3)
+struc.create_layers(step=1)
+
+
+# z, dens, m_dens, atoms = struc.get_density_profile(step=0.1)
+# plt.figure(figsize=(8,4))
+# for name, profile in dens.items():
+#     plt.plot(z, profile, "-o", label=name)
+# plt.xlabel('Profundidad $z$')
+# plt.ylabel('Densidad $\\rho(z)$')
+# plt.ylim(bottom=0)  # Fija el mínimo en y a 0
+# plt.legend()
+# plt.tight_layout()
+# plt.show()
+
+
+
 
 E_eV = 1000.0
 Theta = np.linspace(0.1, 89.1, num=1000)
 qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
 
-plot_slab_model(struc)
 
 
 
@@ -163,11 +196,11 @@ plot_slab_model(struc)
 
 
 
-# e_evs = np.linspace(630, 670, num=500).tolist()
-# theta_deg = 15
+e_evs = np.linspace(630, 670, num=500).tolist()
+theta_deg = 15
 
-# e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
+e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
 # e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
 
-# plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
+plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
 # plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")

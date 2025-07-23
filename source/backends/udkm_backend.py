@@ -19,7 +19,7 @@ def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
 
             atom_symbol = atomic_layer.atom.symbol
             atom = ud.Atom(atom_symbol, atomic_form_factor_path=atomic_layer.atom.ff.ff_path)
-            atom_mixed.add_atom(atom, atomic_layer.atom.stochiometric_fraction)
+            atom_mixed.add_atom(atom, atomic_layer.stochiometric_fraction)
 
         ud_layer = ud.AmorphousLayer(
             compound.id,

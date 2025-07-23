@@ -8,10 +8,10 @@ import pandas as pd
 class FormFactorModel:
     ff_path: str | None = field(default=None)
 
-    def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
+    def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
         raise NotImplementedError("This method should be implemented by subclasses.")
     
-    def get_all_f1f2(self, *args) -> pd.DataFrame:
+    def get_all_formfactors(self, *args) -> pd.DataFrame:
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def get_path(self) -> str | None:

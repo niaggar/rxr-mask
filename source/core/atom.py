@@ -12,9 +12,8 @@ import pandas as pd
 class Atom:
     Z: int
     name: str
-    symbol: str
     ff: FormFactorModel
-    stochiometric_fraction: float = 1.0
+    ffm: FormFactorModel | None = None
     mass: float | None = None  # in atomic mass units (g/mol)
 
     def __post_init__(self):
@@ -31,7 +30,7 @@ class Atom:
         file = open("/Users/niaggar/Developer/mitacs/rxr-mask/source/materials/atomic_mass.txt", "r")
         lines = file.readlines()
         for line in lines:
-            if line.split()[0] == self.symbol:
+            if line.split()[0] == self.name:
                 mass = line.split()[1]
         file.close()
 
