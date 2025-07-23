@@ -16,12 +16,38 @@ HC_EV_ANGSTROM = 12398.41984
 def _to_pr_structure(stack: Structure, E_eV: float):
     S = pr.Generate_structure(stack.n_layers)
 
+    current_z = 0.0
     for i, layer in enumerate(stack.layers):
         if not isinstance(layer, Layer):
             raise TypeError(f"Expected a Layer instance at index {i} in the stack.")
 
         n = layer.get_index_of_refraction(E_eV)
-        S[i].seteps(n ** 2)
+        eps = n ** 2
+
+        compound: Compound | None = None
+        temp_comp_z = 0
+        current_z += layer.thickness
+        for j, comp in enumerate(stack.compounds):
+            if comp is not None:
+                temp_comp_z += comp.thickness
+                if temp_comp_z >= current_z:
+                    compound = comp
+            if j == len(stack.compounds) - 1:
+                compound = comp
+        if compound is None:
+            raise ValueError(f"No compound found for layer at index {i} with z={current_z}.")
+        
+        n = layer.get_index_of_refraction(E_eV)
+        eps = n ** 2
+
+        if compound.magnetic:
+            q = layer.get_magnetic_optical_constant(E_eV)
+            eps_m = -1 * eps * q
+            S[i].setmag(compound.magnetic_direction)
+            S[i].seteps([eps, eps, eps, eps_m])
+        else:
+            S[i].seteps([eps, eps, eps, 0])
+
         S[i].setd(layer.thickness)
 
     return S

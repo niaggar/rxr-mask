@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import numpy as np
 from .atom import Atom, get_atom
+from typing import Literal
 
 from .layer import Layer
 
@@ -33,6 +34,10 @@ class Compound:
     id_layer_end: int = 0
     
     formula_struct: list[AtomLayerStructure] = field(default_factory=list)
+
+    magnetic: bool = False
+    magnetic_direction: Literal["x", "y", "z"] = "x"
+
 
 
 def create_compound(id: str, name: str, thickness: float, density: float, formula: str, atoms_prov: list[Atom], roughness: float | None = None, m_density: float | None = None) -> Compound:

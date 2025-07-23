@@ -23,7 +23,7 @@ class ElementLayer:
     
     def get_q1q2(self, energy_eV: float) -> tuple[float, float]:
         if self.atom.ffm is None:
-            raise ValueError("The atom's magnetic form factor model is not set.")
+            return 0.0, 0.0
         return self.atom.ffm.get_formfactors(energy_eV)
 
 

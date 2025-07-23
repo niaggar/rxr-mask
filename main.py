@@ -186,21 +186,21 @@ qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 
 
 
-# qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
+qz_pr, R_phi_pr, R_pi_pr  = pr_backend.reflectivity(struc, qz, E_eV)
 # qz_pr_para, R_phi_pr_para, R_pi_pr_para  = pr_backend.reflectivity_parallel(struc, qz, E_eV)
 # qz_ud, R_phi_ud, R_pi_ud,  = udkm_backend.reflectivity(struc, qz, E_eV)
 
-# plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr, E_eV, "Cr/Si (PR)")
+plot_reflectivity(qz_pr, R_phi_pr, R_pi_pr, E_eV, "Cr/Si (PR)")
 # plot_reflectivity(qz_pr_para, R_phi_pr_para, R_pi_pr_para, E_eV, "Cr/Si (PR)")
 # plot_reflectivity(qz_ud, R_phi_ud, R_pi_ud, E_eV, "Cr/Si (UDKM)")
 
 
 
-e_evs = np.linspace(630, 670, num=500).tolist()
-theta_deg = 15
+# e_evs = np.linspace(630, 670, num=500).tolist()
+# theta_deg = 15
 
-e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
-# e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
+# e_pr, R_phi_pr, R_pi_pr  = pr_backend.energy_scan(struc, e_evs, theta_deg)
+# # e_pr_pa, R_phi_pr_pa, R_pi_pr_pa  = pr_backend.energy_scan_parallel(struc, e_evs, theta_deg, n_jobs=-1, use_threads=True, verbose=0)
 
-plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
-# plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")
+# plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, "Cr/Si (PR)")
+# # plot_energy_scan(e_pr_pa, R_phi_pr_pa, R_pi_pr_pa, theta_deg, "Cr/Si (PR Parallel)")
