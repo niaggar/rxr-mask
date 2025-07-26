@@ -14,8 +14,7 @@ from source.plot_utils import plot_slab_model, plot_reflectivity, plot_energy_sc
 
 
 
-@dataclass
-class FormFactorData(FormFactorModel):
+class FormFactorFile(FormFactorModel):
     ff_data: pd.DataFrame | None = field(default=None)
 
     def __init__(self, ff_path: str):
@@ -66,18 +65,21 @@ class FormFactorData(FormFactorModel):
 
 
 
-la_ff = FormFactorData(ff_path="./source/materials/form_factor/La.txt")
-mn_ff = FormFactorData(ff_path="./source/materials/form_factor/Mn.txt")
-o_ff = FormFactorData(ff_path="./source/materials/form_factor/O.txt")
-sr_ff = FormFactorData(ff_path="./source/materials/form_factor/Sr.txt")
-ti_ff = FormFactorData(ff_path="./source/materials/form_factor/Ti.txt")
-c_ff = FormFactorData(ff_path="./source/materials/form_factor/C.txt")
+mn_ff = FormFactorFile(ff_path="./source/materials/form_factor/Mn.txt")
+o_ff = FormFactorFile(ff_path="./source/materials/form_factor/O.txt")
+sr_ff = FormFactorFile(ff_path="./source/materials/form_factor/Sr.txt")
+ti_ff = FormFactorFile(ff_path="./source/materials/form_factor/Ti.txt")
+c_ff = FormFactorFile(ff_path="./source/materials/form_factor/C.txt")
 
+
+la_ff = FormFactorFile(ff_path="./source/materials/form_factor/La.txt")
 la_atom = Atom(
     Z=57,
     name="La",
     ff=la_ff,
 )
+
+
 mn_atom = Atom(
     Z=25,
     name="Mn",
@@ -113,40 +115,53 @@ comp_SrTiO3 = create_compound(
     name="SrTiO3",
     thickness=50.0,
     density=5.12,
+    roughness=0.0,
     formula="Sr:1,Ti:1,O:3",
     atoms_prov=[sr_atom, ti_atom, o_atom],
 )
+
+
 comp_LaMnO3 = create_compound(
     id="LaMnO3",
     name="LaMnO3",
-    thickness=10.0,
+    thickness=50.0,
     density=6.52,
     formula="La:1,Mn:1,O:3",
     atoms_prov=[la_atom, mn_atom, o_atom],
     roughness=2.0,
 )
+comp_CCO = create_compound(
+    id="CCO",
+    name="CCO",
+    thickness=10.0,
+    density=5,
+    formula="C:2,O:1",
+    atoms_prov=[c_atom, o_atom],
+    roughness=2.0,
+)
 
-struc = Structure(name=f"Test Stack {10}", n_compounds=2)
+struc = Structure(name=f"Test Structure", n_compounds=3)
 struc.add_compound(0, comp_SrTiO3)
 struc.add_compound(1, comp_LaMnO3)
+struc.add_compound(2, comp_CCO)
 struc.create_layers(step=1)
 
 
-# z, dens, m_dens, atoms = struc.get_density_profile(step=0.1)
-# plt.figure(figsize=(8,4))
-# for name, profile in dens.items():
-#     plt.plot(z, profile, "-", label=name)
-# plt.xlabel('Profundidad $z$')
-# plt.ylabel('Densidad $\\rho(z)$')
-# plt.ylim(bottom=0)  # Fija el mínimo en y a 0
-# plt.legend()
-# plt.tight_layout()
-# plt.show()
+z, dens, m_dens, atoms = struc.get_density_profile(step=0.1)
+plt.figure(figsize=(8, 4))
+for name, profile in dens.items():
+    plt.plot(z, profile, "-", label=name)
+plt.xlabel('Profundidad $z$')
+plt.ylabel('Densidad $\\rho(z)$')
+plt.ylim(bottom=0)  # Fija el mínimo en y a 0
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 
 
 
-E_eV = 1000.0
+E_eV = 650
 Theta = np.linspace(0.1, 89.1, num=1000)
 qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
 

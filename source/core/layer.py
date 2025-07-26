@@ -66,3 +66,4 @@ class Layer:
 
         Q = 2 * (delta_m + 1j * beta_m)
         return Q
+    
