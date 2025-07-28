@@ -1,7 +1,40 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "cython>=3.0.0", "numpy>=1.26"]
+requires = [
+  "setuptools",
+  "wheel",
+  "cython",
+  "numpy",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rxr-mask"
-version = "0.1"
+name = "rxrmask"
+version = "0.1.0"
+description = "Herramientas para modelar resonant X-ray reflectivity"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Tu Nombre", email = "tu@correo.com" },
+]
+keywords = ["x-ray", "reflectivity", "cython", "heteroestructuras"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy",
+  "scipy",
+  "matplotlib",
+  "pint",
+]
+
+
+[tool.setuptools]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rxrmask*", "pythonreflectivity*"]
+
+[tool.setuptools.package-data]
+"pythonreflectivity" = ["Pythonreflectivity.pyx"]

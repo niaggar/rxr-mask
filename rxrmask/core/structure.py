@@ -1,10 +1,9 @@
+from rxrmask.core.compound import Compound
+from rxrmask.core.layer import ElementLayer, Layer
+from rxrmask.utils.density_profile import density_profile
+
 from dataclasses import dataclass, field
-
 import numpy as np
-
-from source.core.compound import Compound
-from source.core.layer import ElementLayer, Layer
-from source.core.utils import density_profile
 
 @dataclass
 class Structure:

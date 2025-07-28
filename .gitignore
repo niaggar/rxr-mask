@@ -1,9 +1,10 @@
 /.venv/
-/libs/rxr_mask.egg-info/
 /build/
-/libs/Pythonreflectivity.cpp
+/pythonreflectivity/Pythonreflectivity.cpp
 /.idea/
 /.ropeproject/
 /.DS_Store/
 .DS_Store
 **/__pycache__/
+*.egg-info/
+*.cpython*

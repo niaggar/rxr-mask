@@ -1,6 +1,7 @@
+from rxrmask.core.atom import Atom
+
 from dataclasses import dataclass, field
 import numpy as np
-from .atom import Atom
 
 
 h = 4.135667696e-15  # Plank's Constant [eV s]

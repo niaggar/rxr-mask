@@ -1,15 +1,19 @@
+print("This is a test file for the rxr_mask package.")
+
+
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 
-from source.backends import udkm_backend, pr_backend
-from source.core.atom import Atom
-from source.core.formfactor import FormFactorModel
-from source.core.structure import Structure
-from source.core.compound import create_compound
-from source.plot_utils import plot_slab_model, plot_reflectivity, plot_energy_scan
+from rxrmask.backends import pr_backend
+from rxrmask.core.atom import Atom
+from rxrmask.core.compound import create_compound
+from rxrmask.core.structure import Structure
+from rxrmask.core.formfactor import FormFactorModel
+from rxrmask.utils.plot import plot_reflectivity, plot_energy_scan
 
 
 
@@ -61,18 +65,14 @@ class FormFactorFile(FormFactorModel):
 
 
 
+mn_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/Mn.txt")
+o_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/O.txt")
+sr_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/Sr.txt")
+ti_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/Ti.txt")
+c_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/C.txt")
 
 
-
-
-mn_ff = FormFactorFile(ff_path="./source/materials/form_factor/Mn.txt")
-o_ff = FormFactorFile(ff_path="./source/materials/form_factor/O.txt")
-sr_ff = FormFactorFile(ff_path="./source/materials/form_factor/Sr.txt")
-ti_ff = FormFactorFile(ff_path="./source/materials/form_factor/Ti.txt")
-c_ff = FormFactorFile(ff_path="./source/materials/form_factor/C.txt")
-
-
-la_ff = FormFactorFile(ff_path="./source/materials/form_factor/La.txt")
+la_ff = FormFactorFile(ff_path="./rxrmask/materials/form_factor/La.txt")
 la_atom = Atom(
     Z=57,
     name="La",

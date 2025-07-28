@@ -1,11 +1,6 @@
-from source.core.formfactor import FormFactorModel
-from source.pint_init import ureg, Q_
+from rxrmask.core.formfactor import FormFactorModel
 
-from dataclasses import dataclass, field
-from pathlib import Path
-import numpy as np
-import pandas as pd
-
+from dataclasses import dataclass
 
 
 @dataclass
@@ -27,7 +22,7 @@ class Atom:
         mass = None
         
         # TODO: Use relative path to the atomic mass file
-        file = open("/Users/niaggar/Developer/mitacs/rxr-mask/source/materials/atomic_mass.txt", "r")
+        file = open("/Users/niaggar/Developer/mitacs/rxr-mask/rxrmask/materials/atomic_mass.txt", "r")
         lines = file.readlines()
         for line in lines:
             if line.split()[0] == self.name:

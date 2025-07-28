@@ -1,9 +1,9 @@
+from rxrmask.core.compound import Compound
+from rxrmask.core.structure import Structure
+from rxrmask.core.layer import Layer
+
 import numpy as np
 import Pythonreflectivity as pr
-from source.core.compound import Compound
-from source.core.structure import Structure
-from source.core.layer import Layer
-
 from joblib import Parallel, delayed, parallel_backend
 
 

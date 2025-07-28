@@ -1,9 +1,7 @@
-from dataclasses import dataclass, field
-import numpy as np
-from .atom import Atom, get_atom
-from typing import Literal
+from rxrmask.core.atom import Atom, get_atom
 
-from .layer import Layer
+from dataclasses import dataclass, field
+from typing import Literal
 
 
 @dataclass
