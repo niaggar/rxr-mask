@@ -1,6 +1,8 @@
 from rxrmask.core.formfactor import FormFactorModel
 
 from dataclasses import dataclass
+import pathlib
+import rxrmask
 
 
 @dataclass
@@ -20,14 +22,14 @@ class Atom:
     
     def load_atomic_mass(self):
         mass = None
+        data_path = pathlib.Path(rxrmask.__file__).parent / "materials" / "atomic_mass.txt"
         
-        # TODO: Use relative path to the atomic mass file
-        file = open("/Users/niaggar/Developer/mitacs/rxr-mask/rxrmask/materials/atomic_mass.txt", "r")
-        lines = file.readlines()
-        for line in lines:
-            if line.split()[0] == self.name:
-                mass = line.split()[1]
-        file.close()
+        with open(data_path, "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                if line.split()[0] == self.name:
+                    mass = line.split()[1]
+            file.close()
 
         if mass == None:
             raise NameError("Inputted formula not found in perovskite density database")

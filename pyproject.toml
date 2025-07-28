@@ -10,14 +10,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rxrmask"
 version = "0.1.0"
-description = "Herramientas para modelar resonant X-ray reflectivity"
+description = "Tools for modeling resonant X-ray reflectivity."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+# license = { file = "LICENSE" }
 authors = [
-  { name = "Tu Nombre", email = "tu@correo.com" },
+  { name = "Nicolas Aguilera G.", email = "niagar25@gmail.com" },
 ]
-keywords = ["x-ray", "reflectivity", "cython", "heteroestructuras"]
+keywords = ["x-ray", "reflectivity", "resonant"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -28,6 +28,9 @@ dependencies = [
   "scipy",
   "matplotlib",
   "pint",
+  "pandas",
+  "joblib",
+  "udkm1Dsim"
 ]
 
 
@@ -38,3 +41,4 @@ include = ["rxrmask*", "pythonreflectivity*"]
 
 [tool.setuptools.package-data]
 "pythonreflectivity" = ["Pythonreflectivity.pyx"]
+"rxrmask" = ["materials/form_factor/*", "materials/magnetic_form_factor/*", "materials/atomic_mass.txt"]
