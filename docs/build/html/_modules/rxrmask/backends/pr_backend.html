@@ -156,7 +156,7 @@
     <span class="k">return</span> <span class="n">S</span>
 
 <div class="viewcode-block" id="reflectivity">
-<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.pr_backend.reflectivity">[docs]</a>
+<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.reflectivity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reflectivity</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate X-ray reflectivity for a multilayer structure.</span>
 <span class="sd">    </span>
@@ -226,7 +226,7 @@
     <span class="k">return</span> <span class="n">qz_i</span><span class="p">,</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
 <div class="viewcode-block" id="reflectivity_parallel">
-<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.pr_backend.reflectivity_parallel">[docs]</a>
+<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.reflectivity_parallel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reflectivity_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate X-ray reflectivity using parallel processing.</span>
 <span class="sd">    </span>
@@ -266,7 +266,7 @@
 
 
 <div class="viewcode-block" id="energy_scan">
-<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.pr_backend.energy_scan">[docs]</a>
+<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.energy_scan">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">energy_scan</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform an energy scan at fixed scattering angle.</span>
 <span class="sd">    </span>
@@ -357,7 +357,7 @@
     <span class="k">return</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
 <div class="viewcode-block" id="energy_scan_parallel">
-<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.pr_backend.energy_scan_parallel">[docs]</a>
+<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.energy_scan_parallel">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">energy_scan_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform an energy scan using parallel processing.</span>
 <span class="sd">    </span>

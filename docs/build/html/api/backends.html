@@ -45,6 +45,11 @@
               <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Backends Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.backends.energy_scan"><code class="docutils literal notranslate"><span class="pre">energy_scan()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.backends.energy_scan_parallel"><code class="docutils literal notranslate"><span class="pre">energy_scan_parallel()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.backends.reflectivity"><code class="docutils literal notranslate"><span class="pre">reflectivity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.backends.reflectivity_parallel"><code class="docutils literal notranslate"><span class="pre">reflectivity_parallel()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.backends.udkm_test"><code class="docutils literal notranslate"><span class="pre">udkm_test()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pythonreflectivity-backend">Pythonreflectivity Backend</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#rxrmask.backends.pr_backend.energy_scan"><code class="docutils literal notranslate"><span class="pre">energy_scan()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#rxrmask.backends.pr_backend.energy_scan_parallel"><code class="docutils literal notranslate"><span class="pre">energy_scan_parallel()</span></code></a></li>
@@ -96,8 +101,146 @@
 <li><p><strong>Pythonreflectivity</strong>.</p></li>
 <li><p><strong>Udkm1Dsim</strong>.</p></li>
 </ul>
+<dl class="py function" id="module-rxrmask.backends">
+<dt class="sig sig-object py" id="rxrmask.backends.energy_scan">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.backends.</span></span><span class="sig-name descname"><span class="pre">energy_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_eVs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_deg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/backends/pr_backend.html#energy_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.backends.energy_scan" title="Link to this definition"></a></dt>
+<dd><p>Perform an energy scan at fixed scattering angle.</p>
+<p>Calculates X-ray reflectivity as a function of energy at a fixed scattering
+angle (theta). Useful for resonant reflectivity measurements and absorption
+edge studies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>E_eVs</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – List of X-ray energies in electron volts.</p></li>
+<li><p><strong>theta_deg</strong> (<em>float</em>) – Scattering angle in degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple containing:</dt><dd><ul class="simple">
+<li><p>E_np: Energy array in eV</p></li>
+<li><p>R_sigma_all: Reflectivity for sigma polarization vs energy</p></li>
+<li><p>R_pi_all: Reflectivity for pi polarization vs energy</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.backends.energy_scan_parallel">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.backends.</span></span><span class="sig-name descname"><span class="pre">energy_scan_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_eVs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/backends/pr_backend.html#energy_scan_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.backends.energy_scan_parallel" title="Link to this definition"></a></dt>
+<dd><p>Perform an energy scan using parallel processing.</p>
+<p>Calculates X-ray reflectivity as a function of energy in parallel across
+multiple energy values using either multiprocessing or threading for
+improved performance on large datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>E_eVs</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – List of X-ray energies in electron volts.</p></li>
+<li><p><strong>theta_deg</strong> (<em>float</em>) – Scattering angle in degrees.</p></li>
+<li><p><strong>n_jobs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel jobs. -1 uses all cores. Defaults to -1.</p></li>
+<li><p><strong>use_threads</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use threading instead of multiprocessing. Defaults to False.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Verbosity level for parallel execution. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple containing:</dt><dd><ul class="simple">
+<li><p>E_np: Energy array in eV</p></li>
+<li><p>R_sigma_all: Reflectivity for sigma polarization vs energy</p></li>
+<li><p>R_pi_all: Reflectivity for pi polarization vs energy</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.backends.reflectivity">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.backends.</span></span><span class="sig-name descname"><span class="pre">reflectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_eV</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/backends/pr_backend.html#reflectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.backends.reflectivity" title="Link to this definition"></a></dt>
+<dd><p>Calculate X-ray reflectivity for a multilayer structure.</p>
+<p>Computes the specular X-ray reflectivity as a function of momentum transfer
+for both sigma and pi polarizations using the Pythonreflectivity library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>qz</strong> (<em>np.ndarray</em>) – Array of momentum transfer values in inverse Angstroms.</p></li>
+<li><p><strong>E_eV</strong> (<em>float</em>) – X-ray energy in electron volts.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple containing:</dt><dd><ul class="simple">
+<li><p>qz: Input momentum transfer array</p></li>
+<li><p>R_sigma: Reflectivity for sigma polarization</p></li>
+<li><p>R_pi: Reflectivity for pi polarization</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.backends.reflectivity_parallel">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.backends.</span></span><span class="sig-name descname"><span class="pre">reflectivity_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stack</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_eV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/backends/pr_backend.html#reflectivity_parallel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.backends.reflectivity_parallel" title="Link to this definition"></a></dt>
+<dd><p>Calculate X-ray reflectivity using parallel processing.</p>
+<p>Computes reflectivity in parallel across multiple qz values using either
+multiprocessing or threading for improved performance on large datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stack</strong> – The multilayer structure.</p></li>
+<li><p><strong>qz</strong> (<em>np.ndarray</em>) – Array of momentum transfer values in inverse Angstroms.</p></li>
+<li><p><strong>E_eV</strong> (<em>float</em>) – X-ray energy in electron volts.</p></li>
+<li><p><strong>n_jobs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel jobs. -1 uses all cores. Defaults to -1.</p></li>
+<li><p><strong>use_threads</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use threading instead of multiprocessing. Defaults to False.</p></li>
+<li><p><strong>verbose</strong> (<em>int</em><em>, </em><em>optional</em>) – Verbosity level for parallel execution. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple containing:</dt><dd><ul class="simple">
+<li><p>qz_out: Sorted momentum transfer array</p></li>
+<li><p>R_sigma: Reflectivity for sigma polarization</p></li>
+<li><p>R_pi: Reflectivity for pi polarization</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.backends.udkm_test">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.backends.</span></span><span class="sig-name descname"><span class="pre">udkm_test</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rxrmask.backends.udkm_test" title="Link to this definition"></a></dt>
+<dd><p>Test function to verify the module is loaded correctly.</p>
+</dd></dl>
+
 <section id="pythonreflectivity-backend">
-<span id="module-rxrmask.backends"></span><h2>Pythonreflectivity Backend<a class="headerlink" href="#pythonreflectivity-backend" title="Link to this heading"></a></h2>
+<h2>Pythonreflectivity Backend<a class="headerlink" href="#pythonreflectivity-backend" title="Link to this heading"></a></h2>
 <p><strong>Main backend</strong>.</p>
 <p id="module-rxrmask.backends.pr_backend">Pythonreflectivity backend for RXR-Mask.</p>
 <p>This module provides an interface to the Pythonreflectivity library for calculating
@@ -115,7 +258,7 @@ edge studies.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.structure.Structure" title="rxrmask.core.structure.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
 <li><p><strong>E_eVs</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – List of X-ray energies in electron volts.</p></li>
 <li><p><strong>theta_deg</strong> (<em>float</em>) – Scattering angle in degrees.</p></li>
 </ul>
@@ -147,7 +290,7 @@ improved performance on large datasets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.structure.Structure" title="rxrmask.core.structure.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
 <li><p><strong>E_eVs</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – List of X-ray energies in electron volts.</p></li>
 <li><p><strong>theta_deg</strong> (<em>float</em>) – Scattering angle in degrees.</p></li>
 <li><p><strong>n_jobs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel jobs. -1 uses all cores. Defaults to -1.</p></li>
@@ -181,7 +324,7 @@ for both sigma and pi polarizations using the Pythonreflectivity library.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.structure.Structure" title="rxrmask.core.structure.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
+<li><p><strong>stack</strong> (<a class="reference internal" href="core.html#rxrmask.core.Structure" title="rxrmask.core.Structure"><em>Structure</em></a>) – The multilayer structure.</p></li>
 <li><p><strong>qz</strong> (<em>np.ndarray</em>) – Array of momentum transfer values in inverse Angstroms.</p></li>
 <li><p><strong>E_eV</strong> (<em>float</em>) – X-ray energy in electron volts.</p></li>
 </ul>

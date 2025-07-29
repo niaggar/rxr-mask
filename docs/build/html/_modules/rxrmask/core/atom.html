@@ -41,7 +41,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
@@ -87,7 +87,7 @@
 
 
 <div class="viewcode-block" id="Atom">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.atom.Atom">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Atom">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Atom</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an atomic species for X-ray reflectometry calculations.</span>
@@ -129,7 +129,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_atomic_mass</span><span class="p">()</span>
     
 <div class="viewcode-block" id="Atom.load_atomic_mass">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.atom.Atom.load_atomic_mass">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Atom.load_atomic_mass">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_atomic_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load atomic mass from the materials database.</span>
 <span class="sd">        </span>
@@ -161,7 +161,7 @@
 
 
 <div class="viewcode-block" id="get_atom">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.atom.get_atom">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.get_atom">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Atom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Find an atom by its chemical symbol from a list of atoms.</span>
 <span class="sd">    </span>

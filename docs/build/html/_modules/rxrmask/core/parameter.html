@@ -41,7 +41,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
@@ -73,87 +73,265 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.parameter</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span></span><span class="sd">&quot;&quot;&quot;Parameter module for RXR-Mask.</span>
+
+<span class="sd">This module provides classes for managing parameters in X-ray reflectometry</span>
+<span class="sd">calculations and fitting procedures. It includes basic parameters for storing</span>
+<span class="sd">values and fit parameters for optimization routines.</span>
+
+<span class="sd">The parameter system supports type validation, value constraints, and parameter</span>
+<span class="sd">containers for organizing collections of parameters used in modeling and fitting.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 
 <div class="viewcode-block" id="Parameter">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.Parameter">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Parameter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basic parameter class for storing named values.</span>
+<span class="sd">    </span>
+<span class="sd">    This class represents a parameter with an identifier, name, and value.</span>
+<span class="sd">    It provides type validation to ensure values are of supported types</span>
+<span class="sd">    (int, float, str, or complex).</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (int): Unique identifier for the parameter.</span>
+<span class="sd">        name (str): Human-readable name of the parameter.</span>
+<span class="sd">        value: The parameter value. Must be int, float, str, or complex. Defaults to None.</span>
+<span class="sd">    </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If value is None after initialization.</span>
+<span class="sd">        TypeError: If value is not of a supported type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-initialization validation of parameter value.</span>
+<span class="sd">        </span>
+<span class="sd">        Validates that the parameter value is not None and is of a supported type.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the parameter value is None.</span>
+<span class="sd">            TypeError: If the parameter value is not int, float, str, or complex.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter value cannot be None.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter value must be an int, float, str, or complex number.&quot;</span><span class="p">)</span>
         
+<div class="viewcode-block" id="Parameter.get">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prray</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the parameter value.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            prray: Parameter array (unused in base Parameter class).</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The parameter value.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the parameter value has not been set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter value has not been set.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
 
+
+<div class="viewcode-block" id="Parameter.set">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter.set">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the parameter value.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            value: New value for the parameter. Must be int, float, str, or complex.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If value is None.</span>
+<span class="sd">            TypeError: If value is not of a supported type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter value cannot be None.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Parameter value must be an int, float, str, or complex number.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+</div>
 
 
 <div class="viewcode-block" id="FitParameter">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.FitParameter">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FitParameter">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FitParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter class designed for optimization and fitting procedures.</span>
+<span class="sd">    </span>
+<span class="sd">    This class extends Parameter to support fitting operations by adding</span>
+<span class="sd">    initial values, bounds constraints, and fit toggling capabilities.</span>
+<span class="sd">    It&#39;s designed to work with optimization algorithms that require</span>
+<span class="sd">    parameter bounds and initial guesses.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        init_value: Initial value for fitting. Defaults to None.</span>
+<span class="sd">        min_value: Minimum allowed value during fitting. Defaults to None.</span>
+<span class="sd">        max_value: Maximum allowed value during fitting. Defaults to None.</span>
+<span class="sd">    </span>
+<span class="sd">    Inherits:</span>
+<span class="sd">        All attributes and methods from Parameter class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">init_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">min_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">max_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-initialization validation for fit parameters.</span>
+<span class="sd">        </span>
+<span class="sd">        Validates the parameter and checks fit parameter requirements.</span>
+<span class="sd">        Note: This method assumes a &#39;fit&#39; attribute exists but it&#39;s not </span>
+<span class="sd">        defined in the class attributes.</span>
+<span class="sd">        </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If parameter value validation fails.</span>
+<span class="sd">            TypeError: If parameter type validation fails or fit is not boolean.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__post_init__</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Fit parameter must be a boolean value.&quot;</span><span class="p">)</span>
     
+<div class="viewcode-block" id="FitParameter.toggle_fit">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FitParameter.toggle_fit">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">toggle_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Toggle the fitting state of the parameter.</span>
+<span class="sd">        </span>
+<span class="sd">        Switches the fit flag between True and False, enabling or disabling</span>
+<span class="sd">        the parameter for fitting procedures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span></div>
+
     
+<div class="viewcode-block" id="FitParameter.set_fit_range">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FitParameter.set_fit_range">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_fit_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the fitting range and initial value for the parameter.</span>
+<span class="sd">        </span>
+<span class="sd">        Configures the parameter for fitting by setting initial value and bounds.</span>
+<span class="sd">        The current parameter value is updated to the initial value.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            init_value: Initial value for fitting. Must be int or float if not None.</span>
+<span class="sd">            min_value: Minimum allowed value during fitting.</span>
+<span class="sd">            max_value: Maximum allowed value during fitting.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If init_value is not None and not int or float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">init_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Initial value must be an int or float.&quot;</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">init_value</span> <span class="o">=</span> <span class="n">init_value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_value</span> <span class="o">=</span> <span class="n">min_value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_value</span> <span class="o">=</span> <span class="n">max_value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">init_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">init_value</span></div>
 
+
+<div class="viewcode-block" id="FitParameter.get">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FitParameter.get">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prray</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the parameter value from a parameter array.</span>
+<span class="sd">        </span>
+<span class="sd">        Retrieves the parameter value from the provided parameter array</span>
+<span class="sd">        using the parameter&#39;s ID as an index. This is used during fitting</span>
+<span class="sd">        when parameters are stored in arrays.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            prray: Parameter array containing current values during fitting.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The parameter value from the array at index self.id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">prray</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="c1"># type: ignore</span></div>
+</div>
 
 
 <div class="viewcode-block" id="ParametersContainer">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParametersContainer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for managing collections of parameters and fit parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    This class provides a centralized way to manage both regular parameters</span>
+<span class="sd">    and fit parameters used in X-ray reflectometry modeling and fitting.</span>
+<span class="sd">    It includes factory methods for creating new parameters and utilities</span>
+<span class="sd">    for extracting parameter vectors for optimization algorithms.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        parameters (list[Parameter]): List of regular parameters.</span>
+<span class="sd">        fit_parameters (list[FitParameter]): List of parameters available for fitting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Parameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
     <span class="n">fit_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">FitParameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 
+<div class="viewcode-block" id="ParametersContainer.new_fit_parameter">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.new_fit_parameter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">new_fit_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">init_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">min_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FitParameter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new fit parameter and add it to the container.</span>
+<span class="sd">        </span>
+<span class="sd">        Factory method that creates a new FitParameter with automatic ID assignment</span>
+<span class="sd">        and adds it to the fit_parameters list.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Human-readable name for the parameter.</span>
+<span class="sd">            init_value: Initial value for fitting. Defaults to None.</span>
+<span class="sd">            min_value: Minimum allowed value during fitting. Defaults to None.</span>
+<span class="sd">            max_value: Maximum allowed value during fitting. Defaults to None.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            FitParameter: The newly created fit parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_parameters</span><span class="p">)</span>
 
         <span class="n">param</span> <span class="o">=</span> <span class="n">FitParameter</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">init_value</span><span class="p">)</span>
         <span class="n">param</span><span class="o">.</span><span class="n">set_fit_range</span><span class="p">(</span><span class="n">init_value</span><span class="p">,</span> <span class="n">min_value</span><span class="p">,</span> <span class="n">max_value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fit_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">param</span>
+        <span class="k">return</span> <span class="n">param</span></div>
+
     
+<div class="viewcode-block" id="ParametersContainer.new_parameter">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.new_parameter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">new_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Parameter</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new regular parameter and add it to the container.</span>
+<span class="sd">        </span>
+<span class="sd">        Factory method that creates a new Parameter with automatic ID assignment</span>
+<span class="sd">        and adds it to the parameters list.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Human-readable name for the parameter.</span>
+<span class="sd">            value: The parameter value.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Parameter: The newly created parameter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_parameters</span><span class="p">)</span>
         <span class="n">param</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">param</span>
+        <span class="k">return</span> <span class="n">param</span></div>
+
     
+<div class="viewcode-block" id="ParametersContainer.get_vector">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.get_vector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract initial values from fit parameters that are enabled for fitting.</span>
+<span class="sd">        </span>
+<span class="sd">        Creates a vector of initial values from all fit parameters that have</span>
+<span class="sd">        their fit flag set to True. This is typically used to initialize</span>
+<span class="sd">        optimization algorithms.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: List of initial values from enabled fit parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">init_value</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_parameters</span> <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">fit</span><span class="p">]</span></div>
+</div>
 
 </pre></div>
 

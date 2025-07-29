@@ -1,3 +1,9 @@
+"""Compound module for RXR-Mask.
+
+This module provides classes and utilities for representing chemical compounds
+and their atomic layer structures in X-ray reflectometry calculations.
+"""
+
 from rxrmask.core.atom import Atom, get_atom
 
 from dataclasses import dataclass, field
@@ -6,6 +12,21 @@ from typing import Literal
 
 @dataclass
 class AtomLayerStructure:
+    """Represents an atomic species within a compound layer structure.
+    
+    This class stores information about a specific atomic species in a compound,
+    including its stoichiometric fraction, associated atom object, and layer-specific
+    properties.
+    
+    Attributes:
+        name (str): Chemical symbol of the atom (e.g., 'Fe', 'O').
+        stochiometric_fraction (float): Stoichiometric coefficient in the compound formula.
+        atom (Atom): The Atom object containing atomic properties.
+        molar_density (float | None): Molar density in g/cm³. Defaults to None.
+        molar_m_density (float | None): Magnetic molar density in mol/cm³. Defaults to None.
+        roughness (float | None): Interface roughness in Angstroms. Defaults to None.
+        thickness (float | None): Layer thickness in Angstroms. Defaults to None.
+    """
     name: str
     stochiometric_fraction: float
     atom: Atom
@@ -18,6 +39,28 @@ class AtomLayerStructure:
 
 @dataclass
 class Compound:
+    """Represents a chemical compound in a multilayer structure.
+    
+    This class encapsulates all properties of a chemical compound including its
+    composition, physical properties, and structural parameters. It can represent
+    both magnetic and non-magnetic.
+    
+    Attributes:
+        id (str): Unique identifier for the compound.
+        name (str): Human-readable name of the compound.
+        formula (str): Chemical formula in the format "Element1:count1,Element2:count2".
+        thickness (float): Total thickness of the compound in Angstroms.
+        base_density (float): Base density in g/cm³.
+        base_m_density (float): Base molar density in mol/cm³. Defaults to 0.0.
+        base_roughness (float): Base interface roughness in Angstroms. Defaults to 0.0.
+        n_layers (int): Number of layers in the compound. Defaults to 1.
+        id_layer_init (int): Initial layer ID. Defaults to 0.
+        id_layer_end (int): Final layer ID. Defaults to 0.
+        formula_struct (list[AtomLayerStructure]): List of atomic layer structures.
+        magnetic (bool): Whether the compound is magnetic. Defaults to False.
+        magnetic_direction (Literal["x", "y", "z", "0"]): Magnetic moment direction. 
+                                                         Defaults to "0" (non-magnetic).
+    """
     id: str
     name: str
     formula: str
@@ -39,6 +82,34 @@ class Compound:
 
 
 def create_compound(id: str, name: str, thickness: float, density: float, formula: str, atoms_prov: list[Atom], roughness: float | None = None, m_density: float | None = None) -> Compound:
+    """Create a Compound object from a chemical formula and properties.
+    
+    Parses a chemical formula string and creates a complete Compound object with
+    calculated atomic layer structures. The function automatically calculates
+    molar densities for each atomic species based on their stoichiometric fractions
+    and atomic masses.
+    
+    Args:
+        id (str): Unique identifier for the compound.
+        name (str): Human-readable name of the compound.
+        thickness (float): Total thickness of the compound in Angstroms.
+        density (float): Base density of the compound in g/cm³.
+        formula (str): Chemical formula in the format "Element1:count1,Element2:count2"
+                      (e.g., "Fe:1,O:3" for Fe₂O₃).
+        atoms_prov (list[Atom]): List of available Atom objects to use in the compound.
+        roughness (float | None, optional): Interface roughness in Angstroms. Defaults to None.
+        m_density (float | None, optional): Magnetic density in mol/cm³. Defaults to None.
+        
+    Returns:
+        Compound: A complete Compound object with calculated atomic layer structures.
+        
+    Raises:
+        ValueError: If an atom symbol from the formula is not found in atoms_prov.
+        
+    Example:
+        >>> atoms = [fe_atom, o_atom]  # Pre-defined Atom objects
+        >>> compound = create_compound("fe2o3", "Iron Oxide", 50.0, 5.24, "Fe:2,O:3", atoms)
+    """
     atoms = []
     formula_dict = []
 

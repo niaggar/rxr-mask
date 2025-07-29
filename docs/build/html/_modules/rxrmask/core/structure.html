@@ -41,7 +41,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
@@ -73,7 +73,13 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.structure</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.compound</span><span class="w"> </span><span class="kn">import</span> <span class="n">Compound</span>
+<span></span><span class="sd">&quot;&quot;&quot;Structure module for RXR-Mask.</span>
+
+<span class="sd">This module provides the Structure class for representing complete multilayer</span>
+<span class="sd">structures used in X-ray reflectometry calculations.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.compound</span><span class="w"> </span><span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.layer</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElementLayer</span><span class="p">,</span> <span class="n">Layer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.utils.density_profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">density_profile</span>
 
@@ -81,9 +87,23 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <div class="viewcode-block" id="Structure">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.structure.Structure">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Structure">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Structure</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a complete multilayer structure for X-ray reflectometry.</span>
+<span class="sd">    </span>
+<span class="sd">    This class manages the organization of compounds into a multilayer structure,</span>
+<span class="sd">    handles the discretization into thin layers, and provides methods for</span>
+<span class="sd">    generating density profiles. It serves as the main container that connects</span>
+<span class="sd">    the material definitions (compounds) with the computational representation (layers).</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        name (str): Human-readable name for the structure.</span>
+<span class="sd">        n_compounds (int): Number of compounds in the structure. Defaults to 0.</span>
+<span class="sd">        n_layers (int): Number of discretized layers. Defaults to 0.</span>
+<span class="sd">        layers (list[Layer]): List of discretized Layer objects.</span>
+<span class="sd">        compounds (list[Compound | None]): List of Compound objects, may contain None entries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">n_compounds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -92,19 +112,56 @@
     <span class="n">compounds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Compound</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_compounds</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a new Structure with specified name and compound capacity.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): Human-readable name for the structure.</span>
+<span class="sd">            n_compounds (int): Number of compounds that will be added to the structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_compounds</span> <span class="o">=</span> <span class="n">n_compounds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_compounds</span>
 
+<div class="viewcode-block" id="Structure.add_compound">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Structure.add_compound">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_compound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">compound</span><span class="p">:</span> <span class="n">Compound</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a compound to the structure at the specified index.</span>
+<span class="sd">        Index 0 represents the substrate layer, and subsequent indices</span>
+<span class="sd">        represent the layers above it in the multilayer structure.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            index (int): Position index where the compound should be added (0-based).</span>
+<span class="sd">            compound (Compound): The Compound object to add to the structure.</span>
+<span class="sd">            </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            IndexError: If index is outside the valid range [0, n_compounds).</span>
+<span class="sd">            TypeError: If compound is not a Compound instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_compounds</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Index out of range for compounds.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">compound</span><span class="p">,</span> <span class="n">Compound</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a Compound instance.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">compound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">compound</span></div>
 
+
+<div class="viewcode-block" id="Structure.create_layers">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Structure.create_layers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create discretized layers from the compound definitions.</span>
+<span class="sd">        </span>
+<span class="sd">        Generates a series of thin layers by discretizing the compound structure</span>
+<span class="sd">        based on the density profile. Each layer contains the appropriate</span>
+<span class="sd">        atomic elements with their calculated densities at that position.</span>
+<span class="sd">        </span>
+<span class="sd">        This method transforms the compound-based description into a layer-based</span>
+<span class="sd">        representation.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            step (float, optional): Discretization step size in Angstroms. </span>
+<span class="sd">                                   Smaller values give higher resolution but more layers. </span>
+<span class="sd">                                   Defaults to 0.1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">z</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">m_dens</span><span class="p">,</span> <span class="n">atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_density_profile</span><span class="p">(</span><span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
         <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -132,9 +189,33 @@
             <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">layers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Structure.get_density_profile">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Structure.get_density_profile">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_density_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate density profiles for all atomic species in the structure.</span>
+<span class="sd">        </span>
+<span class="sd">        Calculates the spatial distribution of atomic densities throughout the</span>
+<span class="sd">        structure, taking into account interface roughness and gradual transitions</span>
+<span class="sd">        between compounds. This method provides the fundamental data needed for</span>
+<span class="sd">        optical constant calculations.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            step (float, optional): Spatial resolution for the density profile in Angstroms.</span>
+<span class="sd">                                   Smaller values provide higher resolution. Defaults to 0.1.</span>
+<span class="sd">                                   </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A 4-tuple containing:</span>
+<span class="sd">                - z (np.ndarray): Spatial positions in Angstroms.</span>
+<span class="sd">                - dens (dict): Regular density profiles for each atomic species.</span>
+<span class="sd">                - m_dens (dict): Magnetic density profiles for each atomic species.  </span>
+<span class="sd">                - atoms (dict): Dictionary mapping element names to Atom objects.</span>
+<span class="sd">                </span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If any compound in the structure is None (undefined).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">thicknesses</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">thickness</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compounds</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
         <span class="n">densities</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">m_densities</span> <span class="o">=</span> <span class="p">{}</span>
@@ -160,12 +241,19 @@
 
         <span class="n">z</span><span class="p">,</span> <span class="n">dens</span> <span class="o">=</span> <span class="n">density_profile</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">m_dens</span> <span class="o">=</span> <span class="n">density_profile</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">,</span> <span class="n">m_densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">m_dens</span><span class="p">,</span> <span class="n">atoms</span>
+        <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="n">m_dens</span><span class="p">,</span> <span class="n">atoms</span></div>
+
 
 
 
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a string representation of the Structure.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A formatted string showing the structure&#39;s name, number of compounds,</span>
+<span class="sd">                 and number of layers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Structure(name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, n_compounds=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_compounds</span><span class="si">}</span><span class="s2">, n_layers=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span><span class="si">}</span><span class="s2">)&quot;</span></div>
 
 
