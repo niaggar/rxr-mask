@@ -1,10 +1,17 @@
-# import numpy as np
-# import udkm1Dsim as ud
+""" Udkm1Dsim module for RXR-Mask.
+"""
+
+import numpy as np
+import udkm1Dsim as ud
 # from source.core.structure import Structure
 # from source.core.compound import Compound
 # from source.pint_init import ureg
 
 # from dask.distributed import Client
+
+def test():
+    """Test function to verify the module is loaded correctly."""
+    print("Udkm1Dsim backend module loaded successfully.")
 
 # def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
 #     ud_layers = []

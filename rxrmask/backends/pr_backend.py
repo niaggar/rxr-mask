@@ -1,3 +1,13 @@
+"""Pythonreflectivity backend for RXR-Mask.
+
+This module provides an interface to the Pythonreflectivity library for calculating
+X-ray reflectivity from multilayer structures. It includes both sequential and parallel
+implementations for reflectivity calculations and energy scans.
+
+The module handles the conversion between RXR-Mask structures and Pythonreflectivity
+format, and provides optimized parallel computation capabilities for large datasets.
+"""
+
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure
 from rxrmask.core.layer import Layer
@@ -7,13 +17,31 @@ import Pythonreflectivity as pr
 from joblib import Parallel, delayed, parallel_backend
 
 
-H_CONST = 4.135667696e-15 # Planck [eV·s]
-C_CONST = 2.99792458e8 # luz  [m/s]
-QZ_SCALE = 0.001013546247 # factor qz→theta
-HC_EV_ANGSTROM = 12398.41984
+H_CONST = 4.135667696e-15  # Planck constant [eV·s]
+C_CONST = 2.99792458e8  # Speed of light [m/s]
+QZ_SCALE = 0.001013546247  # Conversion factor qz→theta
+HC_EV_ANGSTROM = 12398.41984  # hc constant [eV·Å]
 
 
 def _to_pr_structure(stack: Structure, E_eV: float):
+    """Convert RXR-Mask Structure to Pythonreflectivity structure format.
+    
+    Transforms a multilayer structure from RXR-Mask format into the format
+    required by the Pythonreflectivity library, including optical constants
+    and magnetic properties.
+    
+    Args:
+        stack (Structure): The multilayer structure to convert.
+        E_eV (float): X-ray energy in electron volts.
+        
+    Returns:
+        Pythonreflectivity structure: Structure object compatible with 
+                                     Pythonreflectivity calculations.
+                                     
+    Raises:
+        TypeError: If a layer is not a Layer instance.
+        ValueError: If no compound is found for a layer.
+    """
     S = pr.Generate_structure(stack.n_layers)
 
     current_z = 0.0
@@ -53,6 +81,22 @@ def _to_pr_structure(stack: Structure, E_eV: float):
     return S
 
 def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Calculate X-ray reflectivity for a multilayer structure.
+    
+    Computes the specular X-ray reflectivity as a function of momentum transfer
+    for both sigma and pi polarizations using the Pythonreflectivity library.
+    
+    Args:
+        stack (Structure): The multilayer structure.
+        qz (np.ndarray): Array of momentum transfer values in inverse Angstroms.
+        E_eV (float): X-ray energy in electron volts.
+        
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:
+            - qz: Input momentum transfer array
+            - R_sigma: Reflectivity for sigma polarization
+            - R_pi: Reflectivity for pi polarization
+    """
     structure = _to_pr_structure(stack, E_eV)
     h = 4.135667696e-15  # Plank's constant eV*s
     c = 2.99792458e8  # speed of light m/s
@@ -65,7 +109,19 @@ def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -> tuple[np.ndar
 
 
 def _worker_process(stack, qz_i, E_eV):
-    """Worker de multiprocessing: genera su propia Structure."""
+    """Worker function for multiprocessing reflectivity calculations.
+    
+    Generates its own structure and calculates reflectivity for a single qz value.
+    Used in parallel processing to avoid shared memory issues.
+    
+    Args:
+        stack: The multilayer structure.
+        qz_i: Single momentum transfer value.
+        E_eV (float): X-ray energy in electron volts.
+        
+    Returns:
+        tuple: (qz_i, R_sigma, R_pi) for the given qz value.
+    """
     structure = _to_pr_structure(stack, E_eV)
     wavelength = H_CONST * C_CONST / (E_eV * 1e-10)
     theta = np.arcsin(qz_i / E_eV / QZ_SCALE) * 180/np.pi
@@ -73,12 +129,44 @@ def _worker_process(stack, qz_i, E_eV):
     return qz_i, R_sigma, R_pi
 
 def _worker_thread(structure, qz_i, E_eV):
+    """Worker function for threading reflectivity calculations.
+    
+    Calculates reflectivity for a single qz value using a pre-generated structure.
+    Used in thread-based parallel processing where structures can be shared.
+    
+    Args:
+        structure: Pre-generated Pythonreflectivity structure.
+        qz_i: Single momentum transfer value.
+        E_eV (float): X-ray energy in electron volts.
+        
+    Returns:
+        tuple: (qz_i, R_sigma, R_pi) for the given qz value.
+    """
     wavelength = H_CONST * C_CONST / (E_eV * 1e-10)
     theta = np.arcsin(qz_i / E_eV / QZ_SCALE) * 180/np.pi
     R_sigma, R_pi = pr.Reflectivity(structure, theta, wavelength, MagneticCutoff=1e-20)
     return qz_i, R_sigma, R_pi
 
 def reflectivity_parallel(stack, qz: np.ndarray, E_eV: float, n_jobs: int = -1, use_threads: bool = False, verbose: int = 5) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Calculate X-ray reflectivity using parallel processing.
+    
+    Computes reflectivity in parallel across multiple qz values using either
+    multiprocessing or threading for improved performance on large datasets.
+    
+    Args:
+        stack: The multilayer structure.
+        qz (np.ndarray): Array of momentum transfer values in inverse Angstroms.
+        E_eV (float): X-ray energy in electron volts.
+        n_jobs (int, optional): Number of parallel jobs. -1 uses all cores. Defaults to -1.
+        use_threads (bool, optional): Use threading instead of multiprocessing. Defaults to False.
+        verbose (int, optional): Verbosity level for parallel execution. Defaults to 5.
+        
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:
+            - qz_out: Sorted momentum transfer array
+            - R_sigma: Reflectivity for sigma polarization
+            - R_pi: Reflectivity for pi polarization
+    """
     if use_threads:
         structure = _to_pr_structure(stack, E_eV)
         backend = 'threading'
@@ -97,6 +185,23 @@ def reflectivity_parallel(stack, qz: np.ndarray, E_eV: float, n_jobs: int = -1, 
 
 
 def energy_scan(stack: Structure, E_eVs: list[float], theta_deg: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Perform an energy scan at fixed scattering angle.
+    
+    Calculates X-ray reflectivity as a function of energy at a fixed scattering
+    angle (theta). Useful for resonant reflectivity measurements and absorption
+    edge studies.
+    
+    Args:
+        stack (Structure): The multilayer structure.
+        E_eVs (list[float]): List of X-ray energies in electron volts.
+        theta_deg (float): Scattering angle in degrees.
+        
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:
+            - E_np: Energy array in eV
+            - R_sigma_all: Reflectivity for sigma polarization vs energy
+            - R_pi_all: Reflectivity for pi polarization vs energy
+    """
     structures = []
     for E_eV in E_eVs:
         S = _to_pr_structure(stack, E_eV)
@@ -122,6 +227,19 @@ def energy_scan(stack: Structure, E_eVs: list[float], theta_deg: float) -> tuple
 
 
 def _energy_scan_process(stack, E_eV, theta_deg):
+    """Worker function for multiprocessing energy scan calculations.
+    
+    Generates its own structure and calculates reflectivity for a single energy value.
+    Used in parallel processing to avoid shared memory issues.
+    
+    Args:
+        stack: The multilayer structure.
+        E_eV (float): X-ray energy in electron volts.
+        theta_deg (float): Scattering angle in degrees.
+        
+    Returns:
+        tuple: (R_sigma, R_pi) for the given energy.
+    """
     structure = _to_pr_structure(stack, E_eV)
     wavelength = H_CONST * C_CONST / (E_eV * 1e-10)
     R_sigma, R_pi = pr.Reflectivity(
@@ -133,6 +251,19 @@ def _energy_scan_process(stack, E_eV, theta_deg):
     return R_sigma, R_pi
 
 def _energy_scan_thread(structure, wavelength, theta_deg):
+    """Worker function for threading energy scan calculations.
+    
+    Calculates reflectivity for a single energy using a pre-generated structure.
+    Used in thread-based parallel processing where structures can be shared.
+    
+    Args:
+        structure: Pre-generated Pythonreflectivity structure.
+        wavelength (float): X-ray wavelength in Angstroms.
+        theta_deg (float): Scattering angle in degrees.
+        
+    Returns:
+        tuple: (R_sigma, R_pi) for the given energy.
+    """
     R_sigma, R_pi = pr.Reflectivity(
         structure,
         theta_deg,
@@ -142,6 +273,26 @@ def _energy_scan_thread(structure, wavelength, theta_deg):
     return R_sigma, R_pi
 
 def energy_scan_parallel(stack: Structure, E_eVs: list[float], theta_deg: float, n_jobs: int = -1, use_threads: bool = False, verbose: int = 5) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Perform an energy scan using parallel processing.
+    
+    Calculates X-ray reflectivity as a function of energy in parallel across
+    multiple energy values using either multiprocessing or threading for 
+    improved performance on large datasets.
+    
+    Args:
+        stack (Structure): The multilayer structure.
+        E_eVs (list[float]): List of X-ray energies in electron volts.
+        theta_deg (float): Scattering angle in degrees.
+        n_jobs (int, optional): Number of parallel jobs. -1 uses all cores. Defaults to -1.
+        use_threads (bool, optional): Use threading instead of multiprocessing. Defaults to False.
+        verbose (int, optional): Verbosity level for parallel execution. Defaults to 5.
+        
+    Returns:
+        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:
+            - E_np: Energy array in eV
+            - R_sigma_all: Reflectivity for sigma polarization vs energy
+            - R_pi_all: Reflectivity for pi polarization vs energy
+    """
     E_np = np.array(E_eVs)
     wavelengths = H_CONST * C_CONST / (E_np * 1e-10)
 

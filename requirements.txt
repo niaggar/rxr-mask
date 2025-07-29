@@ -6,3 +6,8 @@ joblib
 Cython
 pint
 udkm1Dsim
+
+sphinx
+sphinx-rtd-theme
+sphinx-autodoc-typehints
+sphinx-gallery
