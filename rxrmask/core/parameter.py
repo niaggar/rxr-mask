@@ -9,9 +9,13 @@ containers for organizing collections of parameters used in modeling and fitting
 """
 
 from dataclasses import dataclass, field
+from typing import TypeVar, Generic, Any, Callable, Optional
+import json
+
+T = TypeVar('T')
 
 @dataclass
-class Parameter:
+class Parameter(Generic[T]):
     """Basic parameter class for storing named values.
     
     This class represents a parameter with an identifier, name, and value.
@@ -27,25 +31,15 @@ class Parameter:
         ValueError: If value is None after initialization.
         TypeError: If value is not of a supported type.
     """
-    id: int
-    name: str
-    value: None = None
-
-    def __post_init__(self):
-        """Post-initialization validation of parameter value.
+    value: T
+    id: int = 0
+    name: str = ""
+    
+    min_value: T | None = None  # Optional minimum value constraint
+    max_value: T | None = None  # Optional maximum value constraint
+    fit: bool = False  # Flag to indicate if the parameter is enabled for fitting
         
-        Validates that the parameter value is not None and is of a supported type.
-        
-        Raises:
-            ValueError: If the parameter value is None.
-            TypeError: If the parameter value is not int, float, str, or complex.
-        """
-        if self.value is None:
-            raise ValueError("Parameter value cannot be None.")
-        if not isinstance(self.value, (int, float, str, complex)):
-            raise TypeError("Parameter value must be an int, float, str, or complex number.")
-        
-    def get(self, prray=None) -> None:
+    def get(self, prray=None) -> T:
         """Get the parameter value.
         
         Args:
@@ -57,11 +51,14 @@ class Parameter:
         Raises:
             ValueError: If the parameter value has not been set.
         """
-        if self.value is None:
-            raise ValueError("Parameter value has not been set.")
-        return self.value
+        if prray is None:
+            if self.value is None:
+                raise ValueError("Parameter value has not been set.")
+            return self.value
+        else:
+            return prray[self.id] if self.id < len(prray) else None # type: ignore
 
-    def set(self, value: None) -> None:
+    def set(self, value: T) -> None:
         """Set the parameter value.
         
         Args:
@@ -78,86 +75,14 @@ class Parameter:
         self.value = value
 
 @dataclass
-class FitParameter(Parameter):
-    """Parameter class designed for optimization and fitting procedures.
+class DerivedParameter(Parameter[T]):
+    update_func: Optional[Callable[[], T]] = None  # Function to update the parameter value
     
-    This class extends Parameter to support fitting operations by adding
-    initial values, bounds constraints, and fit toggling capabilities.
-    It's designed to work with optimization algorithms that require
-    parameter bounds and initial guesses.
-    
-    Attributes:
-        init_value: Initial value for fitting. Defaults to None.
-        min_value: Minimum allowed value during fitting. Defaults to None.
-        max_value: Maximum allowed value during fitting. Defaults to None.
-    
-    Inherits:
-        All attributes and methods from Parameter class.
-    """
-    init_value: None = None
-    min_value: None = None
-    max_value: None = None
-
-    def __post_init__(self):
-        """Post-initialization validation for fit parameters.
+    def update(self):
+        if self.update_func is None:
+            raise RuntimeError("No update function defined for DerivedParameter.")
+        self.value = self.update_func()
         
-        Validates the parameter and checks fit parameter requirements.
-        Note: This method assumes a 'fit' attribute exists but it's not 
-        defined in the class attributes.
-        
-        Raises:
-            ValueError: If parameter value validation fails.
-            TypeError: If parameter type validation fails or fit is not boolean.
-        """
-        super().__post_init__()
-        if not isinstance(self.fit, bool):
-            raise TypeError("Fit parameter must be a boolean value.")
-    
-    def toggle_fit(self) -> None:
-        """Toggle the fitting state of the parameter.
-        
-        Switches the fit flag between True and False, enabling or disabling
-        the parameter for fitting procedures.
-        """
-        self.fit = not self.fit
-    
-    def set_fit_range(self, init_value: None, min_value: None, max_value: None) -> None:
-        """Set the fitting range and initial value for the parameter.
-        
-        Configures the parameter for fitting by setting initial value and bounds.
-        The current parameter value is updated to the initial value.
-        
-        Args:
-            init_value: Initial value for fitting. Must be int or float if not None.
-            min_value: Minimum allowed value during fitting.
-            max_value: Maximum allowed value during fitting.
-            
-        Raises:
-            TypeError: If init_value is not None and not int or float.
-        """
-        if init_value is not None and not isinstance(init_value, (int, float)):
-            raise TypeError("Initial value must be an int or float.")
-        
-        self.init_value = init_value
-        self.min_value = min_value
-        self.max_value = max_value
-        self.value = init_value
-
-    def get(self, prray=None) -> None:
-        """Get the parameter value from a parameter array.
-        
-        Retrieves the parameter value from the provided parameter array
-        using the parameter's ID as an index. This is used during fitting
-        when parameters are stored in arrays.
-        
-        Args:
-            prray: Parameter array containing current values during fitting.
-            
-        Returns:
-            The parameter value from the array at index self.id.
-        """
-        return prray[self.id] # type: ignore
-
 @dataclass
 class ParametersContainer:
     """Container for managing collections of parameters and fit parameters.
@@ -171,32 +96,10 @@ class ParametersContainer:
         parameters (list[Parameter]): List of regular parameters.
         fit_parameters (list[FitParameter]): List of parameters available for fitting.
     """
-    parameters: list[Parameter] = field(default_factory=list)
-    fit_parameters: list[FitParameter] = field(default_factory=list)
+    parameters: list[Parameter[Any]] = field(default_factory=list)
+    derived_parameters: list[DerivedParameter[Any]] = field(default_factory=list)
 
-    def new_fit_parameter(self, name: str, init_value: None = None, min_value: None = None, max_value: None = None) -> FitParameter:
-        """Create a new fit parameter and add it to the container.
-        
-        Factory method that creates a new FitParameter with automatic ID assignment
-        and adds it to the fit_parameters list.
-        
-        Args:
-            name (str): Human-readable name for the parameter.
-            init_value: Initial value for fitting. Defaults to None.
-            min_value: Minimum allowed value during fitting. Defaults to None.
-            max_value: Maximum allowed value during fitting. Defaults to None.
-            
-        Returns:
-            FitParameter: The newly created fit parameter.
-        """
-        id = len(self.fit_parameters)
-
-        param = FitParameter(id=id, name=name, value=init_value)
-        param.set_fit_range(init_value, min_value, max_value)
-        self.fit_parameters.append(param)
-        return param
-    
-    def new_parameter(self, name: str, value: None) -> Parameter:
+    def new_parameter(self, name: str, value: Any, fit: bool = False) -> Parameter:
         """Create a new regular parameter and add it to the container.
         
         Factory method that creates a new Parameter with automatic ID assignment
@@ -209,19 +112,63 @@ class ParametersContainer:
         Returns:
             Parameter: The newly created parameter.
         """
-        id = len(self.fit_parameters)
-        param = Parameter(id=id, name=name, value=value)
+        id = len(self.parameters)
+        param = Parameter(id=id, name=name, value=value, fit=fit)
         self.parameters.append(param)
         return param
     
-    def get_vector(self) -> list[None]:
-        """Extract initial values from fit parameters that are enabled for fitting.
+    def register_derived(self, name: str, update_func: Callable[[], Any]) -> DerivedParameter:
+        id = len(self.derived_parameters)
+        p = DerivedParameter(id=id, name=name, value=None, fit=False, update_func=update_func)
+        self.derived_parameters.append(p)
+        return p
+    
+    def update_derived(self):
+        for p in self.derived_parameters:
+            p.update()
+    
+    def get_fit_vector(self) -> list[float]:
+        """Extrae los valores de los parámetros que están marcados como 'fit'."""
+        return [float(p.value) for p in self.parameters if p.fit]
+
+    def set_fit_vector(self, values: list[float]):
+        """Actualiza los parámetros que están marcados como 'fit' desde un vector externo."""
+        i = 0
+        for p in self.parameters:
+            if p.fit:
+                p.set(values[i])
+                i += 1
+        if i != len(values):
+            raise ValueError("Mismatch between fit parameters and values vector.")
+        self.update_derived()
         
-        Creates a vector of initial values from all fit parameters that have
-        their fit flag set to True. This is typically used to initialize
-        optimization algorithms.
-        
-        Returns:
-            list: List of initial values from enabled fit parameters.
-        """
-        return [param.init_value for param in self.fit_parameters if param.fit]
+    def save(self, path: str) -> None:
+        data = []
+        for p in self.parameters:
+            data.append({
+                "id": p.id,
+                "name": p.name,
+                "value": p.value,
+                "min_value": p.min_value,
+                "max_value": p.max_value,
+                "fit": p.fit
+            })
+        with open(path, "w") as f:
+            json.dump(data, f, indent=4)
+
+    def load(self, path: str) -> None:
+        with open(path, "r") as f:
+            data = json.load(f)
+
+        self.parameters.clear()
+        for entry in data:
+            param = Parameter(
+                id=entry["id"],
+                name=entry["name"],
+                value=entry["value"],
+                min_value=entry.get("min_value"),
+                max_value=entry.get("max_value"),
+                fit=entry.get("fit", False)
+            )
+            self.parameters.append(param)
+    

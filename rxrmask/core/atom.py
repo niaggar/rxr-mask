@@ -34,7 +34,7 @@ class Atom:
     name: str
     ff: FormFactorModel
     ffm: FormFactorModel | None = None
-    mass: float | None = None  # in atomic mass units (g/mol)
+    mass: float = 0.0  # in atomic mass units (g/mol)
 
     def __post_init__(self):
         """Post-initialization to validate form factor and load atomic mass.
@@ -48,7 +48,7 @@ class Atom:
         if not isinstance(self.ff, FormFactorModel):
             raise TypeError("ff must be an instance of FormFactorModel")
         
-        if self.mass is None:
+        if self.mass == 0.0:
             self.mass = self.load_atomic_mass()
     
     def load_atomic_mass(self):
@@ -79,7 +79,7 @@ class Atom:
         return float(mass)
 
 
-def get_atom(symbol: str, atoms: list[Atom]) -> Atom | None:
+def find_atom(symbol: str, atoms: list[Atom]) -> Atom | None:
     """Find an atom by its chemical symbol from a list of atoms.
     
     Searches through a list of Atom objects to find one with the specified

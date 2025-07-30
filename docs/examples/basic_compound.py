@@ -67,7 +67,7 @@ comp_SrTiO3 = create_compound(
     density=5.12,
     roughness=0.0,
     formula="Sr:1,Ti:1,O:3",
-    atoms_prov=[sr_atom, ti_atom, o_atom],
+    atoms=[sr_atom, ti_atom, o_atom],
 )
 comp_LaMnO3 = create_compound(
     id="LaMnO3",
@@ -75,7 +75,7 @@ comp_LaMnO3 = create_compound(
     thickness=50.0,
     density=6.52,
     formula="La:1,Mn:1,O:3",
-    atoms_prov=[la_atom, mn_atom, o_atom],
+    atoms=[la_atom, mn_atom, o_atom],
     roughness=2.0,
 )
 comp_CCO = create_compound(
@@ -84,7 +84,7 @@ comp_CCO = create_compound(
     thickness=10.0,
     density=5,
     formula="C:2,O:1",
-    atoms_prov=[c_atom, o_atom],
+    atoms=[c_atom, o_atom],
     roughness=2.0,
 )
 

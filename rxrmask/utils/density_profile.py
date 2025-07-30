@@ -7,109 +7,58 @@ structures, including the effects of interface roughness.
 import numpy as np
 from scipy.special import erf
 
-
-def step_function(z, zi):
-    """Step function for sharp interface transitions.
+def _calculate_single_element_profile(z, layer_positions, densities, roughnesses):    
+    profile = np.full_like(z, densities[0], dtype=float)
     
-    Args:
-        z (np.ndarray): Array of spatial positions.
-        zi (float): Position of the interface transition.
+    for i in range(len(layer_positions) - 1):
+        rho_current = densities[i]
+        rho_next = densities[i + 1]
         
-    Returns:
-        np.ndarray: Array with values 0.0 for z < zi and 2.0 for z >= zi.
-    """
-    return np.where(z >= zi, 2.0, 0.0)
-
-def density_profile(thicknesses, densities, roughness, step=0.1):
-    """Calculate density profiles for multilayer structures with interface roughness.
-    
-    Args:
-        thicknesses (list): List of layer thicknesses in Angstroms.
-        densities (dict): Dictionary mapping element names to density arrays.
-                         Each array contains density values for each layer.
-        roughness (dict): Dictionary mapping element names to roughness arrays.
-                         Each array contains roughness values for each interface.
-        step (float, optional): Spatial resolution for the profile in Angstroms.
-                               Defaults to 0.1.
-                               
-    Returns:
-        tuple: A 2-tuple containing:
-            - z (np.ndarray): Array of spatial positions in Angstroms.
-            - dens (dict): Dictionary mapping element names to density profile arrays.
+        density_change = rho_next - rho_current
+        if density_change == 0:
+            continue
             
-    Example:
-        >>> thicknesses = [10.0, 20.0, 15.0]  # Layer thicknesses
-        >>> densities = {'Fe': [0.0, 5.0, 3.0, 0.0]}  # Fe density in each region
-        >>> roughness = {'Fe': [2.0, 1.5, 2.5]}  # Interface roughness
-        >>> z, profiles = density_profile(thicknesses, densities, roughness)
-    """
-    pos = np.cumsum(thicknesses)
-
-    max_roughness = max(roughness.values(), key=lambda x: x[-1])[-1]
-    z = np.arange(0, pos[-1] + max_roughness*1.5, step)
-    dens = {}
-
-    for name, rho in densities.items():
-        profile = np.full_like(z, rho[0], dtype=float)
-
-        for i in range(len(thicknesses)):
-            drho = rho[i+1] - rho[i]
-            rough = roughness[name][i]
-
-            if rough == 0:
-                profile += 0.5 * (drho) * step_function(z, pos[i])
-            else:
-                profile += (drho/2) * (erf((z-pos[i])/(rough/np.sqrt(2))) + 1)
-
-        dens[name] = profile
-    return z, dens
-
-def z_density_profile(z_eval, thicknesses, densities, roughness):
-    """Calculate density profiles at specific spatial positions.
+        interface_position = layer_positions[i + 1]
+        roughness = roughnesses[i]
+        
+        if roughness == 0:
+            profile += 0.5 * density_change * np.where(z >= interface_position, 2.0, 0.0)
+        else:
+            sigma = roughness / np.sqrt(2)
+            profile += (density_change / 2) * (erf((z - interface_position) / sigma) + 1)
     
-    Computes atomic density profiles at user-specified spatial positions,
-    rather than on a regular grid. This function is useful when density
-    values are needed only at specific locations, such as for fitting
-    or when interfacing with other calculations.
+    return profile
+
+def get_density_profile_from_element_data(element_data, layer_thickness_params, atoms, step: float = 0.1):
+    layer_thicknesses = [param.get() for param in layer_thickness_params]
+    layer_positions = np.cumsum([0.0] + layer_thicknesses)
     
-    The calculation method is identical to density_profile() but evaluates
-    the density functions only at the provided z positions, making it more
-    efficient for sparse sampling.
+    max_roughness = 0.0
+    for data in element_data.values():
+        for roughness_param in data['roughness_params']:
+            if roughness_param is not None:
+                max_roughness = max(max_roughness, roughness_param.get())
     
-    Args:
-        z_eval (array-like): Array of spatial positions where densities should be evaluated.
-        thicknesses (list): List of layer thicknesses in Angstroms.
-        densities (dict): Dictionary mapping element names to density arrays.
-                         Each array contains density values for each layer.
-        roughness (dict): Dictionary mapping element names to roughness arrays.
-                         Each array contains roughness values for each interface.
-                         
-    Returns:
-        tuple: A 2-tuple containing:
-            - z (np.ndarray): Array of input spatial positions (converted to numpy array).
-            - dens (dict): Dictionary mapping element names to density arrays
-                          evaluated at the specified positions.
-                          
-    Example:
-        >>> z_points = [5.0, 15.0, 25.0]  # Specific positions of interest
-        >>> z, profiles = z_density_profile(z_points, thicknesses, densities, roughness)
-    """
-    pos = np.cumsum(thicknesses)
+    total_thickness = sum(layer_thicknesses)
+    z = np.arange(0, total_thickness + max_roughness * 1.5, step)
+    
+    density_profile = {}
+    magnetic_density_profile = {}
+    
+    for element_name, data in element_data.items():
+        densities = [param.get() if param is not None else 0.0 for param in data['density_params']]
+        magnetic_densities = [param.get() if param is not None else 0.0 for param in data['magnetic_density_params']]
+        roughnesses = [param.get() if param is not None else 0.0 for param in data['roughness_params']]
+        
+        density_profile[element_name] = _calculate_single_element_profile(
+            z, layer_positions, densities, roughnesses
+        )
+        
+        magnetic_density_profile[element_name] = _calculate_single_element_profile(
+            z, layer_positions, magnetic_densities, roughnesses
+        )
+    
+    return z, density_profile, magnetic_density_profile, atoms
 
-    z = np.array(z_eval)
-    dens = {}
 
-    for name, rho in densities.items():
-        profile = np.full_like(z, rho[0], dtype=float)
 
-        for i in range(len(thicknesses)):
-            drho = rho[i+1] - rho[i]
-            rough = roughness[name][i]
-
-            if rough == 0:
-                profile += 0.5 * (drho) * step_function(z, pos[i])
-            else:
-                profile += (drho/2) * (erf((z-pos[i])/(rough/np.sqrt(2))) + 1)
-
-        dens[name] = profile
-    return z, dens

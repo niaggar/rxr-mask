@@ -5,6 +5,7 @@ used in X-ray reflectometry calculations.
 """
 
 from rxrmask.core.atom import Atom
+from rxrmask.core.parameter import Parameter
 
 from dataclasses import dataclass, field
 import numpy as np
@@ -15,13 +16,12 @@ h = 4.135667696e-15  # Planck's Constant [eV s]
 c = 2.99792450e10  # Speed of light in vacuum [cm/s]
 re = 2.817940322719e-13  # Classical electron radius (Thompson scattering length) [cm]
 avocado = 6.02214076e23  # Avogadro's number [mol^-1]
-re = 2.817940322719e-13  # Classical electron radius (Thompson scattering length) [cm]
 pihc = 2 * np.pi / (h * c)  # To calculate the photon wavenumber in vacuum [1/cm]
 pireav = 2 * np.pi * re * avocado  # To calculate the electron density in cm^-3
 
 
 @dataclass
-class ElementLayer:
+class AtomLayer:
     """Represents a specific atomic species in a layer.
     
     Attributes:
@@ -31,10 +31,10 @@ class ElementLayer:
                                               Defaults to None.
     """
     atom: Atom
-    molar_density: float  # in mol/cm^3
-    molar_magnetic_density: float | None = None  # in mol/cm^3
+    molar_density: Parameter[float]  # in mol/cm^3
+    molar_magnetic_density: Parameter[float] | None = None  # in mol/cm^3
 
-    def get_f1f2(self, energy_eV: float) -> tuple[float, float]:
+    def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
         """Get atomic form factors f1 and f2 at a specific energy.
         
         Args:
@@ -43,9 +43,9 @@ class ElementLayer:
         Returns:
             tuple[float, float]: Tuple containing (f1, f2) form factor components.
         """
-        return self.atom.ff.get_formfactors(energy_eV)
-    
-    def get_q1q2(self, energy_eV: float) -> tuple[float, float]:
+        return self.atom.ff.get_formfactors(energy_eV, *args)
+
+    def get_q1q2(self, energy_eV: float, *args) -> tuple[float, float]:
         """Get magnetic form factors q1 and q2 at a specific energy.
         
         Args:
@@ -57,7 +57,7 @@ class ElementLayer:
         """
         if self.atom.ffm is None:
             return 0.0, 0.0
-        return self.atom.ffm.get_formfactors(energy_eV)
+        return self.atom.ffm.get_formfactors(energy_eV, *args)
 
 
 @dataclass
@@ -75,9 +75,9 @@ class Layer:
     """
     id: str
     thickness: float  # in Angstroms
-    elements: list[ElementLayer] = field(default_factory=list)
+    elements: list[AtomLayer] = field(default_factory=list)
 
-    def get_index_of_refraction(self, energy_eV: float):
+    def get_index_of_refraction(self, energy_eV: float, *args) -> complex:
         """Calculate the complex refractive index of the layer.
         
         Args:
@@ -91,9 +91,11 @@ class Layer:
         f1_layer = 0.0
         f2_layer = 0.0
         for l in self.elements:
-            f1, f2 = l.get_f1f2(energy_eV)
-            f1_layer += f1 * l.molar_density
-            f2_layer += f2 * l.molar_density
+            f1, f2 = l.get_f1f2(energy_eV, *args)
+            molar_density = l.molar_density.get()
+            
+            f1_layer += f1 * molar_density
+            f2_layer += f2 * molar_density
 
         k0 = energy_eV * pihc
         constant = pireav / (k0 ** 2)
@@ -104,7 +106,7 @@ class Layer:
 
         return n_complex
 
-    def get_magnetic_optical_constant(self, energy_eV: float):
+    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
         """Calculate the magnetic optical constant of the layer.
         
         Args:
@@ -118,9 +120,11 @@ class Layer:
         q1_layer = 0.0
         q2_layer = 0.0
         for l in self.elements:
-            q1, q2 = l.get_q1q2(energy_eV)
-            q1_layer += q1 * l.molar_density
-            q2_layer += q2 * l.molar_density
+            q1, q2 = l.get_q1q2(energy_eV, *args)
+            molar_magnetic_density = l.molar_magnetic_density.get() if l.molar_magnetic_density else 0.0
+            
+            q1_layer += q1 * molar_magnetic_density
+            q2_layer += q2 * molar_magnetic_density
 
         k0 = energy_eV * pihc
         constant = pireav / (k0 ** 2)

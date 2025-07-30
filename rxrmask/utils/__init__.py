@@ -1,5 +1,5 @@
 # Density profile utilities
-from .density_profile import density_profile, z_density_profile, step_function
+from .density_profile import get_density_profile_from_element_data
 
 # Check if plot utilities are available and import if present
 try:
@@ -11,9 +11,7 @@ except ImportError:
 # Define what gets exported when using "from rxrmask.utils import *"
 __all__ = [
     # Density profile functions
-    'density_profile',
-    'z_density_profile', 
-    'step_function',
+    'get_density_profile_from_element_data',
 ]
 
 # Add plot utilities if available

@@ -1,38 +1,38 @@
 # Atom-related imports
-from .atom import Atom, get_atom
+from .atom import Atom, find_atom
 
 # Form factor imports
 from .formfactor import FormFactorModel, FormFactorLocalDB
 
 # Compound-related imports
-from .compound import AtomLayerStructure, Compound, create_compound
+from .compound import CompoundDetails, Compound, create_compound
 
 # Layer-related imports
-from .layer import ElementLayer, Layer
+from .layer import AtomLayer, Layer
 
 # Structure imports
 from .structure import Structure
 
 # Parameter imports
-from .parameter import Parameter, FitParameter, ParametersContainer
+from .parameter import Parameter, DerivedParameter, ParametersContainer
 
 # Define what gets exported when using "from rxrmask.core import *"
 __all__ = [
     # Atom classes and functions
     'Atom',
-    'get_atom',
+    'find_atom',
     
     # Form factor classes
     'FormFactorModel',
     'FormFactorLocalDB',
     
     # Compound classes and functions
-    'AtomLayerStructure',
+    'CompoundDetails',
     'Compound',
     'create_compound',
     
     # Layer classes
-    'ElementLayer',
+    'AtomLayer',
     'Layer',
     
     # Structure class
@@ -40,6 +40,6 @@ __all__ = [
     
     # Parameter classes
     'Parameter',
-    'FitParameter',
+    'DerivedParameter',
     'ParametersContainer',
 ]
