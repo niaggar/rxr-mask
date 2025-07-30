@@ -27,6 +27,19 @@ def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
     plt.tight_layout()
     plt.show()
 
+def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile"):
+    plt.figure(figsize=figsize, dpi=300)
+    for name, profile in dens.items():
+        plt.plot(z, profile, "-", label=name)
+    plt.xlabel('Depth $z$ (Å)')
+    plt.title(title)
+    plt.grid(True)
+    plt.ylabel('Density $\\rho(z)$ (mol/cm³)')
+    plt.ylim(bottom=0)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 def plot_slab_model(structure, figsize=(10,4), cmap_name='tab10'):
     thicknesses = [comp.thickness for comp in structure.compounds]
     densities = [comp.density for comp in structure.compounds]
