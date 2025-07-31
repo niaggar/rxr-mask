@@ -48,12 +48,12 @@
 <li class="toctree-l1"><a class="reference internal" href="materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pint_init.html">Units &amp; Quantities</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.density_profile"><code class="docutils literal notranslate"><span class="pre">density_profile()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.step_function"><code class="docutils literal notranslate"><span class="pre">step_function()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.z_density_profile"><code class="docutils literal notranslate"><span class="pre">z_density_profile()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.density_profile.density_profile"><code class="docutils literal notranslate"><span class="pre">density_profile()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.density_profile.step_function"><code class="docutils literal notranslate"><span class="pre">step_function()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.density_profile.z_density_profile"><code class="docutils literal notranslate"><span class="pre">z_density_profile()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.compute_adaptive_layer_segmentation"><code class="docutils literal notranslate"><span class="pre">compute_adaptive_layer_segmentation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.get_density_profile_from_element_data"><code class="docutils literal notranslate"><span class="pre">get_density_profile_from_element_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.plot_density_profile"><code class="docutils literal notranslate"><span class="pre">plot_density_profile()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.plot_energy_scan"><code class="docutils literal notranslate"><span class="pre">plot_energy_scan()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.plot_reflectivity"><code class="docutils literal notranslate"><span class="pre">plot_reflectivity()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.utils.plot_slab_model"><code class="docutils literal notranslate"><span class="pre">plot_slab_model()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -85,221 +85,74 @@
   <section id="module-rxrmask.utils">
 <span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-rxrmask.utils" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.density_profile">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thicknesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#density_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.density_profile" title="Link to this definition"></a></dt>
-<dd><p>Calculate density profiles for multilayer structures with interface roughness.</p>
+<dt class="sig sig-object py" id="rxrmask.utils.compute_adaptive_layer_segmentation">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">compute_adaptive_layer_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/adaptive_layer_segmentation.html#compute_adaptive_layer_segmentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.compute_adaptive_layer_segmentation" title="Link to this definition"></a></dt>
+<dd><p>Adaptive layer segmentation based on optical constant variation.</p>
+<p>Groups layers with similar optical properties to reduce computation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>thicknesses</strong> (<em>list</em>) – List of layer thicknesses in Angstroms.</p></li>
-<li><p><strong>densities</strong> (<em>dict</em>) – Dictionary mapping element names to density arrays.
-Each array contains density values for each layer.</p></li>
-<li><p><strong>roughness</strong> (<em>dict</em>) – Dictionary mapping element names to roughness arrays.
-Each array contains roughness values for each interface.</p></li>
-<li><p><strong>step</strong> (<em>float</em><em>, </em><em>optional</em>) – Spatial resolution for the profile in Angstroms.
-Defaults to 0.1.</p></li>
+<li><p><strong>layers</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="core.html#rxrmask.core.layer.Layer" title="rxrmask.core.layer.Layer"><code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></a>]</span>) – List of layers with precomputed optical properties.</p></li>
+<li><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Energy at which optical constants were computed.</p></li>
+<li><p><strong>precision</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Threshold for optical constant variation.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A 2-tuple containing:</dt><dd><ul class="simple">
-<li><p>z (np.ndarray): Array of spatial positions in Angstroms.</p></li>
-<li><p>dens (dict): Dictionary mapping element names to density profile arrays.</p></li>
-</ul>
+<dd class="field-even"><p>Layer boundary indices for segmentation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[int]</p>
 </dd>
 </dl>
-</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.utils.get_density_profile_from_element_data">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">get_density_profile_from_element_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_thickness_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#get_density_profile_from_element_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.get_density_profile_from_element_data" title="Link to this definition"></a></dt>
+<dd><p>Calculate density profiles from element data and layer parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>element_data</strong> – Element data dictionary with parameters.</p></li>
+<li><p><strong>layer_thickness_params</strong> – Layer thickness parameters.</p></li>
+<li><p><strong>atoms</strong> – Atom objects dictionary.</p></li>
+<li><p><strong>step</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Depth step size for profile calculation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(z_positions, density_profiles, magnetic_density_profiles, layer_positions).</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thicknesses</span> <span class="o">=</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">]</span>  <span class="c1"># Layer thicknesses</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">densities</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]}</span>  <span class="c1"># Fe density in each region</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">roughness</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]}</span>  <span class="c1"># Interface roughness</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">,</span> <span class="n">profiles</span> <span class="o">=</span> <span class="n">density_profile</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.step_function">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">step_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#step_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.step_function" title="Link to this definition"></a></dt>
-<dd><p>Step function for sharp interface transitions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>z</strong> (<em>np.ndarray</em>) – Array of spatial positions.</p></li>
-<li><p><strong>zi</strong> (<em>float</em>) – Position of the interface transition.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array with values 0.0 for z &lt; zi and 2.0 for z &gt;= zi.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="rxrmask.utils.plot_density_profile">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">plot_density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">4)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Density</span> <span class="pre">Profile'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/plot.html#plot_density_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.plot_density_profile" title="Link to this definition"></a></dt>
+<dd><p>Plot atomic density profiles as function of depth.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.z_density_profile">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">z_density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_eval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thicknesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#z_density_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.z_density_profile" title="Link to this definition"></a></dt>
-<dd><p>Calculate density profiles at specific spatial positions.</p>
-<p>Computes atomic density profiles at user-specified spatial positions,
-rather than on a regular grid. This function is useful when density
-values are needed only at specific locations, such as for fitting
-or when interfacing with other calculations.</p>
-<p>The calculation method is identical to density_profile() but evaluates
-the density functions only at the provided z positions, making it more
-efficient for sparse sampling.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>z_eval</strong> (<em>array-like</em>) – Array of spatial positions where densities should be evaluated.</p></li>
-<li><p><strong>thicknesses</strong> (<em>list</em>) – List of layer thicknesses in Angstroms.</p></li>
-<li><p><strong>densities</strong> (<em>dict</em>) – Dictionary mapping element names to density arrays.
-Each array contains density values for each layer.</p></li>
-<li><p><strong>roughness</strong> (<em>dict</em>) – Dictionary mapping element names to roughness arrays.
-Each array contains roughness values for each interface.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A 2-tuple containing:</dt><dd><ul class="simple">
-<li><p>z (np.ndarray): Array of input spatial positions (converted to numpy array).</p></li>
-<li><dl class="simple">
-<dt>dens (dict): Dictionary mapping element names to density arrays</dt><dd><p>evaluated at the specified positions.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z_points</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">]</span>  <span class="c1"># Specific positions of interest</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">,</span> <span class="n">profiles</span> <span class="o">=</span> <span class="n">z_density_profile</span><span class="p">(</span><span class="n">z_points</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<p id="module-rxrmask.utils.density_profile">Density profile utilities for RXR-Mask.</p>
-<p>This module provides functions for calculating atomic density profiles in multilayer
-structures, including the effects of interface roughness.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.density_profile.density_profile">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.density_profile.</span></span><span class="sig-name descname"><span class="pre">density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thicknesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#density_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.density_profile.density_profile" title="Link to this definition"></a></dt>
-<dd><p>Calculate density profiles for multilayer structures with interface roughness.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>thicknesses</strong> (<em>list</em>) – List of layer thicknesses in Angstroms.</p></li>
-<li><p><strong>densities</strong> (<em>dict</em>) – Dictionary mapping element names to density arrays.
-Each array contains density values for each layer.</p></li>
-<li><p><strong>roughness</strong> (<em>dict</em>) – Dictionary mapping element names to roughness arrays.
-Each array contains roughness values for each interface.</p></li>
-<li><p><strong>step</strong> (<em>float</em><em>, </em><em>optional</em>) – Spatial resolution for the profile in Angstroms.
-Defaults to 0.1.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A 2-tuple containing:</dt><dd><ul class="simple">
-<li><p>z (np.ndarray): Array of spatial positions in Angstroms.</p></li>
-<li><p>dens (dict): Dictionary mapping element names to density profile arrays.</p></li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">thicknesses</span> <span class="o">=</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">]</span>  <span class="c1"># Layer thicknesses</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">densities</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]}</span>  <span class="c1"># Fe density in each region</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">roughness</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Fe&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]}</span>  <span class="c1"># Interface roughness</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">,</span> <span class="n">profiles</span> <span class="o">=</span> <span class="n">density_profile</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
-</pre></div>
-</div>
+<dt class="sig sig-object py" id="rxrmask.utils.plot_energy_scan">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">plot_energy_scan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_pr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_phi_pr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_pi_pr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/plot.html#plot_energy_scan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.plot_energy_scan" title="Link to this definition"></a></dt>
+<dd><p>Plot energy scan reflectivity at fixed angle.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.density_profile.step_function">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.density_profile.</span></span><span class="sig-name descname"><span class="pre">step_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#step_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.density_profile.step_function" title="Link to this definition"></a></dt>
-<dd><p>Step function for sharp interface transitions.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>z</strong> (<em>np.ndarray</em>) – Array of spatial positions.</p></li>
-<li><p><strong>zi</strong> (<em>float</em>) – Position of the interface transition.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array with values 0.0 for z &lt; zi and 2.0 for z &gt;= zi.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="rxrmask.utils.plot_reflectivity">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">plot_reflectivity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">qz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_pi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/plot.html#plot_reflectivity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.plot_reflectivity" title="Link to this definition"></a></dt>
+<dd><p>Plot X-ray reflectivity curves for both polarizations.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="rxrmask.utils.density_profile.z_density_profile">
-<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.density_profile.</span></span><span class="sig-name descname"><span class="pre">z_density_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_eval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thicknesses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/density_profile.html#z_density_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.density_profile.z_density_profile" title="Link to this definition"></a></dt>
-<dd><p>Calculate density profiles at specific spatial positions.</p>
-<p>Computes atomic density profiles at user-specified spatial positions,
-rather than on a regular grid. This function is useful when density
-values are needed only at specific locations, such as for fitting
-or when interfacing with other calculations.</p>
-<p>The calculation method is identical to density_profile() but evaluates
-the density functions only at the provided z positions, making it more
-efficient for sparse sampling.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>z_eval</strong> (<em>array-like</em>) – Array of spatial positions where densities should be evaluated.</p></li>
-<li><p><strong>thicknesses</strong> (<em>list</em>) – List of layer thicknesses in Angstroms.</p></li>
-<li><p><strong>densities</strong> (<em>dict</em>) – Dictionary mapping element names to density arrays.
-Each array contains density values for each layer.</p></li>
-<li><p><strong>roughness</strong> (<em>dict</em>) – Dictionary mapping element names to roughness arrays.
-Each array contains roughness values for each interface.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>A 2-tuple containing:</dt><dd><ul class="simple">
-<li><p>z (np.ndarray): Array of input spatial positions (converted to numpy array).</p></li>
-<li><dl class="simple">
-<dt>dens (dict): Dictionary mapping element names to density arrays</dt><dd><p>evaluated at the specified positions.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z_points</span> <span class="o">=</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">]</span>  <span class="c1"># Specific positions of interest</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">,</span> <span class="n">profiles</span> <span class="o">=</span> <span class="n">z_density_profile</span><span class="p">(</span><span class="n">z_points</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
-</pre></div>
-</div>
+<dt class="sig sig-object py" id="rxrmask.utils.plot_slab_model">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.utils.</span></span><span class="sig-name descname"><span class="pre">plot_slab_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(10,</span> <span class="pre">4)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tab10'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/utils/plot.html#plot_slab_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.utils.plot_slab_model" title="Link to this definition"></a></dt>
+<dd><p>Plot multilayer structure as colored rectangles showing layer composition.</p>
 </dd></dl>
 
-<span class="target" id="module-rxrmask.utils.plot"></span></section>
+</section>
 
 
            </div>

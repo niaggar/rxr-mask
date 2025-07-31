@@ -73,10 +73,9 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.formfactor</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Form factor module for RXR-Mask.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Form factor handling for X-ray reflectometry calculations.</span>
 
-<span class="sd">This module provides a general class interface for handling X-ray atomic form factors.</span>
-<span class="sd">All form factor models must implement this interface to ensure consistent behavior.</span>
+<span class="sd">Provides interface and implementation for atomic form factor models.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
@@ -91,30 +90,39 @@
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorModel">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">FormFactorModel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for atomic form factor models.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for atomic form factor models.</span>
 <span class="sd">    </span>
-<span class="sd">    This class defines the interface for form factor models used in X-ray</span>
-<span class="sd">    reflectometry calculations. Subclasses must implement all abstract methods.</span>
+<span class="sd">    Defines interface for X-ray form factor calculations.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        ff_path (str | None): Path to the form factor data file. If exists.</span>
+<span class="sd">        ff_path (str | None): Path to form factor data file.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ff_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FormFactorModel.get_formfactors">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorModel.get_formfactors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_formfactors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get atomic form factors at a specific energy.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get form factors at specific energy.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            energy_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">            *args: Additional arguments for specific implementations.</span>
+<span class="sd">            energy_eV (float): X-ray energy in eV.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[float, float]: Tuple containing (f1, f2) form factor components.</span>
+<span class="sd">            tuple[float, float]: (f1, f2) form factor components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method should be implemented by subclasses.&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="FormFactorModel.get_formfactors_energies">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorModel.get_formfactors_energies">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_formfactors_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energies</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get form factors for multiple energies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            energies (np.ndarray): Array of energies in eV.</span>
 <span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: This method must be implemented by subclasses.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[tuple[float, float]]: List of (f1, f2) for each energy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method should be implemented by subclasses.&quot;</span><span class="p">)</span></div>
 
@@ -122,16 +130,10 @@
 <div class="viewcode-block" id="FormFactorModel.get_all_formfactors">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorModel.get_all_formfactors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_formfactors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the complete form factor dataset.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get complete form factor dataset.</span>
 <span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            *args: Additional arguments for specific implementations.</span>
-<span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            pd.DataFrame: DataFrame containing all form factor data.</span>
-<span class="sd">            </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            NotImplementedError: This method must be implemented by subclasses.</span>
+<span class="sd">            pd.DataFrame: All form factor data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;This method should be implemented by subclasses.&quot;</span><span class="p">)</span></div>
 
@@ -139,11 +141,7 @@
 <div class="viewcode-block" id="FormFactorModel.get_path">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorModel.get_path">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the path to the form factor data file.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            str | None: Path to the form factor data file, or None if not set.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get path to form factor data file.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_path</span></div>
 </div>
 
@@ -154,27 +152,24 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">FormFactorLocalDB</span><span class="p">(</span><span class="n">FormFactorModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Form factor model using local database files.</span>
 <span class="sd">    </span>
-<span class="sd">    This class implements the FormFactorModel interface for reading atomic form</span>
-<span class="sd">    factors from local text files. It supports both regular and magnetic form</span>
-<span class="sd">    factors, automatically loading the appropriate data based on the element</span>
-<span class="sd">    and magnetic properties.</span>
+<span class="sd">    Reads atomic form factors from local text files with support for</span>
+<span class="sd">    magnetic and non-magnetic elements.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        ff_data (pd.DataFrame | None): Loaded form factor data. Defaults to None.</span>
-<span class="sd">        element (str | None): Chemical symbol of the element. Defaults to None.</span>
-<span class="sd">        is_magnetic (bool): Whether to load magnetic form factors. Defaults to False.</span>
+<span class="sd">        ff_data (pd.DataFrame | None): Loaded form factor data.</span>
+<span class="sd">        element (str | None): Chemical element symbol.</span>
+<span class="sd">        is_magnetic (bool): Whether to load magnetic form factors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ff_data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">element</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">is_magnetic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_magnetic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the FormFactorLocalDB with element and magnetic properties.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize form factor model for specified element.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            element (str): Chemical symbol of the element (e.g., &#39;Fe&#39;, &#39;O&#39;).</span>
-<span class="sd">            is_magnetic (bool, optional): Whether to load magnetic form factors. </span>
-<span class="sd">                                        Defaults to False.</span>
+<span class="sd">            element (str): Chemical symbol (e.g., &#39;Fe&#39;, &#39;O&#39;).</span>
+<span class="sd">            is_magnetic (bool): Load magnetic form factors.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="o">=</span> <span class="n">element</span>
@@ -184,16 +179,7 @@
 <div class="viewcode-block" id="FormFactorLocalDB.read_data">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorLocalDB.read_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read form factor data from the local database.</span>
-<span class="sd">        </span>
-<span class="sd">        Loads form factor data from a text file based on the element name and</span>
-<span class="sd">        magnetic properties. The data is stored in a pandas DataFrame with</span>
-<span class="sd">        columns for energy (E), real part (f1), and imaginary part (f2).</span>
-<span class="sd">        </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            ValueError: If no element is specified.</span>
-<span class="sd">            FileNotFoundError: If the form factor data file does not exist.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read form factor data from local database.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Element must be specified to read form factor data.&quot;</span><span class="p">)</span>
         
@@ -219,6 +205,7 @@
 <div class="viewcode-block" id="FormFactorLocalDB.get_formfactors">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorLocalDB.get_formfactors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_formfactors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get form factors at specific energy using interpolation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Form factor data has not been loaded.&quot;</span><span class="p">)</span>
         
@@ -228,9 +215,23 @@
         <span class="k">return</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span></div>
 
     
+<div class="viewcode-block" id="FormFactorLocalDB.get_formfactors_energies">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorLocalDB.get_formfactors_energies">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_formfactors_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energies</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get form factors for multiple energies using interpolation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Form factor data has not been loaded.&quot;</span><span class="p">)</span>
+        
+        <span class="n">f1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span><span class="o">.</span><span class="n">f1</span><span class="p">)</span>
+        <span class="n">f2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span><span class="o">.</span><span class="n">E</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span><span class="o">.</span><span class="n">f2</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">))</span></div>
+
+    
 <div class="viewcode-block" id="FormFactorLocalDB.get_all_formfactors">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.FormFactorLocalDB.get_all_formfactors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_formfactors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return complete form factor dataset.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Form factor data has not been loaded.&quot;</span><span class="p">)</span>
         

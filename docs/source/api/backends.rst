@@ -8,10 +8,6 @@ Currently, two backend implementations are available:
 - **Pythonreflectivity**.
 - **Udkm1Dsim**.
 
-.. automodule:: rxrmask.backends
-   :members:
-   :undoc-members:
-
 Pythonreflectivity Backend
 ---------------------------
 

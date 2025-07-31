@@ -73,129 +73,84 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.utils.density_profile</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Density profile utilities for RXR-Mask.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Density profile calculations for multilayer structures.</span>
 
-<span class="sd">This module provides functions for calculating atomic density profiles in multilayer</span>
-<span class="sd">structures, including the effects of interface roughness.</span>
+<span class="sd">Provides functions for calculating atomic density profiles including</span>
+<span class="sd">interface roughness effects.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">erf</span>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_single_element_profile</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">layer_positions</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughnesses</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate density profile for single element with interface roughness.&quot;&quot;&quot;</span>    
+    <span class="n">profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">densities</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">layer_positions</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">rho_current</span> <span class="o">=</span> <span class="n">densities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">rho_next</span> <span class="o">=</span> <span class="n">densities</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        
+        <span class="n">density_change</span> <span class="o">=</span> <span class="n">rho_next</span> <span class="o">-</span> <span class="n">rho_current</span>
+        <span class="k">if</span> <span class="n">density_change</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+            
+        <span class="n">interface_position</span> <span class="o">=</span> <span class="n">layer_positions</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">roughness</span> <span class="o">=</span> <span class="n">roughnesses</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">roughness</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">profile</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">density_change</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="n">interface_position</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">roughness</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">profile</span> <span class="o">+=</span> <span class="p">(</span><span class="n">density_change</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">erf</span><span class="p">((</span><span class="n">z</span> <span class="o">-</span> <span class="n">interface_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">profile</span>
 
-<div class="viewcode-block" id="step_function">
-<a class="viewcode-back" href="../../../api/utils.html#rxrmask.utils.step_function">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">step_function</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">zi</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Step function for sharp interface transitions.</span>
+<div class="viewcode-block" id="get_density_profile_from_element_data">
+<a class="viewcode-back" href="../../../api/utils.html#rxrmask.utils.get_density_profile_from_element_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_density_profile_from_element_data</span><span class="p">(</span><span class="n">element_data</span><span class="p">,</span> <span class="n">layer_thickness_params</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate density profiles from element data and layer parameters.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
-<span class="sd">        z (np.ndarray): Array of spatial positions.</span>
-<span class="sd">        zi (float): Position of the interface transition.</span>
+<span class="sd">        element_data: Element data dictionary with parameters.</span>
+<span class="sd">        layer_thickness_params: Layer thickness parameters.</span>
+<span class="sd">        atoms: Atom objects dictionary.</span>
+<span class="sd">        step: Depth step size for profile calculation.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
-<span class="sd">        np.ndarray: Array with values 0.0 for z &lt; zi and 2.0 for z &gt;= zi.</span>
+<span class="sd">        tuple: (z_positions, density_profiles, magnetic_density_profiles, layer_positions).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="n">zi</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
+    <span class="n">layer_thicknesses</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">layer_thickness_params</span><span class="p">]</span>
+    <span class="n">layer_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">+</span> <span class="n">layer_thicknesses</span><span class="p">)</span>
+    
+    <span class="n">max_roughness</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">element_data</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">roughness_param</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;roughness_params&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">roughness_param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">max_roughness</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_roughness</span><span class="p">,</span> <span class="n">roughness_param</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+    
+    <span class="n">total_thickness</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layer_thicknesses</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_thickness</span> <span class="o">+</span> <span class="mi">15</span> <span class="o">+</span> <span class="n">step</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
+    
+    <span class="n">density_profile</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">magnetic_density_profile</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">for</span> <span class="n">element_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">element_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">densities</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;density_params&#39;</span><span class="p">]]</span>
+        <span class="n">magnetic_densities</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;magnetic_density_params&#39;</span><span class="p">]]</span>
+        <span class="n">roughnesses</span> <span class="o">=</span> <span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">param</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;roughness_params&#39;</span><span class="p">]]</span>
+        
+        <span class="n">density_profile</span><span class="p">[</span><span class="n">element_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_calculate_single_element_profile</span><span class="p">(</span>
+            <span class="n">z</span><span class="p">,</span> <span class="n">layer_positions</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughnesses</span>
+        <span class="p">)</span>
+        
+        <span class="n">magnetic_density_profile</span><span class="p">[</span><span class="n">element_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_calculate_single_element_profile</span><span class="p">(</span>
+            <span class="n">z</span><span class="p">,</span> <span class="n">layer_positions</span><span class="p">,</span> <span class="n">magnetic_densities</span><span class="p">,</span> <span class="n">roughnesses</span>
+        <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">density_profile</span><span class="p">,</span> <span class="n">magnetic_density_profile</span><span class="p">,</span> <span class="n">atoms</span></div>
 
 
-<div class="viewcode-block" id="density_profile">
-<a class="viewcode-back" href="../../../api/utils.html#rxrmask.utils.density_profile">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">density_profile</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate density profiles for multilayer structures with interface roughness.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        thicknesses (list): List of layer thicknesses in Angstroms.</span>
-<span class="sd">        densities (dict): Dictionary mapping element names to density arrays.</span>
-<span class="sd">                         Each array contains density values for each layer.</span>
-<span class="sd">        roughness (dict): Dictionary mapping element names to roughness arrays.</span>
-<span class="sd">                         Each array contains roughness values for each interface.</span>
-<span class="sd">        step (float, optional): Spatial resolution for the profile in Angstroms.</span>
-<span class="sd">                               Defaults to 0.1.</span>
-<span class="sd">                               </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: A 2-tuple containing:</span>
-<span class="sd">            - z (np.ndarray): Array of spatial positions in Angstroms.</span>
-<span class="sd">            - dens (dict): Dictionary mapping element names to density profile arrays.</span>
-<span class="sd">            </span>
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; thicknesses = [10.0, 20.0, 15.0]  # Layer thicknesses</span>
-<span class="sd">        &gt;&gt;&gt; densities = {&#39;Fe&#39;: [0.0, 5.0, 3.0, 0.0]}  # Fe density in each region</span>
-<span class="sd">        &gt;&gt;&gt; roughness = {&#39;Fe&#39;: [2.0, 1.5, 2.5]}  # Interface roughness</span>
-<span class="sd">        &gt;&gt;&gt; z, profiles = density_profile(thicknesses, densities, roughness)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">)</span>
 
-    <span class="n">max_roughness</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">roughness</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">max_roughness</span><span class="o">*</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">step</span><span class="p">)</span>
-    <span class="n">dens</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rho</span> <span class="ow">in</span> <span class="n">densities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">rho</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">)):</span>
-            <span class="n">drho</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">rough</span> <span class="o">=</span> <span class="n">roughness</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">rough</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">profile</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">drho</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_function</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">profile</span> <span class="o">+=</span> <span class="p">(</span><span class="n">drho</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">erf</span><span class="p">((</span><span class="n">z</span><span class="o">-</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">rough</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="n">dens</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile</span>
-    <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">dens</span></div>
-
-
-<div class="viewcode-block" id="z_density_profile">
-<a class="viewcode-back" href="../../../api/utils.html#rxrmask.utils.z_density_profile">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">z_density_profile</span><span class="p">(</span><span class="n">z_eval</span><span class="p">,</span> <span class="n">thicknesses</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">roughness</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate density profiles at specific spatial positions.</span>
-<span class="sd">    </span>
-<span class="sd">    Computes atomic density profiles at user-specified spatial positions,</span>
-<span class="sd">    rather than on a regular grid. This function is useful when density</span>
-<span class="sd">    values are needed only at specific locations, such as for fitting</span>
-<span class="sd">    or when interfacing with other calculations.</span>
-<span class="sd">    </span>
-<span class="sd">    The calculation method is identical to density_profile() but evaluates</span>
-<span class="sd">    the density functions only at the provided z positions, making it more</span>
-<span class="sd">    efficient for sparse sampling.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        z_eval (array-like): Array of spatial positions where densities should be evaluated.</span>
-<span class="sd">        thicknesses (list): List of layer thicknesses in Angstroms.</span>
-<span class="sd">        densities (dict): Dictionary mapping element names to density arrays.</span>
-<span class="sd">                         Each array contains density values for each layer.</span>
-<span class="sd">        roughness (dict): Dictionary mapping element names to roughness arrays.</span>
-<span class="sd">                         Each array contains roughness values for each interface.</span>
-<span class="sd">                         </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: A 2-tuple containing:</span>
-<span class="sd">            - z (np.ndarray): Array of input spatial positions (converted to numpy array).</span>
-<span class="sd">            - dens (dict): Dictionary mapping element names to density arrays</span>
-<span class="sd">                          evaluated at the specified positions.</span>
-<span class="sd">                          </span>
-<span class="sd">    Example:</span>
-<span class="sd">        &gt;&gt;&gt; z_points = [5.0, 15.0, 25.0]  # Specific positions of interest</span>
-<span class="sd">        &gt;&gt;&gt; z, profiles = z_density_profile(z_points, thicknesses, densities, roughness)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">)</span>
-
-    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">z_eval</span><span class="p">)</span>
-    <span class="n">dens</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rho</span> <span class="ow">in</span> <span class="n">densities</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">profile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">rho</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">thicknesses</span><span class="p">)):</span>
-            <span class="n">drho</span> <span class="o">=</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">rough</span> <span class="o">=</span> <span class="n">roughness</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">rough</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">profile</span> <span class="o">+=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">drho</span><span class="p">)</span> <span class="o">*</span> <span class="n">step_function</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">profile</span> <span class="o">+=</span> <span class="p">(</span><span class="n">drho</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">erf</span><span class="p">((</span><span class="n">z</span><span class="o">-</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">rough</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="n">dens</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">profile</span>
-    <span class="k">return</span> <span class="n">z</span><span class="p">,</span> <span class="n">dens</span></div>
 
 </pre></div>
 

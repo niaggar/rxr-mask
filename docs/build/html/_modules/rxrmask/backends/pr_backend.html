@@ -73,16 +73,13 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.backends.pr_backend</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Pythonreflectivity backend for RXR-Mask.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Python Reflectivity backend for X-ray reflectometry calculations.</span>
 
-<span class="sd">This module provides an interface to the Pythonreflectivity library for calculating</span>
-<span class="sd">X-ray reflectivity from multilayer structures. It includes both sequential and parallel</span>
-<span class="sd">implementations for reflectivity calculations and energy scans.</span>
-
-<span class="sd">The module handles the conversion between RXR-Mask structures and Pythonreflectivity</span>
-<span class="sd">format, and provides optimized parallel computation capabilities for large datasets.</span>
+<span class="sd">Provides integration with the Python Reflectivity library for</span>
+<span class="sd">numerical simulation of multilayer structures.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_adaptive_layer_segmentation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.compound</span><span class="w"> </span><span class="kn">import</span> <span class="n">Compound</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.structure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Structure</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.layer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Layer</span>
@@ -92,168 +89,171 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">parallel_backend</span>
 
 
+<span class="c1"># Physical constants</span>
 <span class="n">H_CONST</span> <span class="o">=</span> <span class="mf">4.135667696e-15</span>  <span class="c1"># Planck constant [eV·s]</span>
 <span class="n">C_CONST</span> <span class="o">=</span> <span class="mf">2.99792458e8</span>  <span class="c1"># Speed of light [m/s]</span>
 <span class="n">QZ_SCALE</span> <span class="o">=</span> <span class="mf">0.001013546247</span>  <span class="c1"># Conversion factor qz→theta</span>
 <span class="n">HC_EV_ANGSTROM</span> <span class="o">=</span> <span class="mf">12398.41984</span>  <span class="c1"># hc constant [eV·Å]</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert RXR-Mask Structure to Pythonreflectivity structure format.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_print_structure_info</span><span class="p">(</span><span class="n">structure</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print debug information about layer structure.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Structure with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span><span class="si">}</span><span class="s2"> layers:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">structure</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">d</span><span class="p">()</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">sigma</span><span class="p">()</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">eps</span><span class="p">()</span>
+        <span class="n">mag</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">mag</span><span class="p">()</span>
+        <span class="n">epsg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">epsg</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">epsg</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Layer </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: d=</span><span class="si">{</span><span class="n">d</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> Å, sigma=</span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">, eps=</span><span class="si">{</span><span class="n">eps</span><span class="si">}</span><span class="s2">, mag=</span><span class="si">{</span><span class="n">mag</span><span class="si">}</span><span class="s2">, epsg=</span><span class="si">{</span><span class="n">epsg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Compound</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build sorted lookup table mapping depth to compounds.&quot;&quot;&quot;</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">compounds</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">compound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z</span> <span class="o">+=</span> <span class="n">compound</span><span class="o">.</span><span class="n">thickness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">z</span><span class="p">,</span> <span class="n">compound</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">table</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_compound_at_z</span><span class="p">(</span><span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Compound</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Compound</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find compound at given depth position.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">z_top</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">z</span> <span class="o">&lt;=</span> <span class="n">z_top</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">comp</span>
+    <span class="k">return</span> <span class="n">table</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_pr_structure_from_segments</span><span class="p">(</span>
+    <span class="n">layers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Layer</span><span class="p">],</span>
+    <span class="n">indices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">compound_map</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Compound</span><span class="p">]]</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build PythonReflectivity structure from layer segments.</span>
 <span class="sd">    </span>
-<span class="sd">    Transforms a multilayer structure from RXR-Mask format into the format</span>
-<span class="sd">    required by the Pythonreflectivity library, including optical constants</span>
-<span class="sd">    and magnetic properties.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        stack (Structure): The multilayer structure to convert.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        Pythonreflectivity structure: Structure object compatible with </span>
-<span class="sd">                                     Pythonreflectivity calculations.</span>
-<span class="sd">                                     </span>
-<span class="sd">    Raises:</span>
-<span class="sd">        TypeError: If a layer is not a Layer instance.</span>
-<span class="sd">        ValueError: If no compound is found for a layer.</span>
+<span class="sd">    Each segment is represented by first layer but with summed thickness.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">S</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Generate_structure</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">n_layers</span><span class="p">)</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Generate_structure</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-    <span class="n">current_z</span> <span class="o">=</span> <span class="mf">0.0</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">Layer</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected a Layer instance at index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> in the stack.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">i_start</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">i_end</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">n</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_index_of_refraction</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
-        <span class="n">eps</span> <span class="o">=</span> <span class="n">n</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">representative_layer</span> <span class="o">=</span> <span class="n">layers</span><span class="p">[</span><span class="n">i_start</span><span class="p">]</span>
+        <span class="n">segment_thickness</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">layers</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">thickness</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i_start</span><span class="p">,</span> <span class="n">i_end</span><span class="p">))</span>
+        <span class="n">z</span> <span class="o">+=</span> <span class="n">segment_thickness</span>
 
-        <span class="n">compound</span><span class="p">:</span> <span class="n">Compound</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">temp_comp_z</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">current_z</span> <span class="o">+=</span> <span class="n">layer</span><span class="o">.</span><span class="n">thickness</span>
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">comp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">compounds</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">comp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">temp_comp_z</span> <span class="o">+=</span> <span class="n">comp</span><span class="o">.</span><span class="n">thickness</span>
-                <span class="k">if</span> <span class="n">temp_comp_z</span> <span class="o">&gt;=</span> <span class="n">current_z</span><span class="p">:</span>
-                    <span class="n">compound</span> <span class="o">=</span> <span class="n">comp</span>
-            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">compounds</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">compound</span> <span class="o">=</span> <span class="n">comp</span>
-        <span class="k">if</span> <span class="n">compound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No compound found for layer at index </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> with z=</span><span class="si">{</span><span class="n">current_z</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">compound</span> <span class="o">=</span> <span class="n">_find_compound_at_z</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
         
-        <span class="n">n</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_index_of_refraction</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
-        <span class="n">eps</span> <span class="o">=</span> <span class="n">n</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="c1"># print(f&quot;Segment {i}: {compound.name} at z={z:.2f} Å, thickness={segment_thickness:.2f} Å&quot;)</span>
 
-        <span class="k">if</span> <span class="n">compound</span><span class="o">.</span><span class="n">magnetic</span><span class="p">:</span>
-            <span class="n">q</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">get_magnetic_optical_constant</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
-            <span class="n">eps_m</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">q</span>
-            <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setmag</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">magnetic_direction</span><span class="p">)</span>
-            <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">seteps</span><span class="p">([</span><span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">eps_m</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">seteps</span><span class="p">([</span><span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">representative_layer</span><span class="o">.</span><span class="n">get_index_of_refraction</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">representative_layer</span><span class="o">.</span><span class="n">get_magnetic_optical_constant</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">n</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">eps_m</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">q</span>
 
-        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setd</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">thickness</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setmag</span><span class="p">(</span><span class="n">compound</span><span class="o">.</span><span class="n">magnetic_direction</span><span class="p">)</span>
+        <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">seteps</span><span class="p">([</span><span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">eps_m</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">S</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setd</span><span class="p">(</span><span class="n">segment_thickness</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">S</span>
 
+
+
+
+
 <div class="viewcode-block" id="reflectivity">
 <a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.reflectivity">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">reflectivity</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate X-ray reflectivity for a multilayer structure.</span>
-<span class="sd">    </span>
-<span class="sd">    Computes the specular X-ray reflectivity as a function of momentum transfer</span>
-<span class="sd">    for both sigma and pi polarizations using the Pythonreflectivity library.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reflectivity</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate X-ray reflectivity for given momentum transfer and energy.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
-<span class="sd">        stack (Structure): The multilayer structure.</span>
-<span class="sd">        qz (np.ndarray): Array of momentum transfer values in inverse Angstroms.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
+<span class="sd">        stack: Multilayer structure.</span>
+<span class="sd">        qz: Momentum transfer array.</span>
+<span class="sd">        E_eV: X-ray energy in eV.</span>
+<span class="sd">        precision: Adaptive layer segmentation precision.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:</span>
-<span class="sd">            - qz: Input momentum transfer array</span>
-<span class="sd">            - R_sigma: Reflectivity for sigma polarization</span>
-<span class="sd">            - R_pi: Reflectivity for pi polarization</span>
+<span class="sd">        tuple: (qz, R_sigma, R_pi) reflectivity data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
+
+    <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+    
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
+    
+    <span class="c1"># _print_structure_info(structure)</span>
+
     <span class="n">h</span> <span class="o">=</span> <span class="mf">4.135667696e-15</span>  <span class="c1"># Plank&#39;s constant eV*s</span>
     <span class="n">c</span> <span class="o">=</span> <span class="mf">2.99792458e8</span>  <span class="c1"># speed of light m/s</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">c</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_eV</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>  <span class="c1"># wavelength of incoming x-ray</span>
+    
     <span class="n">theta_deg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">qz</span> <span class="o">/</span> <span class="n">E_eV</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.001013546247</span><span class="p">))</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-
     <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
+    
     <span class="k">return</span> <span class="n">qz</span><span class="p">,</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span></div>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_worker_process</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">qz_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for parallel reflectivity calculation.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
+    <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
 
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_worker_process</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">qz_i</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for multiprocessing reflectivity calculations.</span>
-<span class="sd">    </span>
-<span class="sd">    Generates its own structure and calculates reflectivity for a single qz value.</span>
-<span class="sd">    Used in parallel processing to avoid shared memory issues.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        stack: The multilayer structure.</span>
-<span class="sd">        qz_i: Single momentum transfer value.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: (qz_i, R_sigma, R_pi) for the given qz value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">H_CONST</span> <span class="o">*</span> <span class="n">C_CONST</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_eV</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">qz_i</span> <span class="o">/</span> <span class="n">E_eV</span> <span class="o">/</span> <span class="n">QZ_SCALE</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">qz_i</span> <span class="o">/</span> <span class="n">E_eV</span> <span class="o">/</span> <span class="n">QZ_SCALE</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
     <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">qz_i</span><span class="p">,</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_worker_thread</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">qz_i</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for threading reflectivity calculations.</span>
-<span class="sd">    </span>
-<span class="sd">    Calculates reflectivity for a single qz value using a pre-generated structure.</span>
-<span class="sd">    Used in thread-based parallel processing where structures can be shared.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        structure: Pre-generated Pythonreflectivity structure.</span>
-<span class="sd">        qz_i: Single momentum transfer value.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: (qz_i, R_sigma, R_pi) for the given qz value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_worker_thread</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">qz_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for threaded reflectivity calculation.&quot;&quot;&quot;</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">H_CONST</span> <span class="o">*</span> <span class="n">C_CONST</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_eV</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">qz_i</span> <span class="o">/</span> <span class="n">E_eV</span> <span class="o">/</span> <span class="n">QZ_SCALE</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">qz_i</span> <span class="o">/</span> <span class="n">E_eV</span> <span class="o">/</span> <span class="n">QZ_SCALE</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
     <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">qz_i</span><span class="p">,</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
 <div class="viewcode-block" id="reflectivity_parallel">
 <a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.reflectivity_parallel">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">reflectivity_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate X-ray reflectivity using parallel processing.</span>
-<span class="sd">    </span>
-<span class="sd">    Computes reflectivity in parallel across multiple qz values using either</span>
-<span class="sd">    multiprocessing or threading for improved performance on large datasets.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">reflectivity_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">qz</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate reflectivity in parallel for multiple qz values.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
-<span class="sd">        stack: The multilayer structure.</span>
-<span class="sd">        qz (np.ndarray): Array of momentum transfer values in inverse Angstroms.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">        n_jobs (int, optional): Number of parallel jobs. -1 uses all cores. Defaults to -1.</span>
-<span class="sd">        use_threads (bool, optional): Use threading instead of multiprocessing. Defaults to False.</span>
-<span class="sd">        verbose (int, optional): Verbosity level for parallel execution. Defaults to 5.</span>
+<span class="sd">        stack: Multilayer structure.</span>
+<span class="sd">        qz: Momentum transfer array.</span>
+<span class="sd">        E_eV: X-ray energy in eV.</span>
+<span class="sd">        precision: Adaptive segmentation precision.</span>
+<span class="sd">        n_jobs: Number of parallel jobs.</span>
+<span class="sd">        use_threads: Use threading instead of processes.</span>
+<span class="sd">        verbose: Verbosity level.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:</span>
-<span class="sd">            - qz_out: Sorted momentum transfer array</span>
-<span class="sd">            - R_sigma: Reflectivity for sigma polarization</span>
-<span class="sd">            - R_pi: Reflectivity for pi polarization</span>
+<span class="sd">        tuple: (qz, R_sigma, R_pi) reflectivity arrays.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">use_threads</span><span class="p">:</span>
-        <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span>
-        <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;threading&#39;</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
+        <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
+
         <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">_worker_thread</span><span class="p">)(</span><span class="n">structure</span><span class="p">,</span> <span class="n">qzi</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span> <span class="k">for</span> <span class="n">qzi</span> <span class="ow">in</span> <span class="n">qz</span><span class="p">]</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;threading&#39;</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">_worker_process</span><span class="p">)(</span><span class="n">stack</span><span class="p">,</span> <span class="n">qzi</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">qzi</span> <span class="ow">in</span> <span class="n">qz</span><span class="p">]</span>
         <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;loky&#39;</span>
-        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">_worker_process</span><span class="p">)(</span><span class="n">stack</span><span class="p">,</span> <span class="n">qzi</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span> <span class="k">for</span> <span class="n">qzi</span> <span class="ow">in</span> <span class="n">qz</span><span class="p">]</span>
 
     <span class="k">with</span> <span class="n">parallel_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">):</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)(</span><span class="n">tasks</span><span class="p">)</span>
@@ -265,134 +265,114 @@
 
 
 
+
 <div class="viewcode-block" id="energy_scan">
 <a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.energy_scan">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">energy_scan</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform an energy scan at fixed scattering angle.</span>
-<span class="sd">    </span>
-<span class="sd">    Calculates X-ray reflectivity as a function of energy at a fixed scattering</span>
-<span class="sd">    angle (theta). Useful for resonant reflectivity measurements and absorption</span>
-<span class="sd">    edge studies.</span>
-<span class="sd">    </span>
+<span class="k">def</span><span class="w"> </span><span class="nf">energy_scan</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy scan at fixed scattering angle using adaptive segmentation.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        stack (Structure): The multilayer structure.</span>
-<span class="sd">        E_eVs (list[float]): List of X-ray energies in electron volts.</span>
-<span class="sd">        theta_deg (float): Scattering angle in degrees.</span>
-<span class="sd">        </span>
+<span class="sd">        stack: Multilayer structure.</span>
+<span class="sd">        E_eVs: X-ray energies in eV.</span>
+<span class="sd">        theta_deg: Fixed incidence angle in degrees.</span>
+<span class="sd">        precision: Adaptive segmentation precision.</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:</span>
-<span class="sd">            - E_np: Energy array in eV</span>
-<span class="sd">            - R_sigma_all: Reflectivity for sigma polarization vs energy</span>
-<span class="sd">            - R_pi_all: Reflectivity for pi polarization vs energy</span>
+<span class="sd">        tuple: (E array, R_sigma array, R_pi array).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">structures</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">E_eV</span> <span class="ow">in</span> <span class="n">E_eVs</span><span class="p">:</span>
-        <span class="n">S</span> <span class="o">=</span> <span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span>
-        <span class="n">structures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     
-    <span class="n">h</span> <span class="o">=</span> <span class="mf">4.135667696e-15</span>  <span class="c1"># Plank&#39;s constant eV*s</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="mf">2.99792458e8</span>  <span class="c1"># speed of light m/s</span>
-
-    <span class="n">E_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">)</span>
-    <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">h</span> <span class="o">*</span> <span class="n">c</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_np</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
-
     <span class="n">R_sigma_all</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">R_pi_all</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+    
+    <span class="n">comp_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Compound map creation took </span><span class="si">{</span><span class="n">comp_time</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+    
+    <span class="n">wavelength_energies</span> <span class="o">=</span> <span class="n">H_CONST</span> <span class="o">*</span> <span class="n">C_CONST</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">structures_energies</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="n">wave_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wavelength calculation took </span><span class="si">{</span><span class="n">wave_time</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">E_eVs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+            
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
+        <span class="n">structures_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
+
+    <span class="n">structure_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Structure creation took </span><span class="si">{</span><span class="n">structure_time</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+    
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">E_eV</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">):</span>
-        <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structures</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
+        <span class="n">wavelength</span> <span class="o">=</span> <span class="n">wavelength_energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">structures_energies</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        
+        <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
         <span class="n">R_sigma_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R_sigma</span><span class="p">)</span>
         <span class="n">R_pi_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">R_pi</span><span class="p">)</span>
+        
+    <span class="n">calculation_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reflectivity calculation took </span><span class="si">{</span><span class="n">calculation_time</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">R_sigma_all</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">R_pi_all</span><span class="p">)</span></div>
 
-    <span class="n">R_sigma_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">R_sigma_all</span><span class="p">)</span>
-    <span class="n">R_pi_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">R_pi_all</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">E_np</span><span class="p">,</span> <span class="n">R_sigma_all</span><span class="p">,</span> <span class="n">R_pi_all</span></div>
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_energy_scan_worker</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for parallel energy scan.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E_eV</span><span class="p">)</span>
+    <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
 
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_energy_scan_process</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for multiprocessing energy scan calculations.</span>
-<span class="sd">    </span>
-<span class="sd">    Generates its own structure and calculates reflectivity for a single energy value.</span>
-<span class="sd">    Used in parallel processing to avoid shared memory issues.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        stack: The multilayer structure.</span>
-<span class="sd">        E_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">        theta_deg (float): Scattering angle in degrees.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: (R_sigma, R_pi) for the given energy.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">structure</span> <span class="o">=</span> <span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E_eV</span><span class="p">)</span>
     <span class="n">wavelength</span> <span class="o">=</span> <span class="n">H_CONST</span> <span class="o">*</span> <span class="n">C_CONST</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_eV</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
-    <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span>
-        <span class="n">structure</span><span class="p">,</span>
-        <span class="n">theta_deg</span><span class="p">,</span>
-        <span class="n">wavelength</span><span class="p">,</span>
-        <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span>
-    <span class="p">)</span>
+    <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_energy_scan_thread</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for threading energy scan calculations.</span>
-<span class="sd">    </span>
-<span class="sd">    Calculates reflectivity for a single energy using a pre-generated structure.</span>
-<span class="sd">    Used in thread-based parallel processing where structures can be shared.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        structure: Pre-generated Pythonreflectivity structure.</span>
-<span class="sd">        wavelength (float): X-ray wavelength in Angstroms.</span>
-<span class="sd">        theta_deg (float): Scattering angle in degrees.</span>
-<span class="sd">        </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple: (R_sigma, R_pi) for the given energy.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span>
-        <span class="n">structure</span><span class="p">,</span>
-        <span class="n">theta_deg</span><span class="p">,</span>
-        <span class="n">wavelength</span><span class="p">,</span>
-        <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span>
-    <span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_energy_scan_thread</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Worker function for threaded energy scan.&quot;&quot;&quot;</span>
+    <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span> <span class="o">=</span> <span class="n">pr</span><span class="o">.</span><span class="n">Reflectivity</span><span class="p">(</span><span class="n">structure</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">,</span> <span class="n">MagneticCutoff</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">R_sigma</span><span class="p">,</span> <span class="n">R_pi</span>
 
 <div class="viewcode-block" id="energy_scan_parallel">
 <a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.energy_scan_parallel">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">energy_scan_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform an energy scan using parallel processing.</span>
-<span class="sd">    </span>
-<span class="sd">    Calculates X-ray reflectivity as a function of energy in parallel across</span>
-<span class="sd">    multiple energy values using either multiprocessing or threading for </span>
-<span class="sd">    improved performance on large datasets.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">energy_scan_parallel</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span> <span class="n">E_eVs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_threads</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parallel energy scan at fixed scattering angle.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
-<span class="sd">        stack (Structure): The multilayer structure.</span>
-<span class="sd">        E_eVs (list[float]): List of X-ray energies in electron volts.</span>
-<span class="sd">        theta_deg (float): Scattering angle in degrees.</span>
-<span class="sd">        n_jobs (int, optional): Number of parallel jobs. -1 uses all cores. Defaults to -1.</span>
-<span class="sd">        use_threads (bool, optional): Use threading instead of multiprocessing. Defaults to False.</span>
-<span class="sd">        verbose (int, optional): Verbosity level for parallel execution. Defaults to 5.</span>
+<span class="sd">        stack: Multilayer structure.</span>
+<span class="sd">        E_eVs: X-ray energies in eV.</span>
+<span class="sd">        theta_deg: Fixed incidence angle in degrees.</span>
+<span class="sd">        precision: Adaptive segmentation precision.</span>
+<span class="sd">        n_jobs: Number of parallel jobs.</span>
+<span class="sd">        use_threads: Use threading instead of processes.</span>
+<span class="sd">        verbose: Verbosity level.</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
-<span class="sd">        tuple[np.ndarray, np.ndarray, np.ndarray]: Tuple containing:</span>
-<span class="sd">            - E_np: Energy array in eV</span>
-<span class="sd">            - R_sigma_all: Reflectivity for sigma polarization vs energy</span>
-<span class="sd">            - R_pi_all: Reflectivity for pi polarization vs energy</span>
+<span class="sd">        tuple: (E array, R_sigma array, R_pi array).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">E_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">)</span>
     <span class="n">wavelengths</span> <span class="o">=</span> <span class="n">H_CONST</span> <span class="o">*</span> <span class="n">C_CONST</span> <span class="o">/</span> <span class="p">(</span><span class="n">E_np</span> <span class="o">*</span> <span class="mf">1e-10</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">use_threads</span><span class="p">:</span>
-        <span class="n">structures</span> <span class="o">=</span> <span class="p">[</span><span class="n">_to_pr_structure</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E</span><span class="p">)</span> <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">E_eVs</span><span class="p">]</span>
+        <span class="n">structures</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">E_eVs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+                <span class="n">layer</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+            <span class="n">compound_map</span> <span class="o">=</span> <span class="n">_compound_lookup_table</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">compute_adaptive_layer_segmentation</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+            <span class="n">S</span> <span class="o">=</span> <span class="n">_to_pr_structure_from_segments</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">layers</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">compound_map</span><span class="p">)</span>
+            <span class="n">structures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">_energy_scan_thread</span><span class="p">)(</span><span class="n">structures</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">E_np</span><span class="p">))]</span>
         <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;threading&#39;</span>
-        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">delayed</span><span class="p">(</span><span class="n">_energy_scan_thread</span><span class="p">)(</span><span class="n">structures</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">wavelengths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">theta_deg</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">E_eVs</span><span class="p">))</span>
-        <span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">_energy_scan_worker</span><span class="p">)(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">E_eVs</span><span class="p">]</span>
         <span class="n">backend</span> <span class="o">=</span> <span class="s1">&#39;loky&#39;</span>
-        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">delayed</span><span class="p">(</span><span class="n">_energy_scan_process</span><span class="p">)(</span><span class="n">stack</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">theta_deg</span><span class="p">)</span> <span class="k">for</span> <span class="n">E</span> <span class="ow">in</span> <span class="n">E_eVs</span>
-        <span class="p">]</span>
 
     <span class="k">with</span> <span class="n">parallel_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">):</span>
         <span class="n">results</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)(</span><span class="n">tasks</span><span class="p">)</span>

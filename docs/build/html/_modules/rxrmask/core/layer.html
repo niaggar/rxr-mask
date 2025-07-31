@@ -73,73 +73,100 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.layer</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Layer module for RXR-Mask.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Layer representation for multilayer X-ray reflectometry structures.</span>
 
-<span class="sd">This module provides classes for representing layers in multilayer structures</span>
-<span class="sd">used in X-ray reflectometry calculations. </span>
+<span class="sd">Provides classes for atomic species and layers with optical property calculations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <span class="c1"># Physical constants</span>
-<span class="n">h</span> <span class="o">=</span> <span class="mf">4.135667696e-15</span>  <span class="c1"># Planck&#39;s Constant [eV s]</span>
-<span class="n">c</span> <span class="o">=</span> <span class="mf">2.99792450e10</span>  <span class="c1"># Speed of light in vacuum [cm/s]</span>
-<span class="n">re</span> <span class="o">=</span> <span class="mf">2.817940322719e-13</span>  <span class="c1"># Classical electron radius (Thompson scattering length) [cm]</span>
+<span class="n">h</span> <span class="o">=</span> <span class="mf">4.135667696e-15</span>  <span class="c1"># Planck&#39;s constant [eV s]</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mf">2.99792450e10</span>  <span class="c1"># Speed of light [cm/s]</span>
+<span class="n">re</span> <span class="o">=</span> <span class="mf">2.817940322719e-13</span>  <span class="c1"># Classical electron radius [cm]</span>
 <span class="n">avocado</span> <span class="o">=</span> <span class="mf">6.02214076e23</span>  <span class="c1"># Avogadro&#39;s number [mol^-1]</span>
-<span class="n">re</span> <span class="o">=</span> <span class="mf">2.817940322719e-13</span>  <span class="c1"># Classical electron radius (Thompson scattering length) [cm]</span>
-<span class="n">pihc</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span>  <span class="c1"># To calculate the photon wavenumber in vacuum [1/cm]</span>
-<span class="n">pireav</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">re</span> <span class="o">*</span> <span class="n">avocado</span>  <span class="c1"># To calculate the electron density in cm^-3</span>
+<span class="n">pihc</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span>  <span class="c1"># Photon wavenumber factor [1/cm]</span>
+<span class="n">pireav</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">re</span> <span class="o">*</span> <span class="n">avocado</span>  <span class="c1"># Electron density factor [cm^-3]</span>
 
 
-<div class="viewcode-block" id="ElementLayer">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ElementLayer">[docs]</a>
+<div class="viewcode-block" id="AtomLayer">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.AtomLayer">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ElementLayer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a specific atomic species in a layer.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AtomLayer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Atomic species in a layer with density and form factors.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        atom (Atom): The Atom object containing atomic properties and form factors.</span>
-<span class="sd">        molar_density (float): Molar density of the element in mol/cm³.</span>
-<span class="sd">        molar_magnetic_density (float | None): Molar magnetic density in mol/cm³. </span>
-<span class="sd">                                              Defaults to None.</span>
+<span class="sd">        atom (Atom): Atom object with properties and form factors.</span>
+<span class="sd">        molar_density (Parameter[float]): Molar density in mol/cm³.</span>
+<span class="sd">        molar_magnetic_density (Parameter[float] | None): Magnetic density in mol/cm³.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">atom</span><span class="p">:</span> <span class="n">Atom</span>
-    <span class="n">molar_density</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># in mol/cm^3</span>
-    <span class="n">molar_magnetic_density</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># in mol/cm^3</span>
+    <span class="n">molar_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in mol/cm^3</span>
+    <span class="n">molar_magnetic_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># in mol/cm^3</span>
 
-<div class="viewcode-block" id="ElementLayer.get_f1f2">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ElementLayer.get_f1f2">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_f1f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get atomic form factors f1 and f2 at a specific energy.</span>
+<div class="viewcode-block" id="AtomLayer.get_f1f2">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.AtomLayer.get_f1f2">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_f1f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get atomic form factors f1 and f2 at specific energy.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            energy_eV (float): X-ray energy in electron volts.</span>
+<span class="sd">            energy_eV (float): X-ray energy in eV.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[float, float]: Tuple containing (f1, f2) form factor components.</span>
+<span class="sd">            tuple[float, float]: (f1, f2) form factor components.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">get_formfactors</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">get_formfactors</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
 
-    
-<div class="viewcode-block" id="ElementLayer.get_q1q2">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ElementLayer.get_q1q2">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_q1q2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get magnetic form factors q1 and q2 at a specific energy.</span>
+
+<div class="viewcode-block" id="AtomLayer.get_q1q2">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.AtomLayer.get_q1q2">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_q1q2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get magnetic form factors q1 and q2 at specific energy.</span>
 <span class="sd">        </span>
 <span class="sd">        Args:</span>
-<span class="sd">            energy_eV (float): X-ray energy in electron volts.</span>
+<span class="sd">            energy_eV (float): X-ray energy in eV.</span>
 <span class="sd">            </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple[float, float]: Tuple containing (q1, q2) magnetic form factor components.</span>
-<span class="sd">                                Returns (0.0, 0.0) if atom has no magnetic form factor.</span>
+<span class="sd">            tuple[float, float]: (q1, q2) magnetic form factors, (0, 0) if non-magnetic.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ffm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ffm</span><span class="o">.</span><span class="n">get_formfactors</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ffm</span><span class="o">.</span><span class="n">get_formfactors</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AtomLayer.get_f1f2_energies">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.AtomLayer.get_f1f2_energies">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_f1f2_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energies</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get atomic form factors for multiple energies.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            energies (np.ndarray): Array of energies in eV.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[tuple[float, float]]: List of (f1, f2) for each energy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ff</span><span class="o">.</span><span class="n">get_formfactors_energies</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AtomLayer.get_q1q2_energies">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.AtomLayer.get_q1q2_energies">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_q1q2_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energies</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get magnetic form factors for multiple energies.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            energies (np.ndarray): Array of energies in eV.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[tuple[float, float]]: List of (q1, q2) for each energy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ffm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">ffm</span><span class="o">.</span><span class="n">get_formfactors_energies</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
 </div>
 
 
@@ -148,40 +175,65 @@
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Layer">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Layer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a single layer in a multilayer structure.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Single layer in multilayer structure.</span>
 <span class="sd">    </span>
-<span class="sd">    This class encapsulates the properties of a layer including its thickness</span>
-<span class="sd">    and atomic composition. It provides methods to calculate optical constants</span>
-<span class="sd">    based on the constituent elements and their densities.</span>
+<span class="sd">    Represents a layer with thickness and atomic composition, </span>
+<span class="sd">    providing optical property calculations.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        id (str): Unique identifier for the layer.</span>
+<span class="sd">        id (str): Unique layer identifier.</span>
 <span class="sd">        thickness (float): Layer thickness in Angstroms.</span>
-<span class="sd">        elements (list[ElementLayer]): List of atomic elements in the layer.</span>
+<span class="sd">        elements (list[AtomLayer]): Atomic elements in the layer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">thickness</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># in Angstroms</span>
-    <span class="n">elements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ElementLayer</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">elements</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">AtomLayer</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    
+    <span class="n">precomputed_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">precomputed_index_of_refraction</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">precomputed_magnetic_optical_constant</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="Layer.compute">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Layer.compute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Precompute optical properties for given energy.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_energy</span> <span class="o">=</span> <span class="n">energy_eV</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_index_of_refraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_of_refraction</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_magnetic_optical_constant</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_optical_constant</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Layer.get_index_of_refraction">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Layer.get_index_of_refraction">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_index_of_refraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the complex refractive index of the layer.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            energy_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            complex: Complex refractive index n = 1 - δ + iβ where:</span>
-<span class="sd">                    - δ (delta) is the real part of the refractive index decrement</span>
-<span class="sd">                    - β (beta) is the imaginary part related to absorption</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_index_of_refraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get complex refractive index for given energy.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_energy</span> <span class="o">==</span> <span class="n">energy_eV</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_index_of_refraction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_index_of_refraction</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index_of_refraction</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="Layer.get_magnetic_optical_constant">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Layer.get_magnetic_optical_constant">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_magnetic_optical_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get magnetic optical constant for given energy.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_energy</span> <span class="o">==</span> <span class="n">energy_eV</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_magnetic_optical_constant</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">precomputed_magnetic_optical_constant</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_optical_constant</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_index_of_refraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate complex refractive index from atomic form factors.&quot;&quot;&quot;</span>
         <span class="n">f1_layer</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">f2_layer</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
-            <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get_f1f2</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span>
-            <span class="n">f1_layer</span> <span class="o">+=</span> <span class="n">f1</span> <span class="o">*</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_density</span>
-            <span class="n">f2_layer</span> <span class="o">+=</span> <span class="n">f2</span> <span class="o">*</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_density</span>
+            <span class="n">molar_density</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">molar_density</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get_f1f2</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            
+            <span class="n">f1_layer</span> <span class="o">+=</span> <span class="n">f1</span> <span class="o">*</span> <span class="n">molar_density</span>
+            <span class="n">f2_layer</span> <span class="o">+=</span> <span class="n">f2</span> <span class="o">*</span> <span class="n">molar_density</span>
 
         <span class="n">k0</span> <span class="o">=</span> <span class="n">energy_eV</span> <span class="o">*</span> <span class="n">pihc</span>
         <span class="n">constant</span> <span class="o">=</span> <span class="n">pireav</span> <span class="o">/</span> <span class="p">(</span><span class="n">k0</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -189,29 +241,21 @@
         <span class="n">delta</span> <span class="o">=</span> <span class="n">constant</span> <span class="o">*</span> <span class="n">f1_layer</span>
         <span class="n">beta</span>  <span class="o">=</span> <span class="n">constant</span> <span class="o">*</span> <span class="n">f2_layer</span>
         <span class="n">n_complex</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">beta</span>
-
-        <span class="k">return</span> <span class="n">n_complex</span></div>
-
-
-<div class="viewcode-block" id="Layer.get_magnetic_optical_constant">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Layer.get_magnetic_optical_constant">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_magnetic_optical_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the magnetic optical constant of the layer.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            energy_eV (float): X-ray energy in electron volts.</span>
-<span class="sd">            </span>
-<span class="sd">        Returns:</span>
-<span class="sd">            complex: Magnetic optical constant Q = 2(q1 + iq2) where:</span>
-<span class="sd">                    - q1 is the real part of the magnetic optical constant</span>
-<span class="sd">                    - q2 is the imaginary part related to magnetic absorption</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+ 
+        <span class="k">return</span> <span class="n">n_complex</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_magnetic_optical_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy_eV</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate magnetic optical constant from magnetic form factors.&quot;&quot;&quot;</span>
         <span class="n">q1_layer</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">q2_layer</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
-            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get_q1q2</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">)</span>
-            <span class="n">q1_layer</span> <span class="o">+=</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_density</span>
-            <span class="n">q2_layer</span> <span class="o">+=</span> <span class="n">q2</span> <span class="o">*</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_density</span>
+            <span class="n">molar_magnetic_density</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_magnetic_density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">molar_magnetic_density</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="n">molar_magnetic_density</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">get_q1q2</span><span class="p">(</span><span class="n">energy_eV</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            
+            <span class="n">q1_layer</span> <span class="o">+=</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">molar_magnetic_density</span>
+            <span class="n">q2_layer</span> <span class="o">+=</span> <span class="n">q2</span> <span class="o">*</span> <span class="n">molar_magnetic_density</span>
 
         <span class="n">k0</span> <span class="o">=</span> <span class="n">energy_eV</span> <span class="o">*</span> <span class="n">pihc</span>
         <span class="n">constant</span> <span class="o">=</span> <span class="n">pireav</span> <span class="o">/</span> <span class="p">(</span><span class="n">k0</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -221,9 +265,7 @@
 
         <span class="n">Q</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">delta_m</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">beta_m</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Q</span></div>
-</div>
 
-    
 </pre></div>
 
            </div>

@@ -1,9 +1,6 @@
 Core
 ====
 
-.. automodule:: rxrmask.core
-   :members:
-
 .. automodule:: rxrmask.core.atom
    :members:
 
@@ -20,4 +17,7 @@ Core
    :members:
 
 .. automodule:: rxrmask.core.structure
+   :members:
+
+.. automodule:: rxrmask.core.optimization
    :members:

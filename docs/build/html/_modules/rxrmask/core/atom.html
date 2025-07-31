@@ -90,57 +90,41 @@
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Atom">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Atom</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents an atomic species for X-ray reflectometry calculations.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Atomic species for X-ray reflectometry calculations.</span>
 <span class="sd">    </span>
-<span class="sd">    This class stores atomic properties including atomic number, name, form factors,</span>
-<span class="sd">    and atomic mass. The atomic mass is automatically loaded from a database if not provided.</span>
+<span class="sd">    Stores atomic properties, form factors, and mass. Mass is auto-loaded from database.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        Z (int): Atomic number.</span>
-<span class="sd">        name (str): Chemical symbol of the atom (e.g., &#39;Fe&#39;, &#39;O&#39;).</span>
-<span class="sd">        ff (FormFactorModel): X-ray form factor model for the atom.</span>
-<span class="sd">        ffm (FormFactorModel | None): Magnetic form factor model for the atom. Defaults to None.</span>
-<span class="sd">        mass (float | None): Atomic mass in atomic mass units (g/mol). </span>
-<span class="sd">                            Automatically loaded if not provided.</span>
-<span class="sd">    </span>
-<span class="sd">    Raises:</span>
-<span class="sd">        TypeError: If ff is not an instance of FormFactorModel.</span>
-<span class="sd">        NameError: If atomic mass cannot be found in the database.</span>
+<span class="sd">        Z: Atomic number</span>
+<span class="sd">        name: Chemical symbol (e.g., &#39;Fe&#39;, &#39;O&#39;)</span>
+<span class="sd">        ff: X-ray form factor model</span>
+<span class="sd">        ffm: Magnetic form factor model (optional)</span>
+<span class="sd">        mass: Atomic mass in g/mol (auto-loaded if 0.0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">Z</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">ff</span><span class="p">:</span> <span class="n">FormFactorModel</span>
     <span class="n">ffm</span><span class="p">:</span> <span class="n">FormFactorModel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">mass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># in atomic mass units (g/mol)</span>
+    <span class="n">mass</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># in atomic mass units (g/mol)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Post-initialization to validate form factor and load atomic mass.</span>
-<span class="sd">        </span>
-<span class="sd">        Validates that the form factor is an instance of FormFactorModel and</span>
-<span class="sd">        automatically loads the atomic mass if not provided.</span>
-<span class="sd">        </span>
-<span class="sd">        Raises:</span>
-<span class="sd">            TypeError: If ff is not an instance of FormFactorModel.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate form factor and auto-load atomic mass.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff</span><span class="p">,</span> <span class="n">FormFactorModel</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;ff must be an instance of FormFactorModel&quot;</span><span class="p">)</span>
         
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_atomic_mass</span><span class="p">()</span>
     
 <div class="viewcode-block" id="Atom.load_atomic_mass">
 <a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Atom.load_atomic_mass">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_atomic_mass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load atomic mass from the materials database.</span>
-<span class="sd">        </span>
-<span class="sd">        Searches for the atomic mass in the atomic_mass.txt file based on the</span>
-<span class="sd">        atom&#39;s name (chemical symbol).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load atomic mass from materials database.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            float: Atomic mass in atomic mass units (g/mol).</span>
+<span class="sd">            float: Atomic mass in g/mol</span>
 <span class="sd">            </span>
 <span class="sd">        Raises:</span>
-<span class="sd">            NameError: If the atom&#39;s name is not found in the database.</span>
+<span class="sd">            NameError: If atom symbol not found in database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mass</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">data_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">rxrmask</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;materials&quot;</span> <span class="o">/</span> <span class="s2">&quot;atomic_mass.txt&quot;</span>
@@ -153,27 +137,24 @@
             <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">mass</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;Inputted formula not found in perovskite density database&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;Atom symbol not found in database&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">mass</span><span class="p">)</span></div>
 </div>
 
 
 
-<div class="viewcode-block" id="get_atom">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.get_atom">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Atom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find an atom by its chemical symbol from a list of atoms.</span>
-<span class="sd">    </span>
-<span class="sd">    Searches through a list of Atom objects to find one with the specified</span>
-<span class="sd">    chemical symbol.</span>
+<div class="viewcode-block" id="find_atom">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.find_atom">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_atom</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Atom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Atom</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find atom by chemical symbol.</span>
 <span class="sd">    </span>
 <span class="sd">    Args:</span>
-<span class="sd">        symbol (str): Chemical symbol to search for (e.g., &#39;Fe&#39;, &#39;O&#39;).</span>
-<span class="sd">        atoms (list[Atom]): List of Atom objects to search through.</span>
+<span class="sd">        symbol: Chemical symbol (e.g., &#39;Fe&#39;, &#39;O&#39;)</span>
+<span class="sd">        atoms: List of Atom objects to search</span>
 <span class="sd">        </span>
 <span class="sd">    Returns:</span>
-<span class="sd">        Atom | None: The first Atom object with matching symbol, or None if not found.</span>
+<span class="sd">        Atom object if found, None otherwise</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">atoms</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">atom</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">symbol</span><span class="p">:</span>
