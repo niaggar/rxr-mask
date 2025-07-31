@@ -40,7 +40,7 @@ def get_density_profile_from_element_data(element_data, layer_thickness_params, 
                 max_roughness = max(max_roughness, roughness_param.get())
     
     total_thickness = sum(layer_thicknesses)
-    z = np.arange(0, total_thickness + max_roughness * 1.5, step)
+    z = np.arange(0, total_thickness + 15 + step, step)
     
     density_profile = {}
     magnetic_density_profile = {}

@@ -76,18 +76,29 @@ class Layer:
     id: str
     thickness: float  # in Angstroms
     elements: list[AtomLayer] = field(default_factory=list)
+    
+    precomputed_energy: float | None = None
+    precomputed_index_of_refraction: complex | None = None
+    precomputed_magnetic_optical_constant: complex | None = None
+    
+    def compute(self, energy_eV: float, *args):
+        self.precomputed_energy = energy_eV
+        self.precomputed_index_of_refraction = self._index_of_refraction(energy_eV, *args)
+        self.precomputed_magnetic_optical_constant = self._magnetic_optical_constant(energy_eV, *args)
 
     def get_index_of_refraction(self, energy_eV: float, *args) -> complex:
-        """Calculate the complex refractive index of the layer.
+        if self.precomputed_energy == energy_eV and self.precomputed_index_of_refraction is not None:
+            return self.precomputed_index_of_refraction
+        else:
+            return self._index_of_refraction(energy_eV, *args)
         
-        Args:
-            energy_eV (float): X-ray energy in electron volts.
-            
-        Returns:
-            complex: Complex refractive index n = 1 - δ + iβ where:
-                    - δ (delta) is the real part of the refractive index decrement
-                    - β (beta) is the imaginary part related to absorption
-        """
+    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
+        if self.precomputed_energy == energy_eV and self.precomputed_magnetic_optical_constant is not None:
+            return self.precomputed_magnetic_optical_constant
+        else:
+            return self._magnetic_optical_constant(energy_eV, *args)
+        
+    def _index_of_refraction(self, energy_eV: float, *args) -> complex:
         f1_layer = 0.0
         f2_layer = 0.0
         for l in self.elements:
@@ -105,18 +116,8 @@ class Layer:
         n_complex = 1 - delta + 1j * beta
 
         return n_complex
-
-    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
-        """Calculate the magnetic optical constant of the layer.
-        
-        Args:
-            energy_eV (float): X-ray energy in electron volts.
-            
-        Returns:
-            complex: Magnetic optical constant Q = 2(q1 + iq2) where:
-                    - q1 is the real part of the magnetic optical constant
-                    - q2 is the imaginary part related to magnetic absorption
-        """
+    
+    def _magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
         q1_layer = 0.0
         q2_layer = 0.0
         for l in self.elements:
@@ -134,4 +135,3 @@ class Layer:
 
         Q = 2 * (delta_m + 1j * beta_m)
         return Q
-    

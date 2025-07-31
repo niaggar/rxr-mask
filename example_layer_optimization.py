@@ -102,7 +102,7 @@ def demonstrate_layer_workflows():
     # Step 2a: Build element data once
     print("   2a. Building element data (done once)...")
     start_time = time.time()
-    element_data, layer_thickness_params, atoms = structure.get_element_data()
+    element_data, layer_thickness_params, atoms = structure._create_element_data()
     element_data_time = time.time() - start_time
     print(f"       Element data built in {element_data_time:.4f} seconds")
     
@@ -175,7 +175,7 @@ def demonstrate_layer_workflows():
     
     # Optimized method (reuse element data)
     print(f"   Testing optimized method ({n_iterations} iterations)...")
-    element_data, layer_thickness_params, atoms = structure.get_element_data()  # Rebuild once
+    element_data, layer_thickness_params, atoms = structure._create_element_data()  # Rebuild once
     start_time = time.time()
     for i in range(n_iterations):
         # Simulate parameter change

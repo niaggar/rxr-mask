@@ -1,5 +1,6 @@
 # Density profile utilities
 from .density_profile import get_density_profile_from_element_data
+from .adaptive_layer_segmentation import compute_adaptive_layer_segmentation
 
 # Check if plot utilities are available and import if present
 try:
@@ -12,6 +13,7 @@ except ImportError:
 __all__ = [
     # Density profile functions
     'get_density_profile_from_element_data',
+    'compute_adaptive_layer_segmentation',
 ]
 
 # Add plot utilities if available
