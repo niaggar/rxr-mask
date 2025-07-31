@@ -1,6 +1,9 @@
-import numpy as np
+"""Adaptive layer segmentation for efficient reflectivity calculations.
+
+Provides functions to group similar layers for computational optimization.
+"""
+
 from rxrmask.core.layer import Layer
-from rxrmask.core.structure import Structure
 from typing import List
 
 
@@ -9,16 +12,17 @@ def compute_adaptive_layer_segmentation(
     energy_eV: float,
     precision: float = 1e-6
 ) -> List[int]:
-    """
-    Perform adaptive layer segmentation on a list of precomputed layers.
+    """Adaptive layer segmentation based on optical constant variation.
+
+    Groups layers with similar optical properties to reduce computation.
 
     Args:
-        layers (List[Layer]): List of Layer objects with precomputed optical properties.
-        energy_eV (float): Energy at which the optical constants were computed.
-        precision (float): Threshold for optical constant variation to trigger a new segment.
+        layers: List of layers with precomputed optical properties.
+        energy_eV: Energy at which optical constants were computed.
+        precision: Threshold for optical constant variation.
 
     Returns:
-        List[int]: Indices of the layer boundaries (inclusive) for segmentation.
+        List[int]: Layer boundary indices for segmentation.
     """
     if not layers:
         return []

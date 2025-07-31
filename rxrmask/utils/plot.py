@@ -1,9 +1,15 @@
+"""Plotting utilities for X-ray reflectometry visualization.
+
+Provides functions for plotting reflectivity curves, energy scans, and density profiles.
+"""
+
 from matplotlib.patches import Rectangle
 from matplotlib import cm
 from matplotlib import pyplot as plt
 import numpy as np
 
 def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
+    """Plot X-ray reflectivity curves for both polarizations."""
     plt.figure(figsize=(8, 6), dpi=300)
     plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
     plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
@@ -16,6 +22,7 @@ def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
     plt.show()
 
 def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
+    """Plot energy scan reflectivity at fixed angle."""
     plt.figure(figsize=(8, 6), dpi=300)
     plt.plot(e_pr, R_phi_pr, label=r"$\sigma$-pol")
     plt.plot(e_pr, R_pi_pr, "--", label=r"$\pi$-pol")
@@ -28,6 +35,7 @@ def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
     plt.show()
 
 def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile"):
+    """Plot atomic density profiles as function of depth."""
     plt.figure(figsize=figsize, dpi=300)
     for name, profile in dens.items():
         plt.plot(z, profile, "-", label=name)
@@ -41,6 +49,7 @@ def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile"):
     plt.show()
 
 def plot_slab_model(structure, figsize=(10,4), cmap_name='tab10'):
+    """Plot multilayer structure as colored rectangles showing layer composition."""
     thicknesses = [comp.thickness for comp in structure.compounds]
     densities = [comp.density for comp in structure.compounds]
     names = [comp.id for comp in structure.compounds]

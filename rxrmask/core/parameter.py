@@ -1,11 +1,7 @@
-"""Parameter module for RXR-Mask.
+"""Parameter management for X-ray reflectometry calculations.
 
-This module provides classes for managing parameters in X-ray reflectometry
-calculations and fitting procedures. It includes basic parameters for storing
-values and fit parameters for optimization routines.
-
-The parameter system supports type validation, value constraints, and parameter
-containers for organizing collections of parameters used in modeling and fitting.
+Provides parameter classes with type validation, constraints, and fitting capabilities.
+Supports parameter containers for optimization workflows.
 """
 
 from dataclasses import dataclass, field
@@ -16,40 +12,32 @@ T = TypeVar('T')
 
 @dataclass
 class Parameter(Generic[T]):
-    """Basic parameter class for storing named values.
-    
-    This class represents a parameter with an identifier, name, and value.
-    It provides type validation to ensure values are of supported types
-    (int, float, str, or complex).
+    """Parameter with value, constraints, and fitting capability.
     
     Attributes:
-        id (int): Unique identifier for the parameter.
-        name (str): Human-readable name of the parameter.
-        value: The parameter value. Must be int, float, str, or complex. Defaults to None.
-    
-    Raises:
-        ValueError: If value is None after initialization.
-        TypeError: If value is not of a supported type.
+        value: Parameter value (int, float, str, or complex)
+        id: Unique identifier
+        name: Human-readable name
+        min_value: Minimum value constraint (optional)
+        max_value: Maximum value constraint (optional)
+        fit: Enable for fitting/optimization
     """
     value: T
     id: int = 0
     name: str = ""
     
-    min_value: T | None = None  # Optional minimum value constraint
-    max_value: T | None = None  # Optional maximum value constraint
-    fit: bool = False  # Flag to indicate if the parameter is enabled for fitting
+    min_value: T | None = None
+    max_value: T | None = None
+    fit: bool = False
         
     def get(self, prray=None) -> T:
-        """Get the parameter value.
+        """Get parameter value from internal storage or external array.
         
         Args:
-            prray: Parameter array (unused in base Parameter class).
+            prray: External parameter array (optional)
             
         Returns:
-            The parameter value.
-            
-        Raises:
-            ValueError: If the parameter value has not been set.
+            Parameter value
         """
         if prray is None:
             if self.value is None:
@@ -59,14 +47,10 @@ class Parameter(Generic[T]):
             return prray[self.id] if self.id < len(prray) else None # type: ignore
 
     def set(self, value: T) -> None:
-        """Set the parameter value.
+        """Set parameter value with type validation.
         
         Args:
-            value: New value for the parameter. Must be int, float, str, or complex.
-            
-        Raises:
-            ValueError: If value is None.
-            TypeError: If value is not of a supported type.
+            value: New parameter value
         """
         if value is None:
             raise ValueError("Parameter value cannot be None.")
@@ -76,41 +60,40 @@ class Parameter(Generic[T]):
 
 @dataclass
 class DerivedParameter(Parameter[T]):
-    update_func: Optional[Callable[[], T]] = None  # Function to update the parameter value
+    """Parameter with automatic update functionality.
+    
+    Attributes:
+        update_func: Function to calculate parameter value
+    """
+    update_func: Optional[Callable[[], T]] = None
     
     def update(self):
+        """Update parameter value using update function."""
         if self.update_func is None:
             raise RuntimeError("No update function defined for DerivedParameter.")
         self.value = self.update_func()
         
 @dataclass
 class ParametersContainer:
-    """Container for managing collections of parameters and fit parameters.
-    
-    This class provides a centralized way to manage both regular parameters
-    and fit parameters used in X-ray reflectometry modeling and fitting.
-    It includes factory methods for creating new parameters and utilities
-    for extracting parameter vectors for optimization algorithms.
+    """Container for managing parameter collections and fitting workflows.
     
     Attributes:
-        parameters (list[Parameter]): List of regular parameters.
-        fit_parameters (list[FitParameter]): List of parameters available for fitting.
+        parameters: List of regular parameters
+        derived_parameters: List of auto-updating parameters
     """
     parameters: list[Parameter[Any]] = field(default_factory=list)
     derived_parameters: list[DerivedParameter[Any]] = field(default_factory=list)
 
     def new_parameter(self, name: str, value: Any, fit: bool = False) -> Parameter:
-        """Create a new regular parameter and add it to the container.
-        
-        Factory method that creates a new Parameter with automatic ID assignment
-        and adds it to the parameters list.
+        """Create and register a new parameter.
         
         Args:
-            name (str): Human-readable name for the parameter.
-            value: The parameter value.
+            name: Parameter name
+            value: Initial value
+            fit: Enable for optimization
             
         Returns:
-            Parameter: The newly created parameter.
+            Created Parameter object
         """
         id = len(self.parameters)
         param = Parameter(id=id, name=name, value=value, fit=fit)
@@ -118,21 +101,31 @@ class ParametersContainer:
         return param
     
     def register_derived(self, name: str, update_func: Callable[[], Any]) -> DerivedParameter:
+        """Register a derived parameter with update function.
+        
+        Args:
+            name: Parameter name
+            update_func: Function to calculate value
+            
+        Returns:
+            Created DerivedParameter object
+        """
         id = len(self.derived_parameters)
         p = DerivedParameter(id=id, name=name, value=None, fit=False, update_func=update_func)
         self.derived_parameters.append(p)
         return p
     
     def update_derived(self):
+        """Update all derived parameters."""
         for p in self.derived_parameters:
             p.update()
     
     def get_fit_vector(self) -> list[float]:
-        """Extrae los valores de los parámetros que están marcados como 'fit'."""
+        """Extract values of parameters marked for fitting."""
         return [float(p.value) for p in self.parameters if p.fit]
 
     def set_fit_vector(self, values: list[float]):
-        """Actualiza los parámetros que están marcados como 'fit' desde un vector externo."""
+        """Update fitting parameters from vector."""
         i = 0
         for p in self.parameters:
             if p.fit:
@@ -143,6 +136,7 @@ class ParametersContainer:
         self.update_derived()
         
     def save(self, path: str) -> None:
+        """Save parameters to JSON file."""
         data = []
         for p in self.parameters:
             data.append({
@@ -157,6 +151,7 @@ class ParametersContainer:
             json.dump(data, f, indent=4)
 
     def load(self, path: str) -> None:
+        """Load parameters from JSON file."""
         with open(path, "r") as f:
             data = json.load(f)
 

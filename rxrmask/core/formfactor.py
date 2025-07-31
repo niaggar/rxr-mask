@@ -1,7 +1,6 @@
-"""Form factor module for RXR-Mask.
+"""Form factor handling for X-ray reflectometry calculations.
 
-This module provides a general class interface for handling X-ray atomic form factors.
-All form factor models must implement this interface to ensure consistent behavior.
+Provides interface and implementation for atomic form factor models.
 """
 
 from dataclasses import dataclass, field
@@ -14,78 +13,71 @@ import rxrmask
 
 @dataclass
 class FormFactorModel:
-    """Abstract base class for atomic form factor models.
+    """Base class for atomic form factor models.
     
-    This class defines the interface for form factor models used in X-ray
-    reflectometry calculations. Subclasses must implement all abstract methods.
+    Defines interface for X-ray form factor calculations.
     
     Attributes:
-        ff_path (str | None): Path to the form factor data file. If exists.
+        ff_path (str | None): Path to form factor data file.
     """
     ff_path: str | None = field(default=None)
 
     def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
-        """Get atomic form factors at a specific energy.
+        """Get form factors at specific energy.
         
         Args:
-            energy_eV (float): X-ray energy in electron volts.
-            *args: Additional arguments for specific implementations.
+            energy_eV (float): X-ray energy in eV.
             
         Returns:
-            tuple[float, float]: Tuple containing (f1, f2) form factor components.
+            tuple[float, float]: (f1, f2) form factor components.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")
+    
+    def get_formfactors_energies(self, energies: np.ndarray) -> list[tuple[float, float]]:
+        """Get form factors for multiple energies.
+        
+        Args:
+            energies (np.ndarray): Array of energies in eV.
             
-        Raises:
-            NotImplementedError: This method must be implemented by subclasses.
+        Returns:
+            list[tuple[float, float]]: List of (f1, f2) for each energy.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def get_all_formfactors(self, *args) -> pd.DataFrame:
-        """Get the complete form factor dataset.
+        """Get complete form factor dataset.
         
-        Args:
-            *args: Additional arguments for specific implementations.
-            
         Returns:
-            pd.DataFrame: DataFrame containing all form factor data.
-            
-        Raises:
-            NotImplementedError: This method must be implemented by subclasses.
+            pd.DataFrame: All form factor data.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
     def get_path(self) -> str | None:
-        """Get the path to the form factor data file.
-        
-        Returns:
-            str | None: Path to the form factor data file, or None if not set.
-        """
+        """Get path to form factor data file."""
         return self.ff_path
 
 
 class FormFactorLocalDB(FormFactorModel):
     """Form factor model using local database files.
     
-    This class implements the FormFactorModel interface for reading atomic form
-    factors from local text files. It supports both regular and magnetic form
-    factors, automatically loading the appropriate data based on the element
-    and magnetic properties.
+    Reads atomic form factors from local text files with support for
+    magnetic and non-magnetic elements.
     
     Attributes:
-        ff_data (pd.DataFrame | None): Loaded form factor data. Defaults to None.
-        element (str | None): Chemical symbol of the element. Defaults to None.
-        is_magnetic (bool): Whether to load magnetic form factors. Defaults to False.
+        ff_data (pd.DataFrame | None): Loaded form factor data.
+        element (str | None): Chemical element symbol.
+        is_magnetic (bool): Whether to load magnetic form factors.
     """
     ff_data: pd.DataFrame | None = field(default=None)
     element: str | None = field(default=None)
     is_magnetic: bool = field(default=False)
 
     def __init__(self, element: str, is_magnetic: bool = False):
-        """Initialize the FormFactorLocalDB with element and magnetic properties.
+        """Initialize form factor model for specified element.
         
         Args:
-            element (str): Chemical symbol of the element (e.g., 'Fe', 'O').
-            is_magnetic (bool, optional): Whether to load magnetic form factors. 
-                                        Defaults to False.
+            element (str): Chemical symbol (e.g., 'Fe', 'O').
+            is_magnetic (bool): Load magnetic form factors.
         """
         super().__init__()
         self.element = element
@@ -93,16 +85,7 @@ class FormFactorLocalDB(FormFactorModel):
         self.read_data()
 
     def read_data(self):
-        """Read form factor data from the local database.
-        
-        Loads form factor data from a text file based on the element name and
-        magnetic properties. The data is stored in a pandas DataFrame with
-        columns for energy (E), real part (f1), and imaginary part (f2).
-        
-        Raises:
-            ValueError: If no element is specified.
-            FileNotFoundError: If the form factor data file does not exist.
-        """
+        """Read form factor data from local database."""
         if self.element is None:
             raise ValueError("Element must be specified to read form factor data.")
         
@@ -125,6 +108,7 @@ class FormFactorLocalDB(FormFactorModel):
         )
 
     def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
+        """Get form factors at specific energy using interpolation."""
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         
@@ -133,7 +117,18 @@ class FormFactorLocalDB(FormFactorModel):
         
         return f1, f2
     
+    def get_formfactors_energies(self, energies: np.ndarray) -> list[tuple[float, float]]:
+        """Get form factors for multiple energies using interpolation."""
+        if self.ff_data is None:
+            raise ValueError("Form factor data has not been loaded.")
+        
+        f1 = np.interp(energies, self.ff_data.E, self.ff_data.f1)
+        f2 = np.interp(energies, self.ff_data.E, self.ff_data.f2)
+        
+        return list(zip(f1, f2))
+    
     def get_all_formfactors(self, *args) -> pd.DataFrame:
+        """Return complete form factor dataset."""
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         

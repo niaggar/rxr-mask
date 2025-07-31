@@ -1,4 +1,6 @@
-""" Udkm1Dsim module for RXR-Mask.
+"""UDKM1Dsim backend for X-ray reflectometry calculations.
+
+Provides integration with the UDKM1Dsim library (currently under development).
 """
 
 import numpy as np
@@ -10,7 +12,7 @@ import udkm1Dsim as ud
 # from dask.distributed import Client
 
 def test():
-    """Test function to verify the module is loaded correctly."""
+    """Test function to verify backend module loading."""
     print("Udkm1Dsim backend module loaded successfully.")
 
 # def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:

@@ -1,7 +1,6 @@
-"""Layer module for RXR-Mask.
+"""Layer representation for multilayer X-ray reflectometry structures.
 
-This module provides classes for representing layers in multilayer structures
-used in X-ray reflectometry calculations. 
+Provides classes for atomic species and layers with optical property calculations.
 """
 
 from rxrmask.core.atom import Atom
@@ -12,66 +11,87 @@ import numpy as np
 
 
 # Physical constants
-h = 4.135667696e-15  # Planck's Constant [eV s]
-c = 2.99792450e10  # Speed of light in vacuum [cm/s]
-re = 2.817940322719e-13  # Classical electron radius (Thompson scattering length) [cm]
+h = 4.135667696e-15  # Planck's constant [eV s]
+c = 2.99792450e10  # Speed of light [cm/s]
+re = 2.817940322719e-13  # Classical electron radius [cm]
 avocado = 6.02214076e23  # Avogadro's number [mol^-1]
-pihc = 2 * np.pi / (h * c)  # To calculate the photon wavenumber in vacuum [1/cm]
-pireav = 2 * np.pi * re * avocado  # To calculate the electron density in cm^-3
+pihc = 2 * np.pi / (h * c)  # Photon wavenumber factor [1/cm]
+pireav = 2 * np.pi * re * avocado  # Electron density factor [cm^-3]
 
 
 @dataclass
 class AtomLayer:
-    """Represents a specific atomic species in a layer.
+    """Atomic species in a layer with density and form factors.
     
     Attributes:
-        atom (Atom): The Atom object containing atomic properties and form factors.
-        molar_density (float): Molar density of the element in mol/cm³.
-        molar_magnetic_density (float | None): Molar magnetic density in mol/cm³. 
-                                              Defaults to None.
+        atom (Atom): Atom object with properties and form factors.
+        molar_density (Parameter[float]): Molar density in mol/cm³.
+        molar_magnetic_density (Parameter[float] | None): Magnetic density in mol/cm³.
     """
     atom: Atom
     molar_density: Parameter[float]  # in mol/cm^3
     molar_magnetic_density: Parameter[float] | None = None  # in mol/cm^3
 
     def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
-        """Get atomic form factors f1 and f2 at a specific energy.
+        """Get atomic form factors f1 and f2 at specific energy.
         
         Args:
-            energy_eV (float): X-ray energy in electron volts.
+            energy_eV (float): X-ray energy in eV.
             
         Returns:
-            tuple[float, float]: Tuple containing (f1, f2) form factor components.
+            tuple[float, float]: (f1, f2) form factor components.
         """
         return self.atom.ff.get_formfactors(energy_eV, *args)
 
     def get_q1q2(self, energy_eV: float, *args) -> tuple[float, float]:
-        """Get magnetic form factors q1 and q2 at a specific energy.
+        """Get magnetic form factors q1 and q2 at specific energy.
         
         Args:
-            energy_eV (float): X-ray energy in electron volts.
+            energy_eV (float): X-ray energy in eV.
             
         Returns:
-            tuple[float, float]: Tuple containing (q1, q2) magnetic form factor components.
-                                Returns (0.0, 0.0) if atom has no magnetic form factor.
+            tuple[float, float]: (q1, q2) magnetic form factors, (0, 0) if non-magnetic.
         """
         if self.atom.ffm is None:
             return 0.0, 0.0
         return self.atom.ffm.get_formfactors(energy_eV, *args)
+    
+    def get_f1f2_energies(self, energies: np.ndarray, *args) -> list[tuple[float, float]]:
+        """Get atomic form factors for multiple energies.
+
+        Args:
+            energies (np.ndarray): Array of energies in eV.
+
+        Returns:
+            list[tuple[float, float]]: List of (f1, f2) for each energy.
+        """
+        return self.atom.ff.get_formfactors_energies(energies, *args)
+    
+    def get_q1q2_energies(self, energies: np.ndarray, *args) -> list[tuple[float, float]]:
+        """Get magnetic form factors for multiple energies.
+
+        Args:
+            energies (np.ndarray): Array of energies in eV.
+
+        Returns:
+            list[tuple[float, float]]: List of (q1, q2) for each energy.
+        """
+        if self.atom.ffm is None:
+            return [(0.0, 0.0)] * len(energies)
+        return self.atom.ffm.get_formfactors_energies(energies, *args)
 
 
 @dataclass
 class Layer:
-    """Represents a single layer in a multilayer structure.
+    """Single layer in multilayer structure.
     
-    This class encapsulates the properties of a layer including its thickness
-    and atomic composition. It provides methods to calculate optical constants
-    based on the constituent elements and their densities.
+    Represents a layer with thickness and atomic composition, 
+    providing optical property calculations.
     
     Attributes:
-        id (str): Unique identifier for the layer.
+        id (str): Unique layer identifier.
         thickness (float): Layer thickness in Angstroms.
-        elements (list[ElementLayer]): List of atomic elements in the layer.
+        elements (list[AtomLayer]): Atomic elements in the layer.
     """
     id: str
     thickness: float  # in Angstroms
@@ -82,28 +102,34 @@ class Layer:
     precomputed_magnetic_optical_constant: complex | None = None
     
     def compute(self, energy_eV: float, *args):
+        """Precompute optical properties for given energy."""
         self.precomputed_energy = energy_eV
         self.precomputed_index_of_refraction = self._index_of_refraction(energy_eV, *args)
         self.precomputed_magnetic_optical_constant = self._magnetic_optical_constant(energy_eV, *args)
 
     def get_index_of_refraction(self, energy_eV: float, *args) -> complex:
+        """Get complex refractive index for given energy."""
         if self.precomputed_energy == energy_eV and self.precomputed_index_of_refraction is not None:
             return self.precomputed_index_of_refraction
         else:
             return self._index_of_refraction(energy_eV, *args)
         
     def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
+        """Get magnetic optical constant for given energy."""
         if self.precomputed_energy == energy_eV and self.precomputed_magnetic_optical_constant is not None:
             return self.precomputed_magnetic_optical_constant
         else:
             return self._magnetic_optical_constant(energy_eV, *args)
         
     def _index_of_refraction(self, energy_eV: float, *args) -> complex:
+        """Calculate complex refractive index from atomic form factors."""
         f1_layer = 0.0
         f2_layer = 0.0
         for l in self.elements:
-            f1, f2 = l.get_f1f2(energy_eV, *args)
             molar_density = l.molar_density.get()
+            if molar_density == 0.0:
+                continue
+            f1, f2 = l.get_f1f2(energy_eV, *args)
             
             f1_layer += f1 * molar_density
             f2_layer += f2 * molar_density
@@ -114,15 +140,18 @@ class Layer:
         delta = constant * f1_layer
         beta  = constant * f2_layer
         n_complex = 1 - delta + 1j * beta
-
+ 
         return n_complex
     
     def _magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
+        """Calculate magnetic optical constant from magnetic form factors."""
         q1_layer = 0.0
         q2_layer = 0.0
         for l in self.elements:
-            q1, q2 = l.get_q1q2(energy_eV, *args)
             molar_magnetic_density = l.molar_magnetic_density.get() if l.molar_magnetic_density else 0.0
+            if molar_magnetic_density == 0.0:
+                continue
+            q1, q2 = l.get_q1q2(energy_eV, *args)
             
             q1_layer += q1 * molar_magnetic_density
             q2_layer += q2 * molar_magnetic_density

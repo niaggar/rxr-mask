@@ -1,13 +1,14 @@
-"""Density profile utilities for RXR-Mask.
+"""Density profile calculations for multilayer structures.
 
-This module provides functions for calculating atomic density profiles in multilayer
-structures, including the effects of interface roughness.
+Provides functions for calculating atomic density profiles including
+interface roughness effects.
 """
 
 import numpy as np
 from scipy.special import erf
 
-def _calculate_single_element_profile(z, layer_positions, densities, roughnesses):    
+def _calculate_single_element_profile(z, layer_positions, densities, roughnesses):
+    """Calculate density profile for single element with interface roughness."""    
     profile = np.full_like(z, densities[0], dtype=float)
     
     for i in range(len(layer_positions) - 1):
@@ -30,6 +31,17 @@ def _calculate_single_element_profile(z, layer_positions, densities, roughnesses
     return profile
 
 def get_density_profile_from_element_data(element_data, layer_thickness_params, atoms, step: float = 0.1):
+    """Calculate density profiles from element data and layer parameters.
+    
+    Args:
+        element_data: Element data dictionary with parameters.
+        layer_thickness_params: Layer thickness parameters.
+        atoms: Atom objects dictionary.
+        step: Depth step size for profile calculation.
+        
+    Returns:
+        tuple: (z_positions, density_profiles, magnetic_density_profiles, layer_positions).
+    """
     layer_thicknesses = [param.get() for param in layer_thickness_params]
     layer_positions = np.cumsum([0.0] + layer_thicknesses)
     

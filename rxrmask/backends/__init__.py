@@ -1,13 +1,8 @@
 from .pr_backend import (
-    reflectivity,
-    reflectivity_parallel,
-    energy_scan,
-    energy_scan_parallel,
-    # Physical constants
-    H_CONST,
-    C_CONST,
-    QZ_SCALE,
-    HC_EV_ANGSTROM,
+    reflectivity as reflectivity_pr,
+    reflectivity_parallel as reflectivity_parallel_pr,
+    energy_scan as energy_scan_pr,
+    energy_scan_parallel as energy_scan_parallel_pr,
 )
 
 try:
@@ -18,16 +13,10 @@ except ImportError:
 
 __all__ = [
     # Pythonreflectivity backend functions
-    'reflectivity',
-    'reflectivity_parallel', 
-    'energy_scan',
-    'energy_scan_parallel',
-    
-    # Physical constants
-    'H_CONST',
-    'C_CONST', 
-    'QZ_SCALE',
-    'HC_EV_ANGSTROM',
+    'reflectivity_pr',
+    'reflectivity_parallel_pr',
+    'energy_scan_pr',
+    'energy_scan_parallel_pr',
 ]
 
 if _udkm_available:

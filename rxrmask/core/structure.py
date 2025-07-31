@@ -1,31 +1,30 @@
-"""Structure module for RXR-Mask.
+"""Multilayer structure representation for X-ray reflectometry.
 
-This module provides the Structure class for representing complete multilayer
-structures used in X-ray reflectometry calculations.
+Provides Structure class for managing compounds and layer discretization.
 """
 
 from rxrmask.core import Compound, AtomLayer, Layer
 from rxrmask.core.parameter import ParametersContainer
-from rxrmask.utils import get_density_profile_from_element_data, compute_adaptive_layer_segmentation
+from rxrmask.utils import get_density_profile_from_element_data
 
 from dataclasses import dataclass, field
 
 
 @dataclass
 class Structure:
-    """Represents a complete multilayer structure for X-ray reflectometry.
+    """Complete multilayer structure for X-ray reflectometry.
 
-    This class manages the organization of compounds into a multilayer structure,
-    handles the discretization into thin layers, and provides methods for
-    generating density profiles. It serves as the main container that connects
-    the material definitions (compounds) with the computational representation (layers).
+    Manages compounds organization, layer discretization, and density profiles.
 
     Attributes:
-        name (str): Human-readable name for the structure.
-        n_compounds (int): Number of compounds in the structure. Defaults to 0.
-        n_layers (int): Number of discretized layers. Defaults to 0.
-        layers (list[Layer]): List of discretized Layer objects.
-        compounds (list[Compound | None]): List of Compound objects, may contain None entries.
+        name (str): Structure name.
+        n_compounds (int): Number of compounds.
+        n_layers (int): Number of discretized layers.
+        layers (list[Layer]): Discretized layer objects.
+        compounds (list[Compound | None]): Compound objects.
+        element_data (dict | None): Cached element data for optimization.
+        layer_thickness_params (list | None): Layer thickness parameters.
+        atoms (dict | None): Atom objects cache.
     """
 
     name: str
@@ -41,11 +40,13 @@ class Structure:
     step: float = 0.1
 
     def __init__(self, name: str, n_compounds: int):
+        """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
         self.compounds = [None] * n_compounds
 
     def add_compound(self, index: int, compound: Compound) -> None:
+        """Add compound at specified index."""
         if index < 0 or index >= self.n_compounds:
             raise IndexError("Index out of range for compounds.")
         if not isinstance(compound, Compound):
@@ -54,6 +55,7 @@ class Structure:
         self.compounds[index] = compound
 
     def create_layers(self, params_container: ParametersContainer, step: float = 0.1) -> None:
+        """Create discretized layers from compounds with specified step size."""
         self.step = step
         if (
             self.element_data is None
@@ -101,6 +103,7 @@ class Structure:
         self.n_layers = len(layers)
 
     def update_layers(self) -> None:
+        """Update existing layers with current parameter values."""
         if not self.layers:
             raise ValueError(
                 "No layers exist. Call create_layers or create_layers_optimized first."
@@ -146,6 +149,7 @@ class Structure:
                                 )
     
     def _create_element_data(self):
+        """Create element data structure from compounds for density calculations."""
         for compound in self.compounds:
             if compound is None:
                 raise ValueError("All compounds must be defined to get element data.")
