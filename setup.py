@@ -42,7 +42,6 @@ setup(
         "scipy",
         "matplotlib",
         "pint",
-        "pandas",
         "joblib",
         "udkm1Dsim"
     ],
