@@ -8,7 +8,7 @@ from rxrmask.core.parameter import Parameter
 
 from dataclasses import dataclass, field
 import numpy as np
-
+import numpy.typing as npt
 
 # Physical constants
 h = 4.135667696e-15  # Planck's constant [eV s]
@@ -56,73 +56,40 @@ class AtomLayer:
             return 0.0, 0.0
         return self.atom.ffm.get_formfactors(energy_eV, *args)
     
-    def get_f1f2_energies(self, energies: np.ndarray, *args) -> list[tuple[float, float]]:
+    def get_f1f2_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get atomic form factors for multiple energies.
 
         Args:
-            energies (np.ndarray): Array of energies in eV.
+            energies (npt.NDArray[np.float64]): Array of energies in eV.
 
         Returns:
-            list[tuple[float, float]]: List of (f1, f2) for each energy.
+            tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: (f1, f2) form factor arrays.
         """
         return self.atom.ff.get_formfactors_energies(energies, *args)
-    
-    def get_q1q2_energies(self, energies: np.ndarray, *args) -> list[tuple[float, float]]:
+
+    def get_q1q2_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get magnetic form factors for multiple energies.
 
         Args:
-            energies (np.ndarray): Array of energies in eV.
+            energies (npt.NDArray[np.float64]): Array of energies in eV.
 
         Returns:
-            list[tuple[float, float]]: List of (q1, q2) for each energy.
+            tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: (q1, q2) magnetic form factor arrays, zeros if non-magnetic.
         """
         if self.atom.ffm is None:
-            return [(0.0, 0.0)] * len(energies)
+            return (np.zeros(len(energies)), np.zeros(len(energies)))
         return self.atom.ffm.get_formfactors_energies(energies, *args)
 
 
 @dataclass
 class Layer:
-    """Single layer in multilayer structure.
-    
-    Represents a layer with thickness and atomic composition, 
-    providing optical property calculations.
-    
-    Attributes:
-        id (str): Unique layer identifier.
-        thickness (float): Layer thickness in Angstroms.
-        elements (list[AtomLayer]): Atomic elements in the layer.
-    """
     id: str
     thickness: float  # in Angstroms
     elements: list[AtomLayer] = field(default_factory=list)
-    
-    precomputed_energy: float | None = None
-    precomputed_index_of_refraction: complex | None = None
-    precomputed_magnetic_optical_constant: complex | None = None
-    
-    def compute(self, energy_eV: float, *args):
-        """Precompute optical properties for given energy."""
-        self.precomputed_energy = energy_eV
-        self.precomputed_index_of_refraction = self._index_of_refraction(energy_eV, *args)
-        self.precomputed_magnetic_optical_constant = self._magnetic_optical_constant(energy_eV, *args)
+
 
     def get_index_of_refraction(self, energy_eV: float, *args) -> complex:
         """Get complex refractive index for given energy."""
-        if self.precomputed_energy == energy_eV and self.precomputed_index_of_refraction is not None:
-            return self.precomputed_index_of_refraction
-        else:
-            return self._index_of_refraction(energy_eV, *args)
-        
-    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
-        """Get magnetic optical constant for given energy."""
-        if self.precomputed_energy == energy_eV and self.precomputed_magnetic_optical_constant is not None:
-            return self.precomputed_magnetic_optical_constant
-        else:
-            return self._magnetic_optical_constant(energy_eV, *args)
-        
-    def _index_of_refraction(self, energy_eV: float, *args) -> complex:
-        """Calculate complex refractive index from atomic form factors."""
         f1_layer = 0.0
         f2_layer = 0.0
         for l in self.elements:
@@ -142,9 +109,9 @@ class Layer:
         n_complex = 1 - delta + 1j * beta
  
         return n_complex
-    
-    def _magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
-        """Calculate magnetic optical constant from magnetic form factors."""
+        
+    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
+        """Get magnetic optical constant for given energy."""
         q1_layer = 0.0
         q2_layer = 0.0
         for l in self.elements:
@@ -162,5 +129,44 @@ class Layer:
         delta_m = constant * q1_layer
         beta_m  = constant * q2_layer
 
-        Q = 2 * (delta_m + 1j * beta_m)
-        return Q
+        q_complex = 2 * (delta_m + 1j * beta_m)
+        return q_complex
+        
+    
+    def get_index_of_refraction_batch(self, energies: npt.NDArray[np.float64], *args) -> npt.NDArray[np.complexfloating]:
+        delta = np.zeros(len(energies), dtype=np.float64)
+        beta = np.zeros(len(energies), dtype=np.float64)
+
+        k0 = energies * pihc
+        constant = pireav / (k0 ** 2)
+        
+        for l in self.elements:
+            molar_density = l.molar_density.get()
+            if molar_density == 0.0:
+                continue
+
+            formFactors = l.get_f1f2_energies(energies, *args)
+            delta += constant * formFactors[0] * molar_density
+            beta += constant * formFactors[1] * molar_density
+
+        n_complex = 1 - delta + 1j * beta
+        return n_complex
+    
+    def get_magnetic_optical_constant_batch(self, energies: npt.NDArray[np.float64], *args) -> npt.NDArray[np.complexfloating]:
+        delta_m = np.zeros(len(energies), dtype=np.float64)
+        beta_m = np.zeros(len(energies), dtype=np.float64)
+
+        k0 = energies * pihc
+        constant = pireav / (k0 ** 2)
+
+        for l in self.elements:
+            molar_magnetic_density = l.molar_magnetic_density.get() if l.molar_magnetic_density else 0.0
+            if molar_magnetic_density == 0.0:
+                continue
+
+            formFactors = l.get_q1q2_energies(energies, *args)
+            delta_m += constant * formFactors[0] * molar_magnetic_density
+            beta_m += constant * formFactors[1] * molar_magnetic_density
+
+        q_complex = 2 * (delta_m + 1j * beta_m)
+        return q_complex

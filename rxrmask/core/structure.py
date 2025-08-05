@@ -28,9 +28,9 @@ class Structure:
     """
 
     name: str
+    params_container: ParametersContainer
     n_compounds: int = 0
     n_layers: int = 0
-
     layers: list[Layer] = field(default_factory=list)
     compounds: list[Compound | None] = field(default_factory=list)
 
@@ -39,11 +39,12 @@ class Structure:
     atoms: dict | None = None
     step: float = 0.1
 
-    def __init__(self, name: str, n_compounds: int):
+    def __init__(self, name: str, n_compounds: int, params_container: ParametersContainer):
         """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
         self.compounds = [None] * n_compounds
+        self.params_container = params_container
 
     def add_compound(self, index: int, compound: Compound) -> None:
         """Add compound at specified index."""
@@ -54,7 +55,7 @@ class Structure:
 
         self.compounds[index] = compound
 
-    def create_layers(self, params_container: ParametersContainer, step: float = 0.1) -> None:
+    def create_layers(self, step: float = 0.1) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
         if (
@@ -63,9 +64,6 @@ class Structure:
             or self.atoms is None
         ):
             self.element_data, self.layer_thickness_params, self.atoms = self._create_element_data()
-
-        if params_container is None:
-            params_container = ParametersContainer()
 
         z, dens, m_dens, _ = get_density_profile_from_element_data(
             self.element_data, self.layer_thickness_params, self.atoms, self.step
@@ -82,10 +80,10 @@ class Structure:
                     m_dens[element_name][i] if element_name in m_dens else 0.0
                 )
 
-                molar_density_param = params_container.new_parameter(
+                molar_density_param = self.params_container .new_parameter(
                     f"layer_{i}_{element_name}_density", molar_density
                 )
-                molar_magnetic_density_param = params_container.new_parameter(
+                molar_magnetic_density_param = self.params_container .new_parameter(
                     f"layer_{i}_{element_name}_mag_density", molar_magnetic_density
                 )
 
@@ -147,6 +145,8 @@ class Structure:
                                 element_layer.molar_magnetic_density.set(
                                     new_mag_density
                                 )
+    
+    
     
     def _create_element_data(self):
         """Create element data structure from compounds for density calculations."""

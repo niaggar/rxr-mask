@@ -5,6 +5,7 @@ Provides interface and implementation for atomic form factor models.
 
 from dataclasses import dataclass, field
 import numpy as np
+import numpy.typing as npt
 from typing import Optional
 
 import pathlib
@@ -33,22 +34,22 @@ class FormFactorModel:
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
-    def get_formfactors_energies(self, energies: np.ndarray) -> list[tuple[float, float]]:
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get form factors for multiple energies.
         
         Args:
-            energies (np.ndarray): Array of energies in eV.
+            energies (npt.NDArray[np.float64]): Array of energies in eV.
             
         Returns:
-            list[tuple[float, float]]: List of (f1, f2) for each energy.
+            tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: (f1, f2) form factor arrays.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
-    def get_all_formfactors(self, *args) -> np.ndarray:
+    def get_all_formfactors(self, *args) -> npt.NDArray[np.float64]:
         """Get complete form factor dataset.
         
         Returns:
-            np.ndarray: All form factor data.
+            npt.NDArray[np.float64]: All form factor data.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
@@ -61,7 +62,7 @@ class FormFactorLocalDB(FormFactorModel):
     """Form factor model using local database files with numpy."""
     element: Optional[str] = field(default=None)
     is_magnetic: bool = field(default=False)
-    ff_data: Optional[np.ndarray] = field(default=None)
+    ff_data: Optional[npt.NDArray[np.float64]] = field(default=None)
 
     def __init__(self, element: str, is_magnetic: bool = False):
         self.element = element
@@ -98,15 +99,15 @@ class FormFactorLocalDB(FormFactorModel):
         f2 = np.interp(energy_eV, energies, self.ff_data[:, 2])
         return float(f1), float(f2)
 
-    def get_formfactors_energies(self, energies: np.ndarray) -> list[tuple[float, float]]:
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
 
         f1 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 1])
         f2 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 2])
-        return list(zip(f1, f2))
+        return f1, f2
 
-    def get_all_formfactors(self, *args) -> np.ndarray:
+    def get_all_formfactors(self, *args) -> npt.NDArray[np.float64]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         return self.ff_data

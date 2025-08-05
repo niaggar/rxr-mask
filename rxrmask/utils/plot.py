@@ -80,3 +80,25 @@ def plot_slab_model(structure, figsize=(10,4), cmap_name='tab10'):
     plt.tight_layout()
     plt.show()
 
+def plot_formfactor_object(ff, title=None):
+    """Plots f1 and f2 vs energy from a FormFactorLocalDB instance."""
+    data = ff.get_all_formfactors()
+    E = data[:, 0]
+    f1 = data[:, 1]
+    f2 = data[:, 2]
+
+    plt.plot(E, f1, label="f1")
+    plt.plot(E, f2, label="f2")
+    plt.xlabel("Energy (eV)")
+    plt.ylabel("Form Factor")
+    if title:
+        plt.title(title)
+    else:
+        label = ff.element or "Unknown"
+        label += " (Magnetic)" if ff.is_magnetic else ""
+        plt.title(f"Form Factor - {label}")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    
