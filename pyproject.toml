@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rxrmask"
-version = "0.1.0"
+version = "0.2.0"
 description = "Tools for modeling resonant X-ray reflectivity."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -20,7 +20,7 @@ authors = [
 keywords = ["x-ray", "reflectivity", "resonant"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: BSD License",
   "Operating System :: OS Independent",
 ]
 dependencies = [

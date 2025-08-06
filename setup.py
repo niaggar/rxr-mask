@@ -20,7 +20,7 @@ ext_modules = cythonize(
 
 setup(
     name="rxrmask",
-    version="0.1.0",
+    version="0.2.0",
     description="Tools for modeling resonant X-ray reflectivity.",
     long_description_content_type="text/markdown",
     author="Nicolas Aguilera G.",
@@ -29,7 +29,7 @@ setup(
     # license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.10",
