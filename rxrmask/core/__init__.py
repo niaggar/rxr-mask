@@ -2,7 +2,7 @@
 from .atom import Atom, find_atom
 
 # Form factor imports
-from .formfactor import FormFactorModel, FormFactorLocalDB
+from .formfactor import FormFactorModel, FormFactorLocalDB, FormFactorVacancy
 
 # Compound-related imports
 from .compound import CompoundDetails, Compound, create_compound
@@ -25,6 +25,7 @@ __all__ = [
     # Form factor classes
     'FormFactorModel',
     'FormFactorLocalDB',
+    'FormFactorVacancy',
     
     # Compound classes and functions
     'CompoundDetails',

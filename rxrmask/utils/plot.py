@@ -34,16 +34,17 @@ def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
     plt.tight_layout()
     plt.show()
 
-def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile"):
+def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile", x_move=0.0, min_x=0.0):
     """Plot atomic density profiles as function of depth."""
     plt.figure(figsize=figsize, dpi=300)
     for name, profile in dens.items():
-        plt.plot(z, profile, "-", label=name)
+        plt.plot(z + x_move, profile, "-", label=name)
     plt.xlabel('Depth $z$ (Å)')
     plt.title(title)
     plt.grid(True)
     plt.ylabel('Density $\\rho(z)$ (mol/cm³)')
     plt.ylim(bottom=0)
+    plt.xlim(left=min_x)
     plt.legend()
     plt.tight_layout()
     plt.show()

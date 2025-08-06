@@ -56,6 +56,17 @@ class FormFactorModel:
     def get_path(self) -> str | None:
         """Get path to form factor data file."""
         return self.ff_path
+    
+@dataclass
+class FormFactorVacancy(FormFactorModel):
+    def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
+        return 0.0, 0.0
+    
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+        return np.zeros(len(energies)), np.zeros(len(energies))
+    
+    def get_all_formfactors(self, *args) -> npt.NDArray[np.float64]:
+        return np.zeros((1, 3))
 
 @dataclass
 class FormFactorLocalDB(FormFactorModel):

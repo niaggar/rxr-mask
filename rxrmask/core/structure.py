@@ -23,7 +23,6 @@ class Structure:
         layers (list[Layer]): Discretized layer objects.
         compounds (list[Compound | None]): Compound objects.
         element_data (dict | None): Cached element data for optimization.
-        layer_thickness_params (list | None): Layer thickness parameters.
         atoms (dict | None): Atom objects cache.
     """
 
@@ -35,7 +34,6 @@ class Structure:
     compounds: list[Compound] = field(default_factory=list)
 
     element_data: dict | None = None
-    layer_thickness_params: list | None = None
     atoms: dict | None = None
     step: float = 0.1
 
@@ -45,7 +43,7 @@ class Structure:
         """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
-        self.compounds = [None] * n_compounds # type: ignore
+        self.compounds = [None] * n_compounds  # type: ignore
         self.params_container = params_container
 
     def add_compound(self, index: int, compound: Compound) -> None:
@@ -75,19 +73,17 @@ class Structure:
                     raise ValueError(
                         f"Compound {i} has different number of elements than compound {i-1}."
                     )
-                
+
                 for j, detail in enumerate(current_compound.compound_details):
                     detail.prev_roughness = prev_compound.compound_details[j].roughness
 
     def create_layers(self, step: float = 0.1) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
-        self.element_data, self.layer_thickness_params, self.atoms = (
-            self._create_element_data()
-        )
+        self.element_data, self.atoms = self._create_element_data()
 
         z, dens, m_dens, _ = get_density_profile_from_element_data(
-            self.element_data, self.layer_thickness_params, self.atoms, self.step
+            self.element_data, self.atoms, self.step
         )
 
         layers = []
@@ -129,7 +125,7 @@ class Structure:
             )
 
         z, dens, m_dens, _ = get_density_profile_from_element_data(
-            self.element_data, self.layer_thickness_params, self.atoms, self.step
+            self.element_data, self.atoms, self.step
         )
 
         if len(z) != len(self.layers) + 1:
@@ -178,9 +174,9 @@ class Structure:
 
         for i, compound in enumerate(self.compounds):
             if compound is None:
-                continue
+                raise ValueError("All compounds must be defined to get element data.")
 
-            for j, element in enumerate(compound.compound_details):
+            for element in compound.compound_details:
                 name = element.name
 
                 if name not in atoms:
@@ -189,30 +185,31 @@ class Structure:
                         "density_params": [None] * (len(self.compounds) + 1),
                         "magnetic_density_params": [None] * (len(self.compounds) + 1),
                         "roughness_params": [None] * len(self.compounds),
-                        "thickness_params": [None] * len(self.compounds),
+                        "thickness_params": [
+                            x.compound_details[element.index].thickness
+                            for x in self.compounds
+                        ],
                     }
 
                 data[name]["density_params"][i] = element.molar_density
-                data[name]["magnetic_density_params"][i] = element.molar_magnetic_density
-                
-                data[name]["thickness_params"][i] = element.thickness
-                
+                data[name]["magnetic_density_params"][
+                    i
+                ] = element.molar_magnetic_density
+
                 if i > 0:
                     if data[name]["roughness_params"][i - 1] is None:
                         data[name]["roughness_params"][i - 1] = element.prev_roughness
 
                 data[name]["roughness_params"][i] = element.roughness
-                
-                
-        for element_name, element_info in data.items():
-            print(f"  {element_name}:")
-            for param_name, param_value in element_info.items():
-                print(f"    {param_name}: {[p.get() if p else None for p in param_value]}")
 
-        layer_thickness_params = [
-            compound.thickness for compound in self.compounds if compound is not None
-        ]
-        return data, layer_thickness_params, atoms
+        # for element_name, element_info in data.items():
+        #     print(f"  {element_name}:")
+        #     for param_name, param_value in element_info.items():
+        #         print(
+        #             f"    {param_name}: {[p.get() if p else None for p in param_value]}"
+        #         )
+
+        return data, atoms
 
     def print_details(self):
         """Print details of the structure."""

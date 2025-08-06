@@ -30,22 +30,24 @@ def _calculate_single_element_profile(z, layer_positions, densities, roughnesses
     
     return profile
 
-def get_density_profile_from_element_data(element_data, layer_thickness_params, atoms, step: float = 0.1):
+def get_density_profile_from_element_data(element_data, atoms, step: float = 0.1):
     """Calculate density profiles from element data and layer parameters.
     
     Args:
         element_data: Element data dictionary with parameters.
-        layer_thickness_params: Layer thickness parameters.
         atoms: Atom objects dictionary.
         step: Depth step size for profile calculation.
         
     Returns:
         tuple: (z_positions, density_profiles, magnetic_density_profiles, layer_positions).
     """
-    layer_thicknesses = [param.get() for param in layer_thickness_params]
-    layer_positions = np.cumsum([0.0] + layer_thicknesses)
     
-    total_thickness = sum(layer_thicknesses)
+    total_thickness = 0
+    for data in element_data.values():
+        temp_thick = sum(param.get() for param in data['thickness_params'])
+        if temp_thick > total_thickness:
+            total_thickness = temp_thick
+        
     z = np.arange(0, total_thickness + 15 + step, step)
     
     density_profile = {}
@@ -55,7 +57,9 @@ def get_density_profile_from_element_data(element_data, layer_thickness_params, 
         densities = [param.get() if param is not None else 0.0 for param in data['density_params']]
         magnetic_densities = [param.get() if param is not None else 0.0 for param in data['magnetic_density_params']]
         roughnesses = [param.get() if param is not None else 0.0 for param in data['roughness_params']]
-        
+        thickness = [param.get() if param is not None else 0.0 for param in data['thickness_params']]
+        layer_positions = np.cumsum([0.0] + thickness)
+
         density_profile[element_name] = _calculate_single_element_profile(
             z, layer_positions, densities, roughnesses
         )
