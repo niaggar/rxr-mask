@@ -39,7 +39,9 @@ class Structure:
     atoms: dict | None = None
     step: float = 0.1
 
-    def __init__(self, name: str, n_compounds: int, params_container: ParametersContainer):
+    def __init__(
+        self, name: str, n_compounds: int, params_container: ParametersContainer
+    ):
         """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
@@ -58,12 +60,9 @@ class Structure:
     def create_layers(self, step: float = 0.1) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
-        if (
-            self.element_data is None
-            or self.layer_thickness_params is None
-            or self.atoms is None
-        ):
-            self.element_data, self.layer_thickness_params, self.atoms = self._create_element_data()
+        self.element_data, self.layer_thickness_params, self.atoms = (
+            self._create_element_data()
+        )
 
         z, dens, m_dens, _ = get_density_profile_from_element_data(
             self.element_data, self.layer_thickness_params, self.atoms, self.step
@@ -80,10 +79,10 @@ class Structure:
                     m_dens[element_name][i] if element_name in m_dens else 0.0
                 )
 
-                molar_density_param = self.params_container .new_parameter(
+                molar_density_param = self.params_container.new_parameter(
                     f"layer_{i}_{element_name}_density", molar_density
                 )
-                molar_magnetic_density_param = self.params_container .new_parameter(
+                molar_magnetic_density_param = self.params_container.new_parameter(
                     f"layer_{i}_{element_name}_mag_density", molar_magnetic_density
                 )
 
@@ -145,9 +144,7 @@ class Structure:
                                 element_layer.molar_magnetic_density.set(
                                     new_mag_density
                                 )
-    
-    
-    
+
     def _create_element_data(self):
         """Create element data structure from compounds for density calculations."""
         for compound in self.compounds:
@@ -155,30 +152,32 @@ class Structure:
                 raise ValueError("All compounds must be defined to get element data.")
 
         atoms = {}
-        element_data = {}
+        data = {}
 
         for i, compound in enumerate(self.compounds):
             if compound is None:
                 continue
-            
-            for element in compound.compound_details:
-                element_name = element.name
 
-                if element_name not in atoms:
-                    atoms[element_name] = element.atom
-                    element_data[element_name] = {
+            for element in compound.compound_details:
+                name = element.name
+
+                if name not in atoms:
+                    atoms[name] = element.atom
+                    data[name] = {
                         "density_params": [None] * (len(self.compounds) + 1),
                         "magnetic_density_params": [None] * (len(self.compounds) + 1),
                         "roughness_params": [None] * len(self.compounds),
                         "thickness_params": [None] * len(self.compounds),
                     }
 
-                element_data[element_name]["density_params"][i] = element.molar_density
-                element_data[element_name]["magnetic_density_params"][
+                data[name]["density_params"][i] = element.molar_density
+                data[name]["magnetic_density_params"][
                     i
                 ] = element.molar_magnetic_density
-                element_data[element_name]["roughness_params"][i] = element.roughness
-                element_data[element_name]["thickness_params"][i] = element.thickness
+                data[name]["roughness_params"][i] = element.roughness
+                data[name]["thickness_params"][i] = element.thickness
 
-        layer_thickness_params = [compound.thickness for compound in self.compounds if compound is not None]
-        return element_data, layer_thickness_params, atoms
+        layer_thickness_params = [
+            compound.thickness for compound in self.compounds if compound is not None
+        ]
+        return data, layer_thickness_params, atoms
