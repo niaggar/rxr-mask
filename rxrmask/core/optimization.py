@@ -1,3 +1,5 @@
+"""Optimization routines for X-ray reflectometry fitting."""
+
 from typing import Callable, Literal
 from scipy.optimize import minimize, differential_evolution
 
@@ -12,6 +14,16 @@ def optimize_structure_parameters(
     bounds: list[tuple[float, float]] | None = None,
     verbose: bool = True
 ):
+    """Optimize structure parameters using various methods.
+    
+    Args:
+        structure: Structure to optimize
+        container: Parameter container
+        model_loss: Loss function to minimize
+        method: Optimization method
+        bounds: Parameter bounds for differential evolution
+        verbose: Print optimization progress
+    """
     def wrapped_loss(x):
         container.set_fit_vector(x)
         structure.update_layers()

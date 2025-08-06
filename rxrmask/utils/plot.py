@@ -1,7 +1,4 @@
-"""Plotting utilities for X-ray reflectometry visualization.
-
-Provides functions for plotting reflectivity curves, energy scans, and density profiles.
-"""
+"""Plotting utilities for X-ray reflectometry visualization."""
 
 from matplotlib.patches import Rectangle
 from matplotlib import cm

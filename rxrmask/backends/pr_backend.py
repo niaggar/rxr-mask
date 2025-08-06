@@ -1,20 +1,14 @@
-"""Python Reflectivity backend for X-ray reflectometry calculations.
-
-Provides integration with the Python Reflectivity library for
-numerical simulation of multilayer structures.
-"""
+"""Python Reflectivity backend for X-ray reflectometry calculations."""
 
 from rxrmask.utils import compute_adaptive_layer_segmentation
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure
-from rxrmask.core.layer import Layer
 
 import numpy as np
 import Pythonreflectivity as pr
 from joblib import Parallel, delayed, parallel_backend
 
 
-# Physical constants
 H_CONST = 4.135667696e-15  # Planck constant [eV·s]
 C_CONST = 2.99792458e8  # Speed of light [m/s]
 QZ_SCALE = 0.001013546247  # Conversion factor qz→theta
@@ -93,6 +87,18 @@ def reflectivity(
     precision: float = 1e-6,
     als: bool = True,
 ):
+    """Compute reflectivity using Python Reflectivity backend.
+    
+    Args:
+        stack: Structure containing layers
+        qz: Momentum transfer array
+        E_eV: X-ray energy in eV
+        precision: Precision for adaptive layer segmentation
+        als: Enable adaptive layer segmentation
+    
+    Returns:
+        tuple: (qz, R_sigma, R_pi)
+    """
     if stack.n_layers == 0:
         raise ValueError(
             "Stack has no layers. Please create layers before computing reflectivity."
@@ -146,6 +152,21 @@ def reflectivity_parallel(
     verbose: int = 0,
     als: bool = True,
 ):
+    """Compute reflectivity in parallel using Python Reflectivity backend.
+    
+    Args:
+        stack: Structure containing layers
+        qz: Momentum transfer array
+        E_eV: X-ray energy in eV
+        precision: Precision for adaptive layer segmentation
+        n_jobs: Number of parallel jobs. -1 uses all processors
+        use_threads: Use threading backend
+        verbose: Verbosity level
+        als: Enable adaptive layer segmentation
+    
+    Returns:
+        tuple: (qz, R_sigma, R_pi)
+    """
     if stack.n_layers == 0:
         raise ValueError(
             "Stack has no layers. Please create layers before computing reflectivity."
@@ -213,6 +234,18 @@ def energy_scan(
     precision: float = 1e-6,
     als: bool = True,
 ):
+    """Compute energy scan reflectivity using Python Reflectivity backend.
+    
+    Args:
+        stack: Structure containing layers
+        E_eVs: List of X-ray energies in eV
+        theta_deg: Incident angle in degrees
+        precision: Precision for adaptive layer segmentation
+        als: Enable adaptive layer segmentation
+        
+    Returns:
+        tuple: (E_eVs, R_sigma_all, R_pi_all)
+    """
     if stack.n_layers == 0:
         raise ValueError(
             "Stack has no layers. Please create layers before computing reflectivity."
@@ -304,6 +337,21 @@ def _energy_scan_worker(stack, E_eV, theta_deg, precision, als):
 def energy_scan_parallel(
     stack, E_eVs, theta_deg, precision=1e-6, n_jobs=-1, verbose=0, als=True, use_threads=False
 ):
+    """Compute energy scan reflectivity in parallel using Python Reflectivity backend.
+    
+    Args:
+        stack: Structure containing layers
+        E_eVs: List of X-ray energies in eV
+        theta_deg: Incident angle in degrees
+        precision: Precision for adaptive layer segmentation
+        n_jobs: Number of parallel jobs. -1 uses all processors
+        use_threads: Use threading backend
+        verbose: Verbosity level
+        als: Enable adaptive layer segmentation
+        
+    Returns:
+        tuple: (E_eVs, R_sigma_all, R_pi_all)
+    """
     e_array = np.array(E_eVs)
 
     if use_threads:

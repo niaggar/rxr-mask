@@ -1,7 +1,4 @@
-"""UDKM1Dsim backend for X-ray reflectometry calculations.
-
-Provides integration with the UDKM1Dsim library (currently under development).
-"""
+"""UDKM1Dsim backend for X-ray reflectometry calculations."""
 
 import numpy as np
 import udkm1Dsim as ud

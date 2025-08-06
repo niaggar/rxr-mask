@@ -5,14 +5,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rxrmask.core.compound &mdash; rxrmask 0.1.0 documentation</title>
+  <title>rxrmask.core.compound &mdash; rxrmask 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -39,13 +43,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples Gallery</a></li>
 </ul>
 
         </div>
@@ -73,10 +78,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.compound</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Chemical compound representation for X-ray reflectometry.</span>
-
-<span class="sd">Provides classes for representing compounds and their atomic components.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Chemical compound representation for X-ray reflectometry.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">find_atom</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rxrmask.core.parameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">ParametersContainer</span>
@@ -86,67 +88,68 @@
 
 
 <div class="viewcode-block" id="CompoundDetails">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.CompoundDetails">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.compound.CompoundDetails">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CompoundDetails</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Atomic species within a compound layer.</span>
 
-<span class="sd">    Stores stoichiometric and physical properties for individual atoms</span>
-<span class="sd">    in a compound structure.</span>
-
 <span class="sd">    Attributes:</span>
-<span class="sd">        name (str): Chemical symbol.</span>
-<span class="sd">        stochiometric_fraction (float): Stoichiometric coefficient.</span>
-<span class="sd">        atom (Atom): Atom object with atomic properties.</span>
-<span class="sd">        thickness (Parameter[float]): Layer thickness in Angstroms.</span>
-<span class="sd">        molar_density (Parameter[float]): Molar density in mol/cm³.</span>
-<span class="sd">        roughness (Parameter[float]): Interface roughness in Angstroms.</span>
-<span class="sd">        molar_magnetic_density (Parameter[float]): Magnetic density in mol/cm³.</span>
+<span class="sd">        index: Atom position in the lattice layer</span>
+<span class="sd">        name: Chemical symbol</span>
+<span class="sd">        stochiometric_fraction: Stoichiometric coefficient</span>
+<span class="sd">        atom: Atom object with atomic properties</span>
+<span class="sd">        thickness: Layer thickness in Angstroms</span>
+<span class="sd">        roughness: Interface roughness in Angstroms</span>
+<span class="sd">        prev_roughness: Previous interface roughness in Angstroms</span>
+<span class="sd">        molar_density: Molar density in mol/cm³</span>
+<span class="sd">        molar_magnetic_density: Magnetic density in mol/cm³</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">index</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">stochiometric_fraction</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">atom</span><span class="p">:</span> <span class="n">Atom</span>
     <span class="n">thickness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
-    <span class="n">roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="c1"># in Angstrom</span>
+    <span class="n">roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
+    <span class="n">prev_roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
     <span class="n">molar_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in mol/cm^3</span>
-    <span class="n">molar_magnetic_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="c1"># in mol/cm^3</span>
+    <span class="n">molar_magnetic_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in mol/cm^3</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize CompoundDetails with default values.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stochiometric_fraction</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
 
 
 <div class="viewcode-block" id="Compound">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Compound">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.compound.Compound">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Compound</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Chemical compound in multilayer structure.</span>
 
-<span class="sd">    Represents a compound with composition, physical properties,</span>
-<span class="sd">    and structural parameters.</span>
-
 <span class="sd">    Attributes:</span>
-<span class="sd">        name (str): Compound name.</span>
-<span class="sd">        formula (str): Chemical formula as &quot;Element1:count1,Element2:count2&quot;.</span>
-<span class="sd">        thickness (Parameter[float]): Total thickness in Angstroms.</span>
-<span class="sd">        roughness (Parameter[float]): Interface roughness in Angstroms.</span>
-<span class="sd">        density (Parameter[float]): Density in g/cm³.</span>
-<span class="sd">        magnetic_density (Parameter[float]): Magnetic density in g/cm³.</span>
-<span class="sd">        magnetic (bool): Whether compound is magnetic.</span>
-<span class="sd">        magnetic_direction (Literal): Magnetic moment direction.</span>
-<span class="sd">        compound_details (list[CompoundDetails]): Atomic layer structures.</span>
+<span class="sd">        name: Compound name</span>
+<span class="sd">        formula: Chemical formula as &quot;Element1:count1,Element2:count2&quot;</span>
+<span class="sd">        thickness: Total thickness in Angstroms</span>
+<span class="sd">        roughness: Interface roughness in Angstroms</span>
+<span class="sd">        prev_roughness: Previous interface roughness in Angstroms</span>
+<span class="sd">        linked_prev_roughness: Whether to link previous roughness</span>
+<span class="sd">        density: Density in g/cm³</span>
+<span class="sd">        magnetic_density: Magnetic density in g/cm³</span>
+<span class="sd">        magnetic: Whether compound is magnetic</span>
+<span class="sd">        magnetic_direction: Magnetic moment direction</span>
+<span class="sd">        compound_details: Atomic layer structures</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">formula</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="n">thickness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
-    <span class="n">roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="c1"># in Angstrom</span>
+    <span class="n">roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
+    <span class="n">prev_roughness</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in Angstrom</span>
+    <span class="n">linked_prev_roughness</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in g/cm^3</span>
-    <span class="n">magnetic_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="c1"># in g/cm^3</span>
+    <span class="n">magnetic_density</span><span class="p">:</span> <span class="n">Parameter</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>  <span class="c1"># in g/cm^3</span>
 
     <span class="n">magnetic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">magnetic_direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
@@ -157,30 +160,56 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compound_details</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">magnetic</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_direction</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">magnetic_direction</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">print_details</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Compound: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Formula: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">formula</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Thickness: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">thickness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Density: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> g/cm³&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Magnetic Density: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> g/cm³&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Roughness: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">roughness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Previous Roughness: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prev_roughness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Linked Previous Roughness: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">linked_prev_roughness</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">magnetic</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Magnetic: Yes, Direction: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_direction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Magnetic: No&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">detail</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compound_details</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;  Detail - </span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">index</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> - &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">stochiometric_fraction</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">thickness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">roughness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">prev_roughness</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> Angstrom &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">molar_density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> mol/cm³ &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">molar_magnetic_density</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">}</span><span class="s2"> mol/cm³&quot;</span>
+            <span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="get_compound_details">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.get_compound_details">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.compound.get_compound_details">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_compound_details</span><span class="p">(</span><span class="n">formula</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Atom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">CompoundDetails</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse formula and create compound details.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        formula (str): Chemical formula to parse.</span>
-<span class="sd">        atoms (list[Atom]): Available atom objects.</span>
+<span class="sd">        formula: Chemical formula to parse</span>
+<span class="sd">        atoms: Available atom objects</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        list[CompoundDetails]: Details for each element in formula.</span>
+<span class="sd">        Details for each element in formula</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">details</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">formula</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">formula</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)):</span>
         <span class="n">element</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
         <span class="n">atom</span> <span class="o">=</span> <span class="n">find_atom</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">atom</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown atom: </span><span class="si">{</span><span class="n">element</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">detail</span> <span class="o">=</span> <span class="n">CompoundDetails</span><span class="p">()</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">idx</span>
         <span class="n">detail</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">element</span>
         <span class="n">detail</span><span class="o">.</span><span class="n">stochiometric_fraction</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
         <span class="n">detail</span><span class="o">.</span><span class="n">atom</span> <span class="o">=</span> <span class="n">atom</span>
@@ -191,7 +220,7 @@
 
 
 <div class="viewcode-block" id="create_compound">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.create_compound">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.compound.create_compound">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_compound</span><span class="p">(</span>
     <span class="n">parameters_container</span><span class="p">:</span> <span class="n">ParametersContainer</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -200,44 +229,69 @@
     <span class="n">density</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Atom</span><span class="p">],</span>
     <span class="n">roughness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">prev_roughness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">linked_prev_roughness</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">magetic_density</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Compound</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create compound with parameters and atomic details.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        parameters_container: Container for parameter management.</span>
-<span class="sd">        name: Compound name.</span>
-<span class="sd">        formula: Chemical formula.</span>
-<span class="sd">        thickness: Layer thickness.</span>
-<span class="sd">        density: Material density.</span>
-<span class="sd">        atoms: Available atom objects.</span>
-<span class="sd">        roughness: Interface roughness.</span>
-<span class="sd">        magetic_density: Magnetic density.</span>
-<span class="sd">        </span>
+<span class="sd">        parameters_container: Container for parameter management</span>
+<span class="sd">        name: Compound name</span>
+<span class="sd">        formula: Chemical formula</span>
+<span class="sd">        thickness: Layer thickness</span>
+<span class="sd">        density: Material density</span>
+<span class="sd">        atoms: Available atom objects</span>
+<span class="sd">        roughness: Interface roughness</span>
+<span class="sd">        prev_roughness: Previous interface roughness</span>
+<span class="sd">        linked_prev_roughness: Link previous roughness if True</span>
+<span class="sd">        magetic_density: Magnetic density</span>
+
 <span class="sd">    Returns:</span>
-<span class="sd">        Compound: Configured compound object.</span>
+<span class="sd">        Configured compound object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">compound_details</span> <span class="o">=</span> <span class="n">get_compound_details</span><span class="p">(</span><span class="n">formula</span><span class="p">,</span> <span class="n">atoms</span><span class="p">)</span>
 
     <span class="n">total_mass</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">detail</span> <span class="ow">in</span> <span class="n">compound_details</span><span class="p">:</span>
         <span class="n">total_mass</span> <span class="o">+=</span> <span class="n">detail</span><span class="o">.</span><span class="n">atom</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="n">detail</span><span class="o">.</span><span class="n">stochiometric_fraction</span>
-        
+
     <span class="k">for</span> <span class="n">detail</span> <span class="ow">in</span> <span class="n">compound_details</span><span class="p">:</span>
         <span class="n">frac</span> <span class="o">=</span> <span class="n">detail</span><span class="o">.</span><span class="n">stochiometric_fraction</span> <span class="o">/</span> <span class="n">total_mass</span>
         <span class="n">base_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">detail</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">detail</span><span class="o">.</span><span class="n">molar_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-molar_density&quot;</span><span class="p">,</span> <span class="n">density</span> <span class="o">*</span> <span class="n">frac</span><span class="p">)</span>
-        <span class="n">detail</span><span class="o">.</span><span class="n">molar_magnetic_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-molar_magnetic_density&quot;</span><span class="p">,</span> <span class="n">magetic_density</span> <span class="o">*</span> <span class="n">frac</span><span class="p">)</span>
-        <span class="n">detail</span><span class="o">.</span><span class="n">roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-roughness&quot;</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
-        <span class="n">detail</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-thickness&quot;</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">molar_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-molar_density&quot;</span><span class="p">,</span> <span class="n">density</span> <span class="o">*</span> <span class="n">frac</span>
+        <span class="p">)</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">molar_magnetic_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-molar_magnetic_density&quot;</span><span class="p">,</span> <span class="n">magetic_density</span> <span class="o">*</span> <span class="n">frac</span>
+        <span class="p">)</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-roughness&quot;</span><span class="p">,</span> <span class="n">roughness</span>
+        <span class="p">)</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-thickness&quot;</span><span class="p">,</span> <span class="n">thickness</span>
+        <span class="p">)</span>
+        <span class="n">detail</span><span class="o">.</span><span class="n">prev_roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_name</span><span class="si">}</span><span class="s2">-prev_roughness&quot;</span><span class="p">,</span> <span class="n">prev_roughness</span>
+        <span class="p">)</span>
 
     <span class="n">compound</span> <span class="o">=</span> <span class="n">Compound</span><span class="p">()</span>
     <span class="n">compound</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="n">compound</span><span class="o">.</span><span class="n">formula</span> <span class="o">=</span> <span class="n">formula</span>
-    <span class="n">compound</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-thickness&quot;</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+    <span class="n">compound</span><span class="o">.</span><span class="n">thickness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-thickness&quot;</span><span class="p">,</span> <span class="n">thickness</span>
+    <span class="p">)</span>
     <span class="n">compound</span><span class="o">.</span><span class="n">density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-density&quot;</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
-    <span class="n">compound</span><span class="o">.</span><span class="n">magnetic_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-magnetic_density&quot;</span><span class="p">,</span> <span class="n">magetic_density</span><span class="p">)</span>
-    <span class="n">compound</span><span class="o">.</span><span class="n">roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-roughness&quot;</span><span class="p">,</span> <span class="n">roughness</span><span class="p">)</span>
+    <span class="n">compound</span><span class="o">.</span><span class="n">magnetic_density</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-magnetic_density&quot;</span><span class="p">,</span> <span class="n">magetic_density</span>
+    <span class="p">)</span>
+    <span class="n">compound</span><span class="o">.</span><span class="n">roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-roughness&quot;</span><span class="p">,</span> <span class="n">roughness</span>
+    <span class="p">)</span>
+    <span class="n">compound</span><span class="o">.</span><span class="n">prev_roughness</span> <span class="o">=</span> <span class="n">parameters_container</span><span class="o">.</span><span class="n">new_parameter</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-prev_roughness&quot;</span><span class="p">,</span> <span class="n">prev_roughness</span>
+    <span class="p">)</span>
+    <span class="n">compound</span><span class="o">.</span><span class="n">linked_prev_roughness</span> <span class="o">=</span> <span class="n">linked_prev_roughness</span>
     <span class="n">compound</span><span class="o">.</span><span class="n">compound_details</span> <span class="o">=</span> <span class="n">compound_details</span>
 
     <span class="k">return</span> <span class="n">compound</span></div>

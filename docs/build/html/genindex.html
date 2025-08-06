@@ -5,14 +5,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; rxrmask 0.1.0 documentation</title>
+  <title>Index &mdash; rxrmask 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css?v=1277b6f3" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -39,13 +43,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/pint_init.html">Units &amp; Quantities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples Gallery</a></li>
 </ul>
 
         </div>
@@ -85,6 +90,7 @@
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -125,11 +131,9 @@
 </li>
       <li><a href="api/core.html#rxrmask.core.compound.CompoundDetails">CompoundDetails (class in rxrmask.core.compound)</a>
 </li>
-      <li><a href="api/core.html#rxrmask.core.structure.Structure.compounds">compounds (rxrmask.core.structure.Structure attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.layer.Layer.compute">compute() (rxrmask.core.layer.Layer method)</a>
+      <li><a href="api/core.html#rxrmask.core.structure.Structure.compounds">compounds (rxrmask.core.structure.Structure attribute)</a>
 </li>
       <li><a href="api/utils.html#rxrmask.utils.compute_adaptive_layer_segmentation">compute_adaptive_layer_segmentation() (in module rxrmask.utils)</a>
 </li>
@@ -157,14 +161,12 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.element">element (rxrmask.core.formfactor.FormFactorLocalDB attribute)</a>
-</li>
       <li><a href="api/core.html#rxrmask.core.structure.Structure.element_data">element_data (rxrmask.core.structure.Structure attribute)</a>
+</li>
+      <li><a href="api/core.html#rxrmask.core.layer.Layer.elements">elements (rxrmask.core.layer.Layer attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.layer.Layer.elements">elements (rxrmask.core.layer.Layer attribute)</a>
-</li>
       <li><a href="api/backends.html#rxrmask.backends.pr_backend.energy_scan">energy_scan() (in module rxrmask.backends.pr_backend)</a>
 </li>
       <li><a href="api/backends.html#rxrmask.backends.pr_backend.energy_scan_parallel">energy_scan_parallel() (in module rxrmask.backends.pr_backend)</a>
@@ -177,21 +179,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.atom.Atom.ff">ff (rxrmask.core.atom.Atom attribute)</a>
 </li>
-      <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.ff_data">ff_data (rxrmask.core.formfactor.FormFactorLocalDB attribute)</a>
-</li>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel.ff_path">ff_path (rxrmask.core.formfactor.FormFactorModel attribute)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.atom.Atom.ffm">ffm (rxrmask.core.atom.Atom attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.atom.find_atom">find_atom() (in module rxrmask.core.atom)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.parameter.Parameter.fit">fit (rxrmask.core.parameter.Parameter attribute)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB">FormFactorLocalDB (class in rxrmask.core.formfactor)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel">FormFactorModel (class in rxrmask.core.formfactor)</a>
+</li>
+      <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorVacancy">FormFactorVacancy (class in rxrmask.core.formfactor)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.compound.Compound.formula">formula (rxrmask.core.compound.Compound attribute)</a>
 </li>
@@ -201,12 +203,18 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.parameter.Parameter.get">get() (rxrmask.core.parameter.Parameter method)</a>
+      <li><a href="api/core.html#rxrmask.core.parameter.DerivedParameter.get">get() (rxrmask.core.parameter.DerivedParameter method)</a>
+
+      <ul>
+        <li><a href="api/core.html#rxrmask.core.parameter.Parameter.get">(rxrmask.core.parameter.Parameter method)</a>
 </li>
+      </ul></li>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.get_all_formfactors">get_all_formfactors() (rxrmask.core.formfactor.FormFactorLocalDB method)</a>
 
       <ul>
         <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel.get_all_formfactors">(rxrmask.core.formfactor.FormFactorModel method)</a>
+</li>
+        <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorVacancy.get_all_formfactors">(rxrmask.core.formfactor.FormFactorVacancy method)</a>
 </li>
       </ul></li>
       <li><a href="api/core.html#rxrmask.core.compound.get_compound_details">get_compound_details() (in module rxrmask.core.compound)</a>
@@ -219,23 +227,35 @@
 </li>
       <li><a href="api/core.html#rxrmask.core.parameter.ParametersContainer.get_fit_vector">get_fit_vector() (rxrmask.core.parameter.ParametersContainer method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors">get_formfactors() (rxrmask.core.formfactor.FormFactorLocalDB method)</a>
 
       <ul>
         <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel.get_formfactors">(rxrmask.core.formfactor.FormFactorModel method)</a>
 </li>
+        <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors">(rxrmask.core.formfactor.FormFactorVacancy method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors_energies">get_formfactors_energies() (rxrmask.core.formfactor.FormFactorLocalDB method)</a>
 
       <ul>
         <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel.get_formfactors_energies">(rxrmask.core.formfactor.FormFactorModel method)</a>
 </li>
+        <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors_energies">(rxrmask.core.formfactor.FormFactorVacancy method)</a>
+</li>
       </ul></li>
       <li><a href="api/core.html#rxrmask.core.layer.Layer.get_index_of_refraction">get_index_of_refraction() (rxrmask.core.layer.Layer method)</a>
 </li>
+      <li><a href="api/core.html#rxrmask.core.layer.Layer.get_index_of_refraction_batch">get_index_of_refraction_batch() (rxrmask.core.layer.Layer method)</a>
+</li>
+      <li><a href="api/backends.html#rxrmask.backends.pr_backend.get_index_of_refraction_energies">get_index_of_refraction_energies() (in module rxrmask.backends.pr_backend)</a>
+</li>
       <li><a href="api/core.html#rxrmask.core.layer.Layer.get_magnetic_optical_constant">get_magnetic_optical_constant() (rxrmask.core.layer.Layer method)</a>
+</li>
+      <li><a href="api/core.html#rxrmask.core.layer.Layer.get_magnetic_optical_constant_batch">get_magnetic_optical_constant_batch() (rxrmask.core.layer.Layer method)</a>
+</li>
+      <li><a href="api/backends.html#rxrmask.backends.pr_backend.get_magnetic_optical_constants_energies">get_magnetic_optical_constants_energies() (in module rxrmask.backends.pr_backend)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorModel.get_path">get_path() (rxrmask.core.formfactor.FormFactorModel method)</a>
 </li>
@@ -257,7 +277,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.is_magnetic">is_magnetic (rxrmask.core.formfactor.FormFactorLocalDB attribute)</a>
+      <li><a href="api/core.html#rxrmask.core.compound.CompoundDetails.index">index (rxrmask.core.compound.CompoundDetails attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -267,11 +287,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.layer.Layer">Layer (class in rxrmask.core.layer)</a>
 </li>
-      <li><a href="api/core.html#rxrmask.core.structure.Structure.layer_thickness_params">layer_thickness_params (rxrmask.core.structure.Structure attribute)</a>
+      <li><a href="api/core.html#rxrmask.core.structure.Structure.layers">layers (rxrmask.core.structure.Structure attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.structure.Structure.layers">layers (rxrmask.core.structure.Structure attribute)</a>
+      <li><a href="api/core.html#rxrmask.core.compound.Compound.linked_prev_roughness">linked_prev_roughness (rxrmask.core.compound.Compound attribute)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.parameter.ParametersContainer.load">load() (rxrmask.core.parameter.ParametersContainer method)</a>
 </li>
@@ -367,6 +387,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/core.html#rxrmask.core.optimization.optimize_structure_parameters">optimize_structure_parameters() (in module rxrmask.core.optimization)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -376,24 +404,32 @@
 </li>
       <li><a href="api/core.html#rxrmask.core.parameter.ParametersContainer">ParametersContainer (class in rxrmask.core.parameter)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/core.html#rxrmask.core.structure.Structure.params_container">params_container (rxrmask.core.structure.Structure attribute)</a>
+</li>
       <li><a href="api/utils.html#rxrmask.utils.plot_density_profile">plot_density_profile() (in module rxrmask.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/utils.html#rxrmask.utils.plot_energy_scan">plot_energy_scan() (in module rxrmask.utils)</a>
+</li>
+      <li><a href="api/utils.html#rxrmask.utils.plot_formfactor_object">plot_formfactor_object() (in module rxrmask.utils)</a>
 </li>
       <li><a href="api/utils.html#rxrmask.utils.plot_reflectivity">plot_reflectivity() (in module rxrmask.utils)</a>
 </li>
       <li><a href="api/utils.html#rxrmask.utils.plot_slab_model">plot_slab_model() (in module rxrmask.utils)</a>
 </li>
+      <li><a href="api/core.html#rxrmask.core.compound.Compound.prev_roughness">prev_roughness (rxrmask.core.compound.Compound attribute)</a>
+
+      <ul>
+        <li><a href="api/core.html#rxrmask.core.compound.CompoundDetails.prev_roughness">(rxrmask.core.compound.CompoundDetails attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.formfactor.FormFactorLocalDB.read_data">read_data() (rxrmask.core.formfactor.FormFactorLocalDB method)</a>
-</li>
       <li><a href="api/backends.html#rxrmask.backends.pr_backend.reflectivity">reflectivity() (in module rxrmask.backends.pr_backend)</a>
 </li>
       <li><a href="api/backends.html#rxrmask.backends.pr_backend.reflectivity_parallel">reflectivity_parallel() (in module rxrmask.backends.pr_backend)</a>
@@ -502,9 +538,11 @@
 </li>
       <li><a href="api/core.html#rxrmask.core.parameter.Parameter.set">set() (rxrmask.core.parameter.Parameter method)</a>
 </li>
+      <li><a href="api/core.html#rxrmask.core.parameter.ParametersContainer.set_fit_vector">set_fit_vector() (rxrmask.core.parameter.ParametersContainer method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/core.html#rxrmask.core.parameter.ParametersContainer.set_fit_vector">set_fit_vector() (rxrmask.core.parameter.ParametersContainer method)</a>
+      <li><a href="api/core.html#rxrmask.core.structure.Structure.step">step (rxrmask.core.structure.Structure attribute)</a>
 </li>
       <li><a href="api/core.html#rxrmask.core.compound.CompoundDetails.stochiometric_fraction">stochiometric_fraction (rxrmask.core.compound.CompoundDetails attribute)</a>
 </li>
@@ -547,6 +585,10 @@
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/core.html#rxrmask.core.structure.Structure.validate_compounds">validate_compounds() (rxrmask.core.structure.Structure method)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/core.html#rxrmask.core.parameter.Parameter.value">value (rxrmask.core.parameter.Parameter attribute)</a>
 </li>

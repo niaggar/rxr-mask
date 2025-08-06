@@ -1,24 +1,20 @@
-# Version information
-__version__ = "0.1.0"
+"""RXR-Mask: X-ray reflectometry analysis package.
 
-# Make core modules easily accessible
+Provides tools for X-ray reflectometry calculations and analysis.
+"""
+
+__version__ = "0.2.0"
+
 from . import core
 from . import backends
 from . import utils
-
-# Optionally expose the most commonly used classes at the top level
 from .core import Atom, Structure, Compound, Layer, FormFactorLocalDB
 
 __all__ = [
-    # Version info
     '__version__',
-    
-    # Submodules
     'core',
     'backends', 
     'utils',
-    
-    # Commonly used classes
     'Atom',
     'Structure',
     'Compound',

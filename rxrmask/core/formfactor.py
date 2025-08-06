@@ -1,7 +1,4 @@
-"""Form factor handling for X-ray reflectometry calculations.
-
-Provides interface and implementation for atomic form factor models.
-"""
+"""Form factor handling for X-ray reflectometry calculations."""
 
 from dataclasses import dataclass, field
 import numpy as np
@@ -16,10 +13,8 @@ import rxrmask
 class FormFactorModel:
     """Base class for atomic form factor models.
     
-    Defines interface for X-ray form factor calculations.
-    
     Attributes:
-        ff_path (str | None): Path to form factor data file.
+        ff_path: Path to form factor data file
     """
     ff_path: Optional[str] = field(default=None)
 
@@ -27,21 +22,23 @@ class FormFactorModel:
         """Get form factors at specific energy.
         
         Args:
-            energy_eV (float): X-ray energy in eV.
+            energy_eV: X-ray energy in eV
+            args: Additional arguments for specific models
             
         Returns:
-            tuple[float, float]: (f1, f2) form factor components.
+            (f1, f2) form factor components
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
-    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get form factors for multiple energies.
         
         Args:
-            energies (npt.NDArray[np.float64]): Array of energies in eV.
+            energies: Array of energies in eV
+            args: Additional arguments for specific models
             
         Returns:
-            tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: (f1, f2) form factor arrays.
+            (f1, f2) form factor arrays
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
@@ -49,7 +46,7 @@ class FormFactorModel:
         """Get complete form factor dataset.
         
         Returns:
-            npt.NDArray[np.float64]: All form factor data.
+            All form factor data
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
     
@@ -59,10 +56,12 @@ class FormFactorModel:
     
 @dataclass
 class FormFactorVacancy(FormFactorModel):
+    """Form factor model representing a vacancy (zero form factor)."""
+    
     def get_formfactors(self, energy_eV: float, *args) -> tuple[float, float]:
         return 0.0, 0.0
     
-    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         return np.zeros(len(energies)), np.zeros(len(energies))
     
     def get_all_formfactors(self, *args) -> npt.NDArray[np.float64]:
@@ -70,7 +69,7 @@ class FormFactorVacancy(FormFactorModel):
 
 @dataclass
 class FormFactorLocalDB(FormFactorModel):
-    """Form factor model using local database files with numpy."""
+    """Form factor model using local database files."""
     element: Optional[str] = field(default=None)
     is_magnetic: bool = field(default=False)
     ff_data: Optional[npt.NDArray[np.float64]] = field(default=None)
@@ -110,7 +109,7 @@ class FormFactorLocalDB(FormFactorModel):
         f2 = np.interp(energy_eV, energies, self.ff_data[:, 2])
         return float(f1), float(f2)
 
-    def get_formfactors_energies(self, energies: npt.NDArray[np.float64]) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
 

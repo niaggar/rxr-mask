@@ -1,8 +1,4 @@
-"""Parameter management for X-ray reflectometry calculations.
-
-Provides parameter classes with type validation, constraints, and fitting capabilities.
-Supports parameter containers for optimization workflows.
-"""
+"""Parameter management for X-ray reflectometry calculations."""
 
 from dataclasses import dataclass, field
 from typing import TypeVar, Generic, Any, Callable, Optional
@@ -15,11 +11,11 @@ class Parameter(Generic[T]):
     """Parameter with value, constraints, and fitting capability.
     
     Attributes:
-        value: Parameter value (int, float, str, or complex)
+        value: Parameter value
         id: Unique identifier
-        name: Human-readable name
-        min_value: Minimum value constraint (optional)
-        max_value: Maximum value constraint (optional)
+        name: Human-readable name, also used to save/load
+        min_value: Minimum value constraint
+        max_value: Maximum value constraint
         fit: Enable for fitting/optimization
     """
     value: T
@@ -30,21 +26,13 @@ class Parameter(Generic[T]):
     max_value: T | None = None
     fit: bool = False
         
-    def get(self, prray=None) -> T:
-        """Get parameter value from internal storage or external array.
-        
-        Args:
-            prray: External parameter array (optional)
-            
+    def get(self) -> T:
+        """Get parameter value from internal storage.
+
         Returns:
             Parameter value
         """
-        if prray is None:
-            if self.value is None:
-                raise ValueError("Parameter value has not been set.")
-            return self.value
-        else:
-            return prray[self.id] if self.id < len(prray) else None # type: ignore
+        return self.value
 
     def set(self, value: T) -> None:
         """Set parameter value with type validation.
@@ -63,7 +51,7 @@ class DerivedParameter(Parameter[T]):
     """Parameter with automatic update functionality.
     
     Attributes:
-        update_func: Function to calculate parameter value
+        update_func: Function to calculate new value
     """
     update_func: Optional[Callable[[], T]] = None
     
@@ -72,6 +60,10 @@ class DerivedParameter(Parameter[T]):
         if self.update_func is None:
             raise RuntimeError("No update function defined for DerivedParameter.")
         self.value = self.update_func()
+        
+    def get(self) -> T:
+        self.update()
+        return self.value
         
 @dataclass
 class ParametersContainer:

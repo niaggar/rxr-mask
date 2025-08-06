@@ -43,13 +43,14 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Documentation Tree
+   :caption: Contents
    
    api/backends
    api/core
    api/materials
    api/pint_init
    api/utils
+   examples
 
 Indices and Tables
 ==================

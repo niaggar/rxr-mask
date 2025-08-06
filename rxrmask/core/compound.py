@@ -1,7 +1,4 @@
-"""Chemical compound representation for X-ray reflectometry.
-
-Provides classes for representing compounds and their atomic components.
-"""
+"""Chemical compound representation for X-ray reflectometry."""
 
 from rxrmask.core.atom import Atom, find_atom
 from rxrmask.core.parameter import Parameter, ParametersContainer
@@ -14,19 +11,16 @@ from typing import Literal
 class CompoundDetails:
     """Atomic species within a compound layer.
 
-    Stores stoichiometric and physical properties for individual atoms
-    in a compound structure.
-
     Attributes:
-        index (int): Indicates atom position in the lattice layer.
-        name (str): Chemical symbol.
-        stochiometric_fraction (float): Stoichiometric coefficient.
-        atom (Atom): Atom object with atomic properties.
-        thickness (Parameter[float]): Layer thickness in Angstroms.
-        roughness (Parameter[float]): Interface roughness in Angstroms.
-        prev_roughness (Parameter[float]): Previous interface roughness in Angstroms.
-        molar_density (Parameter[float]): Molar density in mol/cm³.
-        molar_magnetic_density (Parameter[float]): Magnetic density in mol/cm³.
+        index: Atom position in the lattice layer
+        name: Chemical symbol
+        stochiometric_fraction: Stoichiometric coefficient
+        atom: Atom object with atomic properties
+        thickness: Layer thickness in Angstroms
+        roughness: Interface roughness in Angstroms
+        prev_roughness: Previous interface roughness in Angstroms
+        molar_density: Molar density in mol/cm³
+        molar_magnetic_density: Magnetic density in mol/cm³
     """
 
     index: int
@@ -40,7 +34,6 @@ class CompoundDetails:
     molar_magnetic_density: Parameter[float]  # in mol/cm^3
 
     def __init__(self):
-        """Initialize CompoundDetails with default values."""
         self.name = ""
         self.stochiometric_fraction = 0.0
 
@@ -49,21 +42,18 @@ class CompoundDetails:
 class Compound:
     """Chemical compound in multilayer structure.
 
-    Represents a compound with composition, physical properties,
-    and structural parameters.
-
     Attributes:
-        name (str): Compound name.
-        formula (str): Chemical formula as "Element1:count1,Element2:count2".
-        thickness (Parameter[float]): Total thickness in Angstroms.
-        roughness (Parameter[float]): Interface roughness in Angstroms.
-        prev_roughness (Parameter[float]): Previous interface roughness in Angstroms.
-        linked_prev_roughness (bool): Whether to link previous roughness.
-        density (Parameter[float]): Density in g/cm³.
-        magnetic_density (Parameter[float]): Magnetic density in g/cm³.
-        magnetic (bool): Whether compound is magnetic.
-        magnetic_direction (Literal): Magnetic moment direction.
-        compound_details (list[CompoundDetails]): Atomic layer structures.
+        name: Compound name
+        formula: Chemical formula as "Element1:count1,Element2:count2"
+        thickness: Total thickness in Angstroms
+        roughness: Interface roughness in Angstroms
+        prev_roughness: Previous interface roughness in Angstroms
+        linked_prev_roughness: Whether to link previous roughness
+        density: Density in g/cm³
+        magnetic_density: Magnetic density in g/cm³
+        magnetic: Whether compound is magnetic
+        magnetic_direction: Magnetic moment direction
+        compound_details: Atomic layer structures
     """
 
     name: str
@@ -117,11 +107,11 @@ def get_compound_details(formula: str, atoms: list[Atom]) -> list[CompoundDetail
     """Parse formula and create compound details.
 
     Args:
-        formula (str): Chemical formula to parse.
-        atoms (list[Atom]): Available atom objects.
+        formula: Chemical formula to parse
+        atoms: Available atom objects
 
     Returns:
-        list[CompoundDetails]: Details for each element in formula.
+        Details for each element in formula
     """
     details = []
     for idx, part in enumerate(formula.split(",")):
@@ -155,17 +145,19 @@ def create_compound(
     """Create compound with parameters and atomic details.
 
     Args:
-        parameters_container: Container for parameter management.
-        name: Compound name.
-        formula: Chemical formula.
-        thickness: Layer thickness.
-        density: Material density.
-        atoms: Available atom objects.
-        roughness: Interface roughness.
-        magetic_density: Magnetic density.
+        parameters_container: Container for parameter management
+        name: Compound name
+        formula: Chemical formula
+        thickness: Layer thickness
+        density: Material density
+        atoms: Available atom objects
+        roughness: Interface roughness
+        prev_roughness: Previous interface roughness
+        linked_prev_roughness: Link previous roughness if True
+        magetic_density: Magnetic density
 
     Returns:
-        Compound: Configured compound object.
+        Configured compound object
     """
     compound_details = get_compound_details(formula, atoms)
 

@@ -1,0 +1,47 @@
+{
+ "Atom": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "rxrmask.core",
+   "module_short": "rxrmask.core",
+   "name": "Atom"
+  }
+ ],
+ "FormFactorLocalDB": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "rxrmask.core",
+   "module_short": "rxrmask.core",
+   "name": "FormFactorLocalDB"
+  }
+ ],
+ "ParametersContainer": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "rxrmask.core",
+   "module_short": "rxrmask.core",
+   "name": "ParametersContainer"
+  }
+ ],
+ "Structure": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "rxrmask.core",
+   "module_short": "rxrmask.core",
+   "name": "Structure"
+  }
+ ],
+ "create_compound": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "rxrmask.core",
+   "module_short": "rxrmask.core",
+   "name": "create_compound"
+  }
+ ]
+}

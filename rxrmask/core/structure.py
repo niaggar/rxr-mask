@@ -1,7 +1,4 @@
-"""Multilayer structure representation for X-ray reflectometry.
-
-Provides Structure class for managing compounds and layer discretization.
-"""
+"""Multilayer structure representation for X-ray reflectometry."""
 
 from rxrmask.core import Compound, AtomLayer, Layer
 from rxrmask.core.parameter import ParametersContainer
@@ -14,16 +11,16 @@ from dataclasses import dataclass, field
 class Structure:
     """Complete multilayer structure for X-ray reflectometry.
 
-    Manages compounds organization, layer discretization, and density profiles.
-
     Attributes:
-        name (str): Structure name.
-        n_compounds (int): Number of compounds.
-        n_layers (int): Number of discretized layers.
-        layers (list[Layer]): Discretized layer objects.
-        compounds (list[Compound | None]): Compound objects.
-        element_data (dict | None): Cached element data for optimization.
-        atoms (dict | None): Atom objects cache.
+        name: Structure name
+        params_container: Container for parameters
+        n_compounds: Number of compounds
+        n_layers: Number of discretized layers
+        layers: Discretized layer objects
+        compounds: Compound objects
+        element_data: Cached element data for optimization
+        atoms: Atom objects cache
+        step: Discretization step size in Angstroms
     """
 
     name: str
@@ -40,7 +37,6 @@ class Structure:
     def __init__(
         self, name: str, n_compounds: int, params_container: ParametersContainer
     ):
-        """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
         self.compounds = [None] * n_compounds  # type: ignore
@@ -56,7 +52,7 @@ class Structure:
         self.compounds[index] = compound
 
     def validate_compounds(self):
-        """Validate that all compounds are defined."""
+        """Validate that all compounds are defined and link roughness if needed."""
         for compound in self.compounds:
             if compound is None:
                 raise ValueError("All compounds must be defined.")
@@ -212,7 +208,6 @@ class Structure:
         return data, atoms
 
     def print_details(self):
-        """Print details of the structure."""
         print(f"Structure: {self.name}")
         print(f"Number of compounds: {self.n_compounds}")
         print(f"Number of layers: {self.n_layers}")

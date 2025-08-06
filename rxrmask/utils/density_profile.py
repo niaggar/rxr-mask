@@ -1,8 +1,4 @@
-"""Density profile calculations for multilayer structures.
-
-Provides functions for calculating atomic density profiles including
-interface roughness effects.
-"""
+"""Density profile calculations for multilayer structures."""
 
 import numpy as np
 from scipy.special import erf

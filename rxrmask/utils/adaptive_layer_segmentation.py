@@ -1,7 +1,4 @@
-"""Adaptive layer segmentation for efficient reflectivity calculations.
-
-Provides functions to group similar layers for computational optimization.
-"""
+"""Adaptive layer segmentation for efficient reflectivity calculations."""
 
 from rxrmask.core.layer import Layer
 from typing import List
@@ -16,15 +13,14 @@ def compute_adaptive_layer_segmentation(
 ) -> List[int]:
     """Adaptive layer segmentation based on optical constant variation.
 
-    Groups layers with similar optical properties to reduce computation.
-
     Args:
-        layers: List of layers with precomputed optical properties.
-        energy_eV: Energy at which optical constants were computed.
-        precision: Threshold for optical constant variation.
+        index_of_refraction: Index of refraction array
+        magnetic_optical_constants: Magnetic optical constants
+        precision: Threshold for optical constant variation
+        als: Enable adaptive layer segmentation
 
     Returns:
-        List[int]: Layer boundary indices for segmentation.
+        Layer boundary indices for segmentation
     """
     if als is False:
         return list(range(len(index_of_refraction)))

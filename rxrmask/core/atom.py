@@ -1,8 +1,4 @@
-"""Atom module for RXR-Mask.
-
-This module provides the Atom class and related utilities for representing
-atomic species in X-ray reflectometry calculations.
-"""
+"""Atomic species for X-ray reflectometry calculations."""
 
 from rxrmask.core.formfactor import FormFactorModel
 
@@ -13,14 +9,12 @@ import rxrmask
 
 @dataclass
 class Atom:
-    """Atomic species for X-ray reflectometry calculations.
-
-    Stores atomic properties, form factors, and mass. Mass is auto-loaded from database.
+    """Atomic species for X-ray reflectometry.
 
     Attributes:
         Z: Atomic number
         name: Chemical symbol (e.g., 'Fe', 'O')
-        ff: X-ray form factor model
+        ff: Form factor model
         ffm: Magnetic form factor model (optional)
         mass: Atomic mass in g/mol (auto-loaded if 0.0)
     """
@@ -43,12 +37,11 @@ class Atom:
         """Load atomic mass from materials database.
 
         Returns:
-            float: Atomic mass in g/mol
+            Atomic mass in g/mol
 
         Raises:
             NameError: If atom symbol not found in database
         """
-        # Validate if the name of the atom is somthing like Xi where i is a number
         if len(self.name) >= 2:
             if (
                 self.name[0].isalpha() and self.name[0].upper() == "X"

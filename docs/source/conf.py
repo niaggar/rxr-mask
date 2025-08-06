@@ -12,16 +12,17 @@ sys.path.insert(0, os.path.abspath("../../rxrmask"))
 project = 'rxrmask'
 copyright = '2025, Nicolas Aguilera G'
 author = 'Nicolas Aguilera G'
-release = '0.1.0'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinx.ext.autodoc",            # extrae docstrings
-    "sphinx.ext.napoleon",           # soporta NumPy/Google style
-    "sphinx_autodoc_typehints",      # incluye hints de tipo
-    "sphinx.ext.viewcode",           # link al código fuente
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx_autodoc_typehints",
+    "sphinx.ext.viewcode",
+    "sphinx_gallery.gen_gallery",
 ]
 
 templates_path = ['_templates']
@@ -29,7 +30,7 @@ exclude_patterns = []
 
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",   # donde pongas tus ejemplos
-    "gallery_dirs": "examples",     # dónde generar las páginas
+    "gallery_dirs": "auto_examples",     # dónde generar las páginas
 }
 
 
@@ -37,4 +38,4 @@ sphinx_gallery_conf = {
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
-html_static_path = ['_static']
+# html_static_path = ['_static']

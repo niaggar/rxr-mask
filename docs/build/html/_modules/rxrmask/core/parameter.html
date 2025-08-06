@@ -5,14 +5,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rxrmask.core.parameter &mdash; rxrmask 0.1.0 documentation</title>
+  <title>rxrmask.core.parameter &mdash; rxrmask 0.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -39,13 +43,14 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Documentation Tree</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples Gallery</a></li>
 </ul>
 
         </div>
@@ -73,11 +78,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rxrmask.core.parameter</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Parameter management for X-ray reflectometry calculations.</span>
-
-<span class="sd">Provides parameter classes with type validation, constraints, and fitting capabilities.</span>
-<span class="sd">Supports parameter containers for optimization workflows.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Parameter management for X-ray reflectometry calculations.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
@@ -86,17 +87,17 @@
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Parameter">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.Parameter">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Parameter</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter with value, constraints, and fitting capability.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        value: Parameter value (int, float, str, or complex)</span>
+<span class="sd">        value: Parameter value</span>
 <span class="sd">        id: Unique identifier</span>
-<span class="sd">        name: Human-readable name</span>
-<span class="sd">        min_value: Minimum value constraint (optional)</span>
-<span class="sd">        max_value: Maximum value constraint (optional)</span>
+<span class="sd">        name: Human-readable name, also used to save/load</span>
+<span class="sd">        min_value: Minimum value constraint</span>
+<span class="sd">        max_value: Maximum value constraint</span>
 <span class="sd">        fit: Enable for fitting/optimization</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">T</span>
@@ -108,26 +109,18 @@
     <span class="n">fit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         
 <div class="viewcode-block" id="Parameter.get">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter.get">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prray</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get parameter value from internal storage or external array.</span>
-<span class="sd">        </span>
-<span class="sd">        Args:</span>
-<span class="sd">            prray: External parameter array (optional)</span>
-<span class="sd">            </span>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.Parameter.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get parameter value from internal storage.</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            Parameter value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">prray</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter value has not been set.&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">prray</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">prray</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span> <span class="c1"># type: ignore</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
 
 
 <div class="viewcode-block" id="Parameter.set">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.Parameter.set">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.Parameter.set">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set parameter value with type validation.</span>
 <span class="sd">        </span>
@@ -143,28 +136,35 @@
 
 
 <div class="viewcode-block" id="DerivedParameter">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.DerivedParameter">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.DerivedParameter">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DerivedParameter</span><span class="p">(</span><span class="n">Parameter</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parameter with automatic update functionality.</span>
 <span class="sd">    </span>
 <span class="sd">    Attributes:</span>
-<span class="sd">        update_func: Function to calculate parameter value</span>
+<span class="sd">        update_func: Function to calculate new value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">update_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
     
 <div class="viewcode-block" id="DerivedParameter.update">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.DerivedParameter.update">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.DerivedParameter.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update parameter value using update function.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No update function defined for DerivedParameter.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_func</span><span class="p">()</span></div>
+
+        
+<div class="viewcode-block" id="DerivedParameter.get">
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.DerivedParameter.get">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div>
 </div>
 
         
 <div class="viewcode-block" id="ParametersContainer">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParametersContainer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Container for managing parameter collections and fitting workflows.</span>
@@ -177,7 +177,7 @@
     <span class="n">derived_parameters</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">DerivedParameter</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ParametersContainer.new_parameter">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.new_parameter">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.new_parameter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">new_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">fit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Parameter</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and register a new parameter.</span>
 <span class="sd">        </span>
@@ -196,7 +196,7 @@
 
     
 <div class="viewcode-block" id="ParametersContainer.register_derived">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.register_derived">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.register_derived">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">register_derived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">update_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">DerivedParameter</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a derived parameter with update function.</span>
 <span class="sd">        </span>
@@ -214,7 +214,7 @@
 
     
 <div class="viewcode-block" id="ParametersContainer.update_derived">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.update_derived">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.update_derived">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_derived</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update all derived parameters.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">derived_parameters</span><span class="p">:</span>
@@ -222,14 +222,14 @@
 
     
 <div class="viewcode-block" id="ParametersContainer.get_fit_vector">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.get_fit_vector">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.get_fit_vector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fit_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract values of parameters marked for fitting.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">fit</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="ParametersContainer.set_fit_vector">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.set_fit_vector">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.set_fit_vector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_fit_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Update fitting parameters from vector.&quot;&quot;&quot;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
@@ -243,7 +243,7 @@
 
         
 <div class="viewcode-block" id="ParametersContainer.save">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.save">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.save">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save parameters to JSON file.&quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
@@ -261,7 +261,7 @@
 
 
 <div class="viewcode-block" id="ParametersContainer.load">
-<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.ParametersContainer.load">[docs]</a>
+<a class="viewcode-back" href="../../../api/core.html#rxrmask.core.parameter.ParametersContainer.load">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load parameters from JSON file.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>

@@ -1,3 +1,5 @@
+"""Computational backends for X-ray reflectometry calculations."""
+
 from .pr_backend import (
     reflectivity as reflectivity_pr,
     reflectivity_parallel as reflectivity_parallel_pr,
@@ -12,7 +14,6 @@ except ImportError:
     _udkm_available = False
 
 __all__ = [
-    # Pythonreflectivity backend functions
     'reflectivity_pr',
     'reflectivity_parallel_pr',
     'energy_scan_pr',
