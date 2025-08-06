@@ -45,12 +45,6 @@ def get_density_profile_from_element_data(element_data, layer_thickness_params, 
     layer_thicknesses = [param.get() for param in layer_thickness_params]
     layer_positions = np.cumsum([0.0] + layer_thicknesses)
     
-    max_roughness = 0.0
-    for data in element_data.values():
-        for roughness_param in data['roughness_params']:
-            if roughness_param is not None:
-                max_roughness = max(max_roughness, roughness_param.get())
-    
     total_thickness = sum(layer_thicknesses)
     z = np.arange(0, total_thickness + 15 + step, step)
     

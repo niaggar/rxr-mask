@@ -32,7 +32,7 @@ class Structure:
     n_compounds: int = 0
     n_layers: int = 0
     layers: list[Layer] = field(default_factory=list)
-    compounds: list[Compound | None] = field(default_factory=list)
+    compounds: list[Compound] = field(default_factory=list)
 
     element_data: dict | None = None
     layer_thickness_params: list | None = None
@@ -45,7 +45,7 @@ class Structure:
         """Initialize structure with name and number of compounds."""
         self.name = name
         self.n_compounds = n_compounds
-        self.compounds = [None] * n_compounds
+        self.compounds = [None] * n_compounds # type: ignore
         self.params_container = params_container
 
     def add_compound(self, index: int, compound: Compound) -> None:
@@ -56,6 +56,28 @@ class Structure:
             raise TypeError("Expected a Compound instance.")
 
         self.compounds[index] = compound
+
+    def validate_compounds(self):
+        """Validate that all compounds are defined."""
+        for compound in self.compounds:
+            if compound is None:
+                raise ValueError("All compounds must be defined.")
+
+        for i in range(1, len(self.compounds)):
+            current_compound = self.compounds[i]  # type: ignore
+            if current_compound.linked_prev_roughness:
+                prev_compound = self.compounds[i - 1]  # type: ignore
+                current_compound.prev_roughness = prev_compound.roughness
+
+                if len(current_compound.compound_details) != len(
+                    prev_compound.compound_details
+                ):
+                    raise ValueError(
+                        f"Compound {i} has different number of elements than compound {i-1}."
+                    )
+                
+                for j, detail in enumerate(current_compound.compound_details):
+                    detail.prev_roughness = prev_compound.compound_details[j].roughness
 
     def create_layers(self, step: float = 0.1) -> None:
         """Create discretized layers from compounds with specified step size."""
@@ -158,7 +180,7 @@ class Structure:
             if compound is None:
                 continue
 
-            for element in compound.compound_details:
+            for j, element in enumerate(compound.compound_details):
                 name = element.name
 
                 if name not in atoms:
@@ -171,13 +193,40 @@ class Structure:
                     }
 
                 data[name]["density_params"][i] = element.molar_density
-                data[name]["magnetic_density_params"][
-                    i
-                ] = element.molar_magnetic_density
-                data[name]["roughness_params"][i] = element.roughness
+                data[name]["magnetic_density_params"][i] = element.molar_magnetic_density
+                
                 data[name]["thickness_params"][i] = element.thickness
+                
+                if i > 0:
+                    if data[name]["roughness_params"][i - 1] is None:
+                        data[name]["roughness_params"][i - 1] = element.prev_roughness
+
+                data[name]["roughness_params"][i] = element.roughness
+                
+                
+        for element_name, element_info in data.items():
+            print(f"  {element_name}:")
+            for param_name, param_value in element_info.items():
+                print(f"    {param_name}: {[p.get() if p else None for p in param_value]}")
 
         layer_thickness_params = [
             compound.thickness for compound in self.compounds if compound is not None
         ]
         return data, layer_thickness_params, atoms
+
+    def print_details(self):
+        """Print details of the structure."""
+        print(f"Structure: {self.name}")
+        print(f"Number of compounds: {self.n_compounds}")
+        print(f"Number of layers: {self.n_layers}")
+
+        for i, compound in enumerate(self.compounds):
+            if compound is None:
+                continue
+            print(f"Compound {i}: {compound.name}")
+            print(f"  Thickness: {compound.thickness} Angstrom")
+            print(f"  Density: {compound.density} g/cm³")
+            if compound.magnetic_density:
+                print(f"  Magnetic Density: {compound.magnetic_density} mol/cm³")
+            print(f"  Roughness: {compound.roughness} Angstrom")
+            print(f"  Previous Roughness: {compound.prev_roughness} Angstrom")

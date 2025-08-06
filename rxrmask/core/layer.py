@@ -170,3 +170,16 @@ class Layer:
 
         q_complex = 2 * (delta_m + 1j * beta_m)
         return q_complex
+    
+    def print_details(self):
+        """Print details of the layer."""
+        print(f"Layer ID: {self.id}")
+        print(f"  Thickness: {self.thickness} Angstroms")
+        for element in self.elements:
+            atom = element.atom
+            print(
+                f"  Element: {atom.name}, "
+                f"Molar Density: {element.molar_density.get()} mol/cm³, "
+                f"Magnetic Density: {element.molar_magnetic_density.get() if element.molar_magnetic_density else 'N/A'} mol/cm³, "
+                f"Is Magnetic: {'Yes' if element.molar_magnetic_density else 'No'}"
+            )
