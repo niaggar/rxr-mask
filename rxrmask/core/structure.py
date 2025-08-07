@@ -34,9 +34,7 @@ class Structure:
     atoms: dict | None = None
     step: float = 0.1
 
-    def __init__(
-        self, name: str, n_compounds: int, params_container: ParametersContainer
-    ):
+    def __init__(self, name: str, n_compounds: int, params_container: ParametersContainer):
         self.name = name
         self.n_compounds = n_compounds
         self.compounds = [None] * n_compounds  # type: ignore
@@ -58,17 +56,13 @@ class Structure:
                 raise ValueError("All compounds must be defined.")
 
         for i in range(1, len(self.compounds)):
-            current_compound = self.compounds[i]  # type: ignore
+            current_compound = self.compounds[i]
             if current_compound.linked_prev_roughness:
-                prev_compound = self.compounds[i - 1]  # type: ignore
+                prev_compound = self.compounds[i - 1]
                 current_compound.prev_roughness = prev_compound.roughness
 
-                if len(current_compound.compound_details) != len(
-                    prev_compound.compound_details
-                ):
-                    raise ValueError(
-                        f"Compound {i} has different number of elements than compound {i-1}."
-                    )
+                if len(current_compound.compound_details) != len(prev_compound.compound_details):
+                    raise ValueError(f"Compound {i} has different number of elements than compound {i-1}.")
 
                 for j, detail in enumerate(current_compound.compound_details):
                     detail.prev_roughness = prev_compound.compound_details[j].roughness
@@ -78,9 +72,7 @@ class Structure:
         self.step = step
         self.element_data, self.atoms = self._create_element_data()
 
-        z, dens, m_dens, _ = get_density_profile_from_element_data(
-            self.element_data, self.atoms, self.step
-        )
+        z, dens, m_dens, _ = get_density_profile_from_element_data(self.element_data, self.atoms, self.step)
 
         layers = []
         for i in range(1, len(z)):
@@ -89,16 +81,10 @@ class Structure:
             elements = []
             for element_name, atom in self.atoms.items():
                 molar_density = dens[element_name][i] if element_name in dens else 0.0
-                molar_magnetic_density = (
-                    m_dens[element_name][i] if element_name in m_dens else 0.0
-                )
+                molar_magnetic_density = m_dens[element_name][i] if element_name in m_dens else 0.0
 
-                molar_density_param = self.params_container.new_parameter(
-                    f"layer_{i}_{element_name}_density", molar_density
-                )
-                molar_magnetic_density_param = self.params_container.new_parameter(
-                    f"layer_{i}_{element_name}_mag_density", molar_magnetic_density
-                )
+                molar_density_param = self.params_container.new_parameter(f"layer_{i}_{element_name}_density", molar_density)
+                molar_magnetic_density_param = self.params_container.new_parameter(f"layer_{i}_{element_name}_mag_density", molar_magnetic_density)
 
                 element_layer = AtomLayer(
                     atom=atom,
@@ -112,52 +98,6 @@ class Structure:
 
         self.layers = layers
         self.n_layers = len(layers)
-
-    def update_layers(self) -> None:
-        """Update existing layers with current parameter values."""
-        if not self.layers:
-            raise ValueError(
-                "No layers exist. Call create_layers or create_layers_optimized first."
-            )
-
-        z, dens, m_dens, _ = get_density_profile_from_element_data(
-            self.element_data, self.atoms, self.step
-        )
-
-        if len(z) != len(self.layers) + 1:
-            raise ValueError(
-                f"Length of z ({len(z)}) does not match number of layers ({len(self.layers)})."
-            )
-
-        for i, layer in enumerate(self.layers):
-            layer_index = i + 1
-
-            if layer_index < len(z):
-                new_thickness = (
-                    z[layer_index] - z[layer_index - 1]
-                    if layer_index > 0
-                    else self.step
-                )
-                layer.thickness = new_thickness
-
-                # Update density values for each element in the layer
-                for element_layer in layer.elements:
-                    element_name = element_layer.atom.name
-
-                    if element_name in dens and layer_index < len(dens[element_name]):
-                        # Update regular density
-                        new_density = dens[element_name][layer_index]
-                        element_layer.molar_density.set(new_density)
-
-                        # Update magnetic density
-                        if element_name in m_dens and layer_index < len(
-                            m_dens[element_name]
-                        ):
-                            new_mag_density = m_dens[element_name][layer_index]
-                            if element_layer.molar_magnetic_density is not None:
-                                element_layer.molar_magnetic_density.set(
-                                    new_mag_density
-                                )
 
     def _create_element_data(self):
         """Create element data structure from compounds for density calculations."""
@@ -181,29 +121,17 @@ class Structure:
                         "density_params": [None] * (len(self.compounds) + 1),
                         "magnetic_density_params": [None] * (len(self.compounds) + 1),
                         "roughness_params": [None] * len(self.compounds),
-                        "thickness_params": [
-                            x.compound_details[element.index].thickness
-                            for x in self.compounds
-                        ],
+                        "thickness_params": [x.compound_details[element.index].thickness for x in self.compounds],
                     }
 
                 data[name]["density_params"][i] = element.molar_density
-                data[name]["magnetic_density_params"][
-                    i
-                ] = element.molar_magnetic_density
+                data[name]["magnetic_density_params"][i] = element.molar_magnetic_density
 
                 if i > 0:
                     if data[name]["roughness_params"][i - 1] is None:
                         data[name]["roughness_params"][i - 1] = element.prev_roughness
 
                 data[name]["roughness_params"][i] = element.roughness
-
-        # for element_name, element_info in data.items():
-        #     print(f"  {element_name}:")
-        #     for param_name, param_value in element_info.items():
-        #         print(
-        #             f"    {param_name}: {[p.get() if p else None for p in param_value]}"
-        #         )
 
         return data, atoms
 

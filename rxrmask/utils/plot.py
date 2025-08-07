@@ -8,8 +8,8 @@ import numpy as np
 def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
     """Plot X-ray reflectivity curves for both polarizations."""
     plt.figure(figsize=(8, 6), dpi=300)
-    plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
-    plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
+    plt.plot(qz, R_phi, label=r"$\sigma$-pol")
+    plt.plot(qz, R_pi, "--", label=r"$\pi$-pol")
     plt.xlabel(r"$q_z$ (Å$^{-1}$)")
     plt.ylabel(r"Reflectivity")
     plt.title(rf"Reflectivity for {model_name} at {energy_eV} eV")

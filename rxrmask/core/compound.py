@@ -165,42 +165,31 @@ def create_compound(
     for detail in compound_details:
         total_mass += detail.atom.mass * detail.stochiometric_fraction
 
+    com = Compound()
+    com.name = name
+    com.formula = formula
+    com.thickness = parameters_container.new_parameter(f"{name}-thickness", thickness)
+    com.density = parameters_container.new_parameter(f"{name}-density", density)
+    com.magnetic_density = parameters_container.new_parameter(f"{name}-magnetic_density", magetic_density)
+    com.roughness = parameters_container.new_parameter(f"{name}-roughness", roughness)
+    com.prev_roughness = parameters_container.new_parameter(f"{name}-prev_roughness", prev_roughness)
+    com.linked_prev_roughness = linked_prev_roughness
+
     for detail in compound_details:
         frac = detail.stochiometric_fraction / total_mass
         base_name = f"{name}-{detail.name}"
-        detail.molar_density = parameters_container.new_parameter(
-            f"{base_name}-molar_density", density * frac
-        )
-        detail.molar_magnetic_density = parameters_container.new_parameter(
-            f"{base_name}-molar_magnetic_density", magetic_density * frac
-        )
-        detail.roughness = parameters_container.new_parameter(
-            f"{base_name}-roughness", roughness
-        )
-        detail.thickness = parameters_container.new_parameter(
-            f"{base_name}-thickness", thickness
-        )
-        detail.prev_roughness = parameters_container.new_parameter(
-            f"{base_name}-prev_roughness", prev_roughness
-        )
 
-    compound = Compound()
-    compound.name = name
-    compound.formula = formula
-    compound.thickness = parameters_container.new_parameter(
-        f"{name}-thickness", thickness
-    )
-    compound.density = parameters_container.new_parameter(f"{name}-density", density)
-    compound.magnetic_density = parameters_container.new_parameter(
-        f"{name}-magnetic_density", magetic_density
-    )
-    compound.roughness = parameters_container.new_parameter(
-        f"{name}-roughness", roughness
-    )
-    compound.prev_roughness = parameters_container.new_parameter(
-        f"{name}-prev_roughness", prev_roughness
-    )
-    compound.linked_prev_roughness = linked_prev_roughness
-    compound.compound_details = compound_details
+        detail.molar_density = parameters_container.register_derived(
+            f"{base_name}-molar_density",
+            lambda: com.density.get() * frac,
+        )
+        detail.molar_magnetic_density = parameters_container.register_derived(
+            f"{base_name}-molar_magnetic_density",
+            lambda: com.magnetic_density.get() * frac,
+        )
+        detail.roughness = com.roughness
+        detail.thickness = com.thickness
+        detail.prev_roughness = com.prev_roughness
 
-    return compound
+    com.compound_details = compound_details
+    return com

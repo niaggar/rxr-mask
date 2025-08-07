@@ -114,7 +114,7 @@ class ParametersContainer:
     
     def get_fit_vector(self) -> list[float]:
         """Extract values of parameters marked for fitting."""
-        return [float(p.value) for p in self.parameters if p.fit]
+        return [float(p.get()) for p in self.parameters if p.fit]
 
     def set_fit_vector(self, values: list[float]):
         """Update fitting parameters from vector."""
@@ -134,7 +134,7 @@ class ParametersContainer:
             data.append({
                 "id": p.id,
                 "name": p.name,
-                "value": p.value,
+                "value": p.get(),
                 "min_value": p.min_value,
                 "max_value": p.max_value,
                 "fit": p.fit
