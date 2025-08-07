@@ -3,6 +3,9 @@
 from rxrmask.utils import compute_adaptive_layer_segmentation
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure
+from rxrmask.backends.reflectivitybackend import ReflectivityBackend
+from rxrmask.core.reflectivitydata import ReflectivityData, EnergyScanData
+
 
 import numpy as np
 import Pythonreflectivity as pr
@@ -14,6 +17,40 @@ C_CONST = 2.99792458e8  # Speed of light [m/s]
 QZ_SCALE = 0.001013546247  # Conversion factor qz→theta
 HC_EV_ANGSTROM = 12398.41984  # hc constant [eV·Å]
 HC_WAVELENGTH_CONV = H_CONST * C_CONST * 1e10  # Pre-calculated h*c conversion for wavelength (eV·Å)
+
+
+class PRReflectivityBackend(ReflectivityBackend):
+    """Reflectivity backend using Python Reflectivity library."""
+    als: bool = True
+    precision: float = 1e-6
+    
+    def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
+        return reflectivity(structure, qz, energy, self.precision, self.als)
+
+    def compute_energy_scan(self, structure, energy_range, theta) -> EnergyScanData:
+        return energy_scan(structure, energy_range, theta, self.precision, self.als)
+
+
+class PRParallelReflectivityBackend(ReflectivityBackend):
+    """Parallel Reflectivity backend using Python Reflectivity library."""
+    als: bool = True
+    precision: float = 1e-6
+    n_jobs: int = -1
+    use_threads: bool = False
+    verbose: int = 0
+    
+    def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
+        return reflectivity_parallel(
+            structure, qz, energy, self.precision, self.n_jobs, self.use_threads, self.verbose, self.als
+        )
+
+    def compute_energy_scan(self, structure, energy_range, theta) -> EnergyScanData:
+        return energy_scan_parallel(
+            structure, energy_range, theta, self.precision, self.n_jobs, self.verbose, self.als, self.use_threads
+        )
+
+
+
 
 
 def _print_structure_info(structure):
@@ -86,7 +123,7 @@ def reflectivity(
     E_eV: float,
     precision: float = 1e-6,
     als: bool = True,
-):
+) -> ReflectivityData:
     """Compute reflectivity using Python Reflectivity backend.
     
     Args:
@@ -97,7 +134,7 @@ def reflectivity(
         als: Enable adaptive layer segmentation
     
     Returns:
-        tuple: (qz, R_sigma, R_pi)
+        ReflectivityData
     """
     if stack.n_layers == 0:
         raise ValueError(
@@ -131,9 +168,12 @@ def reflectivity(
     R_sigma, R_pi = pr.Reflectivity(
         structure, theta_deg, wavelength, MagneticCutoff=1e-20
     )
-
-    return qz, R_sigma, R_pi
-
+    
+    res = ReflectivityData()
+    res.qz = qz
+    res.R_s = R_sigma
+    res.R_p = R_pi
+    return res
 
 def _worker_thread(structure, qz_i: float, E_eV: float):
     wavelength = HC_WAVELENGTH_CONV / E_eV
@@ -151,7 +191,7 @@ def reflectivity_parallel(
     use_threads: bool = False,
     verbose: int = 0,
     als: bool = True,
-):
+) -> ReflectivityData:
     """Compute reflectivity in parallel using Python Reflectivity backend.
     
     Args:
@@ -165,7 +205,7 @@ def reflectivity_parallel(
         als: Enable adaptive layer segmentation
     
     Returns:
-        tuple: (qz, R_sigma, R_pi)
+        ReflectivityData
     """
     if stack.n_layers == 0:
         raise ValueError(
@@ -203,8 +243,9 @@ def reflectivity_parallel(
     with parallel_backend(backend, n_jobs=n_jobs):
         results = Parallel(verbose=verbose)(tasks)
 
-    qz_out, R_sigma, R_pi = zip(*results)
-    return np.array(qz_out), np.array(R_sigma), np.array(R_pi)
+    res = ReflectivityData()
+    res.qz, res.R_s, res.R_p = zip(*results)
+    return res
 
 
 def get_index_of_refraction_energies(stack: Structure, energies: np.ndarray):
@@ -233,7 +274,7 @@ def energy_scan(
     theta_deg: float,
     precision: float = 1e-6,
     als: bool = True,
-):
+) -> EnergyScanData:
     """Compute energy scan reflectivity using Python Reflectivity backend.
     
     Args:
@@ -244,7 +285,7 @@ def energy_scan(
         als: Enable adaptive layer segmentation
         
     Returns:
-        tuple: (E_eVs, R_sigma_all, R_pi_all)
+        EnergyScanData
     """
     if stack.n_layers == 0:
         raise ValueError(
@@ -299,7 +340,11 @@ def energy_scan(
         R_sigma_all.append(R_sigma)
         R_pi_all.append(R_pi)
 
-    return e_array, R_sigma_all, R_pi_all
+    res = EnergyScanData()
+    res.energy_range = e_array
+    res.R_s = np.array(R_sigma_all)
+    res.R_p = np.array(R_pi_all)
+    return res
 
 
 def _energy_scan_thread(structure, wavelength, theta_deg):
@@ -336,7 +381,7 @@ def _energy_scan_worker(stack, E_eV, theta_deg, precision, als):
 
 def energy_scan_parallel(
     stack, E_eVs, theta_deg, precision=1e-6, n_jobs=-1, verbose=0, als=True, use_threads=False
-):
+) -> EnergyScanData:
     """Compute energy scan reflectivity in parallel using Python Reflectivity backend.
     
     Args:
@@ -350,7 +395,7 @@ def energy_scan_parallel(
         als: Enable adaptive layer segmentation
         
     Returns:
-        tuple: (E_eVs, R_sigma_all, R_pi_all)
+        EnergyScanData
     """
     e_array = np.array(E_eVs)
 
@@ -391,4 +436,8 @@ def energy_scan_parallel(
             )
 
     R_sigma_all, R_pi_all = zip(*results)
-    return e_array, list(R_sigma_all), list(R_pi_all)
+    res = EnergyScanData()
+    res.energy_range = e_array
+    res.R_s = np.array(R_sigma_all)
+    res.R_p = np.array(R_pi_all)
+    return res

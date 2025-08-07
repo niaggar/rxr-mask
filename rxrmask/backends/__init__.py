@@ -5,7 +5,11 @@ from .pr_backend import (
     reflectivity_parallel as reflectivity_parallel_pr,
     energy_scan as energy_scan_pr,
     energy_scan_parallel as energy_scan_parallel_pr,
+    PRReflectivityBackend,
+    PRParallelReflectivityBackend,
 )
+
+from .reflectivitybackend import ReflectivityBackend
 
 try:
     from .udkm_backend import test as udkm_test
@@ -18,6 +22,9 @@ __all__ = [
     'reflectivity_parallel_pr',
     'energy_scan_pr',
     'energy_scan_parallel_pr',
+    'PRReflectivityBackend',
+    'ReflectivityBackend',
+    'PRParallelReflectivityBackend',
 ]
 
 if _udkm_available:
