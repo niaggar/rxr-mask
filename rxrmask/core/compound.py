@@ -1,5 +1,3 @@
-"""Chemical compound representation for X-ray reflectometry."""
-
 from rxrmask.core.atom import Atom, find_atom
 from rxrmask.core.parameter import Parameter, ParametersContainer
 

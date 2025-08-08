@@ -1,5 +1,3 @@
-"""Form factor handling for X-ray reflectometry calculations."""
-
 from dataclasses import dataclass, field
 import numpy as np
 import numpy.typing as npt

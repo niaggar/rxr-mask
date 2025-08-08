@@ -3,9 +3,11 @@ from scipy.optimize import minimize, differential_evolution
 
 
 class Optimizer:
+    """Base class for optimization algorithms."""
+    
     def minimize(self, x0, loss_fn, grad_fn=None, bounds=None):
+        """Minimize the loss function."""
         raise NotImplementedError("This method should be overridden by subclasses.")
-
 
 class NelderMeadOptimizer(Optimizer):
     def minimize(self, x0, loss_fn, grad_fn=None, bounds=None):

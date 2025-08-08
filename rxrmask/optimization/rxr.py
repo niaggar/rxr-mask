@@ -8,6 +8,15 @@ import numpy as np
 from rxrmask.optimization.optimization import Optimizer
 
 class RXRModel:
+    """Model for reflectivity calculations.
+    
+    Attributes:
+        structure: The structure to be modeled.
+        parameters_container: The container for model parameters.
+        backend: The backend for reflectivity calculations.
+        R_scale: The scale factor for reflectivity.
+        R_offset: The offset for reflectivity.
+    """
     structure: Structure
     parameters_container: ParametersContainer
     backend: ReflectivityBackend
@@ -53,6 +62,13 @@ class RXRModel:
 
 
 class RXRFitter:
+    """Fitter for optimizing reflectivity model parameters.
+
+    Attributes:
+        model: The RXR model to be fitted.
+        experiment: The experimental reflectivity data.
+        optimizer: The optimization algorithm to be used.
+    """
     model: RXRModel
     experiment: ReflectivityData
     optimizer: Optimizer
@@ -63,9 +79,11 @@ class RXRFitter:
         self.optimizer = optimizer
 
     def fit(self, initial_params, bounds):
+        """Fit the model to the experimental data using the optimizer."""
         return self.optimizer.minimize(initial_params, self.loss_function, bounds)
 
     def loss_function(self, fit_params):
+        """Compute the loss between the experimental and simulated reflectivity data."""
         self.model.parameters_container.set_fit_vector(fit_params)
         
         qz = self.experiment.qz

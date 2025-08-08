@@ -1,5 +1,3 @@
-"""Parameter management for X-ray reflectometry calculations."""
-
 from dataclasses import dataclass, field
 from typing import TypeVar, Generic, Any, Callable, Optional
 import json

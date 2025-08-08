@@ -1,5 +1,3 @@
-"""Adaptive layer segmentation for efficient reflectivity calculations."""
-
 from rxrmask.core.layer import Layer
 from typing import List
 import numpy as np

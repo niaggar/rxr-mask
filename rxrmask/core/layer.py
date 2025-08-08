@@ -1,5 +1,3 @@
-"""Layer representation for multilayer X-ray reflectometry structures."""
-
 from rxrmask.core.atom import Atom
 from rxrmask.core.parameter import Parameter
 

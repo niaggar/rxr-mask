@@ -1,5 +1,3 @@
-"""Python Reflectivity backend for X-ray reflectometry calculations."""
-
 from rxrmask.utils import compute_adaptive_layer_segmentation
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure

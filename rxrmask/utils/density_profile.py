@@ -1,5 +1,3 @@
-"""Density profile calculations for multilayer structures."""
-
 import numpy as np
 from scipy.special import erf
 
@@ -26,16 +24,15 @@ def _calculate_single_element_profile(z, layer_positions, densities, roughnesses
     
     return profile
 
-def get_density_profile_from_element_data(element_data, atoms, step: float = 0.1):
+def get_density_profile_from_element_data(element_data, step: float = 0.1):
     """Calculate density profiles from element data and layer parameters.
     
     Args:
         element_data: Element data dictionary with parameters.
-        atoms: Atom objects dictionary.
         step: Depth step size for profile calculation.
         
     Returns:
-        tuple: (z_positions, density_profiles, magnetic_density_profiles, layer_positions).
+        tuple: (z_positions, density_profiles, magnetic_density_profiles).
     """
     
     total_thickness = 0
@@ -64,7 +61,7 @@ def get_density_profile_from_element_data(element_data, atoms, step: float = 0.1
             z, layer_positions, magnetic_densities, roughnesses
         )
     
-    return z, density_profile, magnetic_density_profile, atoms
+    return z, density_profile, magnetic_density_profile
 
 
 

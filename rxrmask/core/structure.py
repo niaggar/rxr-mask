@@ -1,5 +1,3 @@
-"""Multilayer structure representation for X-ray reflectometry."""
-
 from rxrmask.core import Compound, AtomLayer, Layer
 from rxrmask.core.parameter import ParametersContainer
 from rxrmask.utils import get_density_profile_from_element_data
@@ -72,7 +70,7 @@ class Structure:
         self.step = step
         self.element_data, self.atoms = self._create_element_data()
 
-        z, dens, m_dens, _ = get_density_profile_from_element_data(self.element_data, self.atoms, self.step)
+        z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
 
         layers = []
         for i in range(1, len(z)):
@@ -98,6 +96,31 @@ class Structure:
 
         self.layers = layers
         self.n_layers = len(layers)
+
+    def update_layers(self) -> None:
+        """Update layer parameters based on current element data and density profile."""
+        z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
+        
+        if len(z) != len(self.layers) + 1:
+            raise ValueError("Inconsistent current layer count with density profile.")
+
+        for i in range(1, len(z)):
+            layer_idx = i - 1
+            if layer_idx >= len(self.layers):
+                break
+
+            layer = self.layers[layer_idx]
+            for element_layer in layer.elements:
+                atom_name = element_layer.atom.name
+
+                if atom_name in dens:
+                    new_density = dens[atom_name][i]
+                    element_layer.molar_density.set(new_density)
+
+                if atom_name in m_dens:
+                    new_mag_density = m_dens[atom_name][i]
+                    if element_layer.molar_magnetic_density is not None:
+                        element_layer.molar_magnetic_density.set(new_mag_density)
 
     def _create_element_data(self):
         """Create element data structure from compounds for density calculations."""

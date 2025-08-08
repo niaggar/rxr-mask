@@ -1,5 +1,3 @@
-"""UDKM1Dsim backend for X-ray reflectometry calculations."""
-
 import numpy as np
 import udkm1Dsim as ud
 # from source.core.structure import Structure

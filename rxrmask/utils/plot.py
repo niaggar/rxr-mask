@@ -1,5 +1,3 @@
-"""Plotting utilities for X-ray reflectometry visualization."""
-
 from matplotlib.patches import Rectangle
 from matplotlib import cm
 from matplotlib import pyplot as plt
