@@ -19,5 +19,7 @@ Core
 .. automodule:: rxrmask.core.structure
    :members:
 
-.. automodule:: rxrmask.core.optimization
+.. automodule:: rxrmask.core.reflectivitydata
    :members:
+
+

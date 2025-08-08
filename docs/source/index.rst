@@ -50,6 +50,7 @@ Contents
    api/materials
    api/pint_init
    api/utils
+   api/optimization
    examples
 
 Indices and Tables
