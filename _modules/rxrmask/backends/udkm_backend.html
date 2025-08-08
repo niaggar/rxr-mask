@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rxrmask.backends.udkm_backend &mdash; rxrmask 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            rxrmask
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/backends.html">Backends Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/core.html">Core</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/materials.html">Materials Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/pint_init.html">Units &amp; Quantities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/optimization.html">Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples Gallery</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rxrmask</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">rxrmask.backends.udkm_backend</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rxrmask.backends.udkm_backend</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">udkm1Dsim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ud</span>
+<span class="c1"># from source.core.structure import Structure</span>
+<span class="c1"># from source.core.compound import Compound</span>
+<span class="c1"># from source.pint_init import ureg</span>
+
+<span class="c1"># from dask.distributed import Client</span>
+
+<div class="viewcode-block" id="test">
+<a class="viewcode-back" href="../../../api/backends.html#rxrmask.backends.udkm_backend.test">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test function to verify backend module loading.&quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Udkm1Dsim backend module loaded successfully.&quot;</span><span class="p">)</span></div>
+
+
+<span class="c1"># def _compound_to_ud(compound: Compound) -&gt; list[ud.AmorphousLayer]:</span>
+<span class="c1">#     ud_layers = []</span>
+
+<span class="c1">#     for i in reversed(range(len(compound.layers))):</span>
+<span class="c1">#         level_layer = compound.layers[i]</span>
+<span class="c1">#         atom_mixed = ud.AtomMixed(compound.formula)</span>
+
+<span class="c1">#         for atomic_layer in level_layer:</span>
+<span class="c1">#             if atomic_layer.atom.ff.ff_path is None:</span>
+<span class="c1">#                 raise ValueError(f&quot;Layer {atomic_layer.id} has no form factor valid path to use udkm1Dsim.&quot;)</span>
+
+<span class="c1">#             atom_symbol = atomic_layer.atom.symbol</span>
+<span class="c1">#             atom = ud.Atom(atom_symbol, atomic_form_factor_path=atomic_layer.atom.ff.ff_path)</span>
+<span class="c1">#             atom_mixed.add_atom(atom, atomic_layer.stochiometric_fraction)</span>
+
+<span class="c1">#         ud_layer = ud.AmorphousLayer(</span>
+<span class="c1">#             compound.id,</span>
+<span class="c1">#             f&quot;{compound.name} layer&quot;,</span>
+<span class="c1">#             compound.get_thickness_layer(i) * ureg.angstrom,</span>
+<span class="c1">#             compound.base_density * ureg.g / ureg.cm**3,</span>
+<span class="c1">#             atom=atom_mixed,</span>
+<span class="c1">#         )</span>
+
+<span class="c1">#         ud_layers.append(ud_layer)</span>
+
+<span class="c1">#     return ud_layers</span>
+
+
+<span class="c1"># def _to_ud_structure(stack: Structure) -&gt; ud.Structure:</span>
+<span class="c1">#     ud_stack = ud.Structure(stack.name)</span>
+    
+<span class="c1">#     for comp in reversed(stack.compounds):</span>
+<span class="c1">#         if not isinstance(comp, Compound):</span>
+<span class="c1">#             raise TypeError(&quot;Expected a Compound instance in the stack.&quot;)</span>
+
+<span class="c1">#         sub_structure = ud.Structure(comp.name)</span>
+<span class="c1">#         layers = _compound_to_ud(comp)</span>
+        
+<span class="c1">#         for layer in layers:</span>
+<span class="c1">#             sub_structure.add_sub_structure(layer)</span>
+
+<span class="c1">#         ud_stack.add_sub_structure(sub_structure)</span>
+
+<span class="c1">#     return ud_stack</span>
+
+
+<span class="c1"># def reflectivity(stack: Structure, qz: np.ndarray, E_eV: float) -&gt; tuple[np.ndarray, np.ndarray, np.ndarray]:</span>
+<span class="c1">#     ud_structure = _to_ud_structure(stack)</span>
+<span class="c1">#     # ud_structure.visualize()</span>
+
+<span class="c1">#     dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)</span>
+<span class="c1">#     dyn_mag.energy = np.r_[E_eV] * ureg.eV</span>
+<span class="c1">#     dyn_mag.qz = qz / ureg.angstrom</span>
+
+<span class="c1">#     dyn_mag.set_polarization(0, 3)</span>
+<span class="c1">#     R_hom_sigma, _, _, _ = dyn_mag.homogeneous_reflectivity()</span>
+
+<span class="c1">#     dyn_mag.set_polarization(0, 4)</span>
+<span class="c1">#     R_hom_pi, _, _, _ = dyn_mag.homogeneous_reflectivity()</span>
+
+<span class="c1">#     return dyn_mag.qz[0, :], R_hom_sigma[0, :], R_hom_pi[0, :]</span>
+
+<span class="c1"># # TODO: Think how to implement this function</span>
+<span class="c1"># # def reflectivity_parallel(stack: Structure, qz: np.ndarray, E_eV: float) -&gt; tuple[np.ndarray, np.ndarray, np.ndarray]:</span>
+<span class="c1"># #     ud_structure = _to_ud_structure(stack)</span>
+<span class="c1"># #     # ud_structure.visualize()</span>
+
+<span class="c1"># #     dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)</span>
+<span class="c1"># #     dyn_mag.energy = np.r_[E_eV] * ureg.eV</span>
+<span class="c1"># #     dyn_mag.qz = qz / ureg.angstrom</span>
+
+<span class="c1"># #     dclient = Client()</span>
+<span class="c1"># #     dyn_mag.set_polarization(0, 3)</span>
+<span class="c1"># #     R_hom_sigma, _, _, _ = dyn_mag.homogeneous_reflectivity(calc_type=&quot;parallel&quot;, client=dclient)</span>
+
+<span class="c1"># def energy_scan(stack: Structure, E_eVs: list[float], theta_deg: float) -&gt; tuple[np.ndarray, np.ndarray, np.ndarray]:</span>
+<span class="c1">#     ud_structure = _to_ud_structure(stack)</span>
+<span class="c1">#     # ud_structure.visualize()</span>
+
+<span class="c1">#     dyn_mag = ud.XrayDynMag(ud_structure, True, disp_messages=False, save_data=False)</span>
+<span class="c1">#     dyn_mag.energy = np.array(E_eVs) * ureg.eV</span>
+<span class="c1">#     dyn_mag.qz = np.sin(np.radians(theta_deg)) * (E_eVs[0] * 0.001013546143) / ureg.angstrom</span>
+
+<span class="c1">#     dyn_mag.set_polarization(0, 3)</span>
+<span class="c1">#     R_hom_sigma, _, _, _ = dyn_mag.homogeneous_reflectivity()</span>
+
+<span class="c1">#     dyn_mag.set_polarization(0, 4)</span>
+<span class="c1">#     R_hom_pi, _, _, _ = dyn_mag.homogeneous_reflectivity()</span>
+
+<span class="c1">#     return np.array(E_eVs), R_hom_sigma, R_hom_pi</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nicolas Aguilera G.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

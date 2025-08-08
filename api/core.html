@@ -1,0 +1,1231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core &mdash; rxrmask 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+      <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Materials Database" href="materials.html" />
+    <link rel="prev" title="Backends Package" href="backends.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            rxrmask
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="backends.html">Backends Package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.atom.Atom"><code class="docutils literal notranslate"><span class="pre">Atom</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.Z"><code class="docutils literal notranslate"><span class="pre">Atom.Z</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.name"><code class="docutils literal notranslate"><span class="pre">Atom.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.ff"><code class="docutils literal notranslate"><span class="pre">Atom.ff</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.ffm"><code class="docutils literal notranslate"><span class="pre">Atom.ffm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.mass"><code class="docutils literal notranslate"><span class="pre">Atom.mass</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.atom.Atom.load_atomic_mass"><code class="docutils literal notranslate"><span class="pre">Atom.load_atomic_mass()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.atom.find_atom"><code class="docutils literal notranslate"><span class="pre">find_atom()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.compound.Compound"><code class="docutils literal notranslate"><span class="pre">Compound</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.name"><code class="docutils literal notranslate"><span class="pre">Compound.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.formula"><code class="docutils literal notranslate"><span class="pre">Compound.formula</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.thickness"><code class="docutils literal notranslate"><span class="pre">Compound.thickness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.roughness"><code class="docutils literal notranslate"><span class="pre">Compound.roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.prev_roughness"><code class="docutils literal notranslate"><span class="pre">Compound.prev_roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.linked_prev_roughness"><code class="docutils literal notranslate"><span class="pre">Compound.linked_prev_roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.density"><code class="docutils literal notranslate"><span class="pre">Compound.density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.magnetic_density"><code class="docutils literal notranslate"><span class="pre">Compound.magnetic_density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.magnetic"><code class="docutils literal notranslate"><span class="pre">Compound.magnetic</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.magnetic_direction"><code class="docutils literal notranslate"><span class="pre">Compound.magnetic_direction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.Compound.compound_details"><code class="docutils literal notranslate"><span class="pre">Compound.compound_details</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails"><code class="docutils literal notranslate"><span class="pre">CompoundDetails</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.index"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.index</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.name"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.stochiometric_fraction"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.stochiometric_fraction</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.atom"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.atom</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.thickness"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.thickness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.roughness"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.prev_roughness"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.prev_roughness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.molar_density"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.molar_density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.compound.CompoundDetails.molar_magnetic_density"><code class="docutils literal notranslate"><span class="pre">CompoundDetails.molar_magnetic_density</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.compound.create_compound"><code class="docutils literal notranslate"><span class="pre">create_compound()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.compound.get_compound_details"><code class="docutils literal notranslate"><span class="pre">get_compound_details()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorLocalDB"><code class="docutils literal notranslate"><span class="pre">FormFactorLocalDB</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_all_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorLocalDB.get_all_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorLocalDB.get_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors_energies"><code class="docutils literal notranslate"><span class="pre">FormFactorLocalDB.get_formfactors_energies()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel"><code class="docutils literal notranslate"><span class="pre">FormFactorModel</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel.ff_path"><code class="docutils literal notranslate"><span class="pre">FormFactorModel.ff_path</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel.get_all_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorModel.get_all_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel.get_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorModel.get_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel.get_formfactors_energies"><code class="docutils literal notranslate"><span class="pre">FormFactorModel.get_formfactors_energies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorModel.get_path"><code class="docutils literal notranslate"><span class="pre">FormFactorModel.get_path()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorVacancy"><code class="docutils literal notranslate"><span class="pre">FormFactorVacancy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorVacancy.get_all_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorVacancy.get_all_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors"><code class="docutils literal notranslate"><span class="pre">FormFactorVacancy.get_formfactors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors_energies"><code class="docutils literal notranslate"><span class="pre">FormFactorVacancy.get_formfactors_energies()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer"><code class="docutils literal notranslate"><span class="pre">AtomLayer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.atom"><code class="docutils literal notranslate"><span class="pre">AtomLayer.atom</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.molar_density"><code class="docutils literal notranslate"><span class="pre">AtomLayer.molar_density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.molar_magnetic_density"><code class="docutils literal notranslate"><span class="pre">AtomLayer.molar_magnetic_density</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.get_f1f2"><code class="docutils literal notranslate"><span class="pre">AtomLayer.get_f1f2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.get_f1f2_energies"><code class="docutils literal notranslate"><span class="pre">AtomLayer.get_f1f2_energies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.get_q1q2"><code class="docutils literal notranslate"><span class="pre">AtomLayer.get_q1q2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.AtomLayer.get_q1q2_energies"><code class="docutils literal notranslate"><span class="pre">AtomLayer.get_q1q2_energies()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.layer.Layer"><code class="docutils literal notranslate"><span class="pre">Layer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.id"><code class="docutils literal notranslate"><span class="pre">Layer.id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.thickness"><code class="docutils literal notranslate"><span class="pre">Layer.thickness</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.elements"><code class="docutils literal notranslate"><span class="pre">Layer.elements</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.get_index_of_refraction"><code class="docutils literal notranslate"><span class="pre">Layer.get_index_of_refraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.get_index_of_refraction_batch"><code class="docutils literal notranslate"><span class="pre">Layer.get_index_of_refraction_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.get_magnetic_optical_constant"><code class="docutils literal notranslate"><span class="pre">Layer.get_magnetic_optical_constant()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.layer.Layer.get_magnetic_optical_constant_batch"><code class="docutils literal notranslate"><span class="pre">Layer.get_magnetic_optical_constant_batch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.parameter.DerivedParameter"><code class="docutils literal notranslate"><span class="pre">DerivedParameter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.DerivedParameter.update_func"><code class="docutils literal notranslate"><span class="pre">DerivedParameter.update_func</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.DerivedParameter.get"><code class="docutils literal notranslate"><span class="pre">DerivedParameter.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.DerivedParameter.update"><code class="docutils literal notranslate"><span class="pre">DerivedParameter.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.parameter.Parameter"><code class="docutils literal notranslate"><span class="pre">Parameter</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.value"><code class="docutils literal notranslate"><span class="pre">Parameter.value</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.id"><code class="docutils literal notranslate"><span class="pre">Parameter.id</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.name"><code class="docutils literal notranslate"><span class="pre">Parameter.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.min_value"><code class="docutils literal notranslate"><span class="pre">Parameter.min_value</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.max_value"><code class="docutils literal notranslate"><span class="pre">Parameter.max_value</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.fit"><code class="docutils literal notranslate"><span class="pre">Parameter.fit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.get"><code class="docutils literal notranslate"><span class="pre">Parameter.get()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.Parameter.set"><code class="docutils literal notranslate"><span class="pre">Parameter.set()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer"><code class="docutils literal notranslate"><span class="pre">ParametersContainer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.parameters"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.derived_parameters"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.derived_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.get_fit_vector"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.get_fit_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.load"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.new_parameter"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.new_parameter()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.register_derived"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.register_derived()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.save"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.save()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.set_fit_vector"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.set_fit_vector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer.update_derived"><code class="docutils literal notranslate"><span class="pre">ParametersContainer.update_derived()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.structure.Structure"><code class="docutils literal notranslate"><span class="pre">Structure</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.name"><code class="docutils literal notranslate"><span class="pre">Structure.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.params_container"><code class="docutils literal notranslate"><span class="pre">Structure.params_container</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.n_compounds"><code class="docutils literal notranslate"><span class="pre">Structure.n_compounds</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.n_layers"><code class="docutils literal notranslate"><span class="pre">Structure.n_layers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.layers"><code class="docutils literal notranslate"><span class="pre">Structure.layers</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.compounds"><code class="docutils literal notranslate"><span class="pre">Structure.compounds</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.element_data"><code class="docutils literal notranslate"><span class="pre">Structure.element_data</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.atoms"><code class="docutils literal notranslate"><span class="pre">Structure.atoms</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.step"><code class="docutils literal notranslate"><span class="pre">Structure.step</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.add_compound"><code class="docutils literal notranslate"><span class="pre">Structure.add_compound()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.create_layers"><code class="docutils literal notranslate"><span class="pre">Structure.create_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.update_layers"><code class="docutils literal notranslate"><span class="pre">Structure.update_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.structure.Structure.validate_compounds"><code class="docutils literal notranslate"><span class="pre">Structure.validate_compounds()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.reflectivitydata.EnergyScanData"><code class="docutils literal notranslate"><span class="pre">EnergyScanData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.EnergyScanData.energy_range"><code class="docutils literal notranslate"><span class="pre">EnergyScanData.energy_range</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.EnergyScanData.qz"><code class="docutils literal notranslate"><span class="pre">EnergyScanData.qz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.EnergyScanData.R_s"><code class="docutils literal notranslate"><span class="pre">EnergyScanData.R_s</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.EnergyScanData.R_p"><code class="docutils literal notranslate"><span class="pre">EnergyScanData.R_p</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rxrmask.core.reflectivitydata.ReflectivityData"><code class="docutils literal notranslate"><span class="pre">ReflectivityData</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.ReflectivityData.qz"><code class="docutils literal notranslate"><span class="pre">ReflectivityData.qz</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.ReflectivityData.energy"><code class="docutils literal notranslate"><span class="pre">ReflectivityData.energy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.ReflectivityData.R_s"><code class="docutils literal notranslate"><span class="pre">ReflectivityData.R_s</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rxrmask.core.reflectivitydata.ReflectivityData.R_p"><code class="docutils literal notranslate"><span class="pre">ReflectivityData.R_p</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials Database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pint_init.html">Units &amp; Quantities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimization.html">Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples Gallery</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rxrmask</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Core</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/core.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-rxrmask.core.atom">
+<span id="core"></span><h1>Core<a class="headerlink" href="#module-rxrmask.core.atom" title="Link to this heading"></a></h1>
+<p>Atomic species for X-ray reflectometry calculations.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.atom.</span></span><span class="sig-name descname"><span class="pre">Atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ffm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/atom.html#Atom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.atom.Atom" title="Link to this definition"></a></dt>
+<dd><p>Atomic species for X-ray reflectometry.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.Z">
+<span class="sig-name descname"><span class="pre">Z</span></span><a class="headerlink" href="#rxrmask.core.atom.Atom.Z" title="Link to this definition"></a></dt>
+<dd><p>Atomic number</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rxrmask.core.atom.Atom.name" title="Link to this definition"></a></dt>
+<dd><p>Chemical symbol (e.g., ‘Fe’, ‘O’)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.ff">
+<span class="sig-name descname"><span class="pre">ff</span></span><a class="headerlink" href="#rxrmask.core.atom.Atom.ff" title="Link to this definition"></a></dt>
+<dd><p>Form factor model</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.ffm">
+<span class="sig-name descname"><span class="pre">ffm</span></span><a class="headerlink" href="#rxrmask.core.atom.Atom.ffm" title="Link to this definition"></a></dt>
+<dd><p>Magnetic form factor model (optional)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><a class="headerlink" href="#rxrmask.core.atom.Atom.mass" title="Link to this definition"></a></dt>
+<dd><p>Atomic mass in g/mol (auto-loaded if 0.0)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.atom.Atom.load_atomic_mass">
+<span class="sig-name descname"><span class="pre">load_atomic_mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/atom.html#Atom.load_atomic_mass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.atom.Atom.load_atomic_mass" title="Link to this definition"></a></dt>
+<dd><p>Load atomic mass from materials database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Atomic mass in g/mol</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NameError</strong> – If atom symbol not found in database</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.core.atom.find_atom">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.core.atom.</span></span><span class="sig-name descname"><span class="pre">find_atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/atom.html#find_atom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.atom.find_atom" title="Link to this definition"></a></dt>
+<dd><p>Find atom by chemical symbol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>symbol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Chemical symbol (e.g., ‘Fe’, ‘O’)</p></li>
+<li><p><strong>atoms</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#rxrmask.core.atom.Atom" title="rxrmask.core.atom.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a>]</span>) – List of Atom objects to search</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#rxrmask.core.atom.Atom" title="rxrmask.core.atom.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Atom object if found, None otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.compound">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.compound.</span></span><span class="sig-name descname"><span class="pre">Compound</span></span><a class="reference internal" href="../_modules/rxrmask/core/compound.html#Compound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.compound.Compound" title="Link to this definition"></a></dt>
+<dd><p>Chemical compound in multilayer structure.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.name" title="Link to this definition"></a></dt>
+<dd><p>Compound name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.formula">
+<span class="sig-name descname"><span class="pre">formula</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.formula" title="Link to this definition"></a></dt>
+<dd><p>Chemical formula as “Element1:count1,Element2:count2”</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.thickness">
+<span class="sig-name descname"><span class="pre">thickness</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.thickness" title="Link to this definition"></a></dt>
+<dd><p>Total thickness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.roughness">
+<span class="sig-name descname"><span class="pre">roughness</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.roughness" title="Link to this definition"></a></dt>
+<dd><p>Interface roughness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.prev_roughness">
+<span class="sig-name descname"><span class="pre">prev_roughness</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.prev_roughness" title="Link to this definition"></a></dt>
+<dd><p>Previous interface roughness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.linked_prev_roughness">
+<span class="sig-name descname"><span class="pre">linked_prev_roughness</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.linked_prev_roughness" title="Link to this definition"></a></dt>
+<dd><p>Whether to link previous roughness</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.density">
+<span class="sig-name descname"><span class="pre">density</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.density" title="Link to this definition"></a></dt>
+<dd><p>Density in g/cm³</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.magnetic_density">
+<span class="sig-name descname"><span class="pre">magnetic_density</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.magnetic_density" title="Link to this definition"></a></dt>
+<dd><p>Magnetic density in g/cm³</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.magnetic">
+<span class="sig-name descname"><span class="pre">magnetic</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.magnetic" title="Link to this definition"></a></dt>
+<dd><p>Whether compound is magnetic</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.magnetic_direction">
+<span class="sig-name descname"><span class="pre">magnetic_direction</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.magnetic_direction" title="Link to this definition"></a></dt>
+<dd><p>Magnetic moment direction</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.Compound.compound_details">
+<span class="sig-name descname"><span class="pre">compound_details</span></span><a class="headerlink" href="#rxrmask.core.compound.Compound.compound_details" title="Link to this definition"></a></dt>
+<dd><p>Atomic layer structures</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.compound.</span></span><span class="sig-name descname"><span class="pre">CompoundDetails</span></span><a class="reference internal" href="../_modules/rxrmask/core/compound.html#CompoundDetails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails" title="Link to this definition"></a></dt>
+<dd><p>Atomic species within a compound layer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.index">
+<span class="sig-name descname"><span class="pre">index</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.index" title="Link to this definition"></a></dt>
+<dd><p>Atom position in the lattice layer</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.name" title="Link to this definition"></a></dt>
+<dd><p>Chemical symbol</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.stochiometric_fraction">
+<span class="sig-name descname"><span class="pre">stochiometric_fraction</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.stochiometric_fraction" title="Link to this definition"></a></dt>
+<dd><p>Stoichiometric coefficient</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.atom">
+<span class="sig-name descname"><span class="pre">atom</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.atom" title="Link to this definition"></a></dt>
+<dd><p>Atom object with atomic properties</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.thickness">
+<span class="sig-name descname"><span class="pre">thickness</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.thickness" title="Link to this definition"></a></dt>
+<dd><p>Layer thickness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.roughness">
+<span class="sig-name descname"><span class="pre">roughness</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.roughness" title="Link to this definition"></a></dt>
+<dd><p>Interface roughness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.prev_roughness">
+<span class="sig-name descname"><span class="pre">prev_roughness</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.prev_roughness" title="Link to this definition"></a></dt>
+<dd><p>Previous interface roughness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.molar_density">
+<span class="sig-name descname"><span class="pre">molar_density</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.molar_density" title="Link to this definition"></a></dt>
+<dd><p>Molar density in mol/cm³</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.compound.CompoundDetails.molar_magnetic_density">
+<span class="sig-name descname"><span class="pre">molar_magnetic_density</span></span><a class="headerlink" href="#rxrmask.core.compound.CompoundDetails.molar_magnetic_density" title="Link to this definition"></a></dt>
+<dd><p>Magnetic density in mol/cm³</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.core.compound.create_compound">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.core.compound.</span></span><span class="sig-name descname"><span class="pre">create_compound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters_container</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">roughness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_roughness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linked_prev_roughness</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magetic_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/compound.html#create_compound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.compound.create_compound" title="Link to this definition"></a></dt>
+<dd><p>Create compound with parameters and atomic details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters_container</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#rxrmask.core.parameter.ParametersContainer" title="rxrmask.core.parameter.ParametersContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParametersContainer</span></code></a></span>) – Container for parameter management</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Compound name</p></li>
+<li><p><strong>formula</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Chemical formula</p></li>
+<li><p><strong>thickness</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Layer thickness</p></li>
+<li><p><strong>density</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Material density</p></li>
+<li><p><strong>atoms</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#rxrmask.core.atom.Atom" title="rxrmask.core.atom.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a>]</span>) – Available atom objects</p></li>
+<li><p><strong>roughness</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Interface roughness</p></li>
+<li><p><strong>prev_roughness</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Previous interface roughness</p></li>
+<li><p><strong>linked_prev_roughness</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Link previous roughness if True</p></li>
+<li><p><strong>magetic_density</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Magnetic density</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#rxrmask.core.compound.Compound" title="rxrmask.core.compound.Compound"><code class="xref py py-class docutils literal notranslate"><span class="pre">Compound</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Configured compound object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rxrmask.core.compound.get_compound_details">
+<span class="sig-prename descclassname"><span class="pre">rxrmask.core.compound.</span></span><span class="sig-name descname"><span class="pre">get_compound_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formula</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/compound.html#get_compound_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.compound.get_compound_details" title="Link to this definition"></a></dt>
+<dd><p>Parse formula and create compound details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>formula</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Chemical formula to parse</p></li>
+<li><p><strong>atoms</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#rxrmask.core.atom.Atom" title="rxrmask.core.atom.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a>]</span>) – Available atom objects</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="#rxrmask.core.compound.CompoundDetails" title="rxrmask.core.compound.CompoundDetails"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompoundDetails</span></code></a>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Details for each element in formula</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.formfactor">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorLocalDB">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.formfactor.</span></span><span class="sig-name descname"><span class="pre">FormFactorLocalDB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_magnetic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorLocalDB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorLocalDB" title="Link to this definition"></a></dt>
+<dd><p>Form factor model using local database files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorLocalDB.get_all_formfactors">
+<span class="sig-name descname"><span class="pre">get_all_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorLocalDB.get_all_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_all_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get complete form factor dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All form factor data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors">
+<span class="sig-name descname"><span class="pre">get_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorLocalDB.get_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get form factors at specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – X-ray energy in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors_energies">
+<span class="sig-name descname"><span class="pre">get_formfactors_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorLocalDB.get_formfactors_energies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorLocalDB.get_formfactors_energies" title="Link to this definition"></a></dt>
+<dd><p>Get form factors for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span>) – Array of energies in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.formfactor.</span></span><span class="sig-name descname"><span class="pre">FormFactorModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ff_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel" title="Link to this definition"></a></dt>
+<dd><p>Base class for atomic form factor models.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel.ff_path">
+<span class="sig-name descname"><span class="pre">ff_path</span></span><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel.ff_path" title="Link to this definition"></a></dt>
+<dd><p>Path to form factor data file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel.get_all_formfactors">
+<span class="sig-name descname"><span class="pre">get_all_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorModel.get_all_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel.get_all_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get complete form factor dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All form factor data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel.get_formfactors">
+<span class="sig-name descname"><span class="pre">get_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorModel.get_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel.get_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get form factors at specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – X-ray energy in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel.get_formfactors_energies">
+<span class="sig-name descname"><span class="pre">get_formfactors_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorModel.get_formfactors_energies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel.get_formfactors_energies" title="Link to this definition"></a></dt>
+<dd><p>Get form factors for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span>) – Array of energies in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorModel.get_path">
+<span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorModel.get_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorModel.get_path" title="Link to this definition"></a></dt>
+<dd><p>Get path to form factor data file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorVacancy">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.formfactor.</span></span><span class="sig-name descname"><span class="pre">FormFactorVacancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ff_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorVacancy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorVacancy" title="Link to this definition"></a></dt>
+<dd><p>Form factor model representing a vacancy (zero form factor).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorVacancy.get_all_formfactors">
+<span class="sig-name descname"><span class="pre">get_all_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorVacancy.get_all_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorVacancy.get_all_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get complete form factor dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>All form factor data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorVacancy.get_formfactors">
+<span class="sig-name descname"><span class="pre">get_formfactors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorVacancy.get_formfactors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors" title="Link to this definition"></a></dt>
+<dd><p>Get form factors at specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – X-ray energy in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.formfactor.FormFactorVacancy.get_formfactors_energies">
+<span class="sig-name descname"><span class="pre">get_formfactors_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/formfactor.html#FormFactorVacancy.get_formfactors_energies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.formfactor.FormFactorVacancy.get_formfactors_energies" title="Link to this definition"></a></dt>
+<dd><p>Get form factors for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span>) – Array of energies in eV</p></li>
+<li><p><strong>args</strong> – Additional arguments for specific models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.layer">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.layer.</span></span><span class="sig-name descname"><span class="pre">AtomLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molar_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molar_magnetic_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#AtomLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.AtomLayer" title="Link to this definition"></a></dt>
+<dd><p>Atomic species in a layer with density and form factors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.atom">
+<span class="sig-name descname"><span class="pre">atom</span></span><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.atom" title="Link to this definition"></a></dt>
+<dd><p>Atom object with properties and form factors</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.molar_density">
+<span class="sig-name descname"><span class="pre">molar_density</span></span><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.molar_density" title="Link to this definition"></a></dt>
+<dd><p>Molar density in mol/cm³</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.molar_magnetic_density">
+<span class="sig-name descname"><span class="pre">molar_magnetic_density</span></span><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.molar_magnetic_density" title="Link to this definition"></a></dt>
+<dd><p>Magnetic density in mol/cm³</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.get_f1f2">
+<span class="sig-name descname"><span class="pre">get_f1f2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#AtomLayer.get_f1f2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.get_f1f2" title="Link to this definition"></a></dt>
+<dd><p>Get atomic form factors f1 and f2 at specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – X-ray energy in eV</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor components</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.get_f1f2_energies">
+<span class="sig-name descname"><span class="pre">get_f1f2_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#AtomLayer.get_f1f2_energies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.get_f1f2_energies" title="Link to this definition"></a></dt>
+<dd><p>Get atomic form factors for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span>) – Array of energies in eV.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(f1, f2) form factor arrays.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.get_q1q2">
+<span class="sig-name descname"><span class="pre">get_q1q2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#AtomLayer.get_q1q2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.get_q1q2" title="Link to this definition"></a></dt>
+<dd><p>Get magnetic form factors q1 and q2 at specific energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energy_eV</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – X-ray energy in eV</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(q1, q2) magnetic form factors, (0, 0) if non-magnetic.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.AtomLayer.get_q1q2_energies">
+<span class="sig-name descname"><span class="pre">get_q1q2_energies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#AtomLayer.get_q1q2_energies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.AtomLayer.get_q1q2_energies" title="Link to this definition"></a></dt>
+<dd><p>Get magnetic form factors for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energies</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</span>) – Array of energies in eV.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(q1, q2) magnetic form factor arrays, zeros if non-magnetic.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.layer.</span></span><span class="sig-name descname"><span class="pre">Layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thickness</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elements=&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#Layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.Layer" title="Link to this definition"></a></dt>
+<dd><p>Layer in multilayer structure with atomic composition.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#rxrmask.core.layer.Layer.id" title="Link to this definition"></a></dt>
+<dd><p>Layer identifier</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.thickness">
+<span class="sig-name descname"><span class="pre">thickness</span></span><a class="headerlink" href="#rxrmask.core.layer.Layer.thickness" title="Link to this definition"></a></dt>
+<dd><p>Layer thickness in Angstroms</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.elements">
+<span class="sig-name descname"><span class="pre">elements</span></span><a class="headerlink" href="#rxrmask.core.layer.Layer.elements" title="Link to this definition"></a></dt>
+<dd><p>List of atomic species in the layer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.get_index_of_refraction">
+<span class="sig-name descname"><span class="pre">get_index_of_refraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#Layer.get_index_of_refraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.Layer.get_index_of_refraction" title="Link to this definition"></a></dt>
+<dd><p>Get complex refractive index for given energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.get_index_of_refraction_batch">
+<span class="sig-name descname"><span class="pre">get_index_of_refraction_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#Layer.get_index_of_refraction_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.Layer.get_index_of_refraction_batch" title="Link to this definition"></a></dt>
+<dd><p>Get complex refractive index for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">complexfloating</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.get_magnetic_optical_constant">
+<span class="sig-name descname"><span class="pre">get_magnetic_optical_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy_eV</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#Layer.get_magnetic_optical_constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.Layer.get_magnetic_optical_constant" title="Link to this definition"></a></dt>
+<dd><p>Get magnetic optical constant for given energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.layer.Layer.get_magnetic_optical_constant_batch">
+<span class="sig-name descname"><span class="pre">get_magnetic_optical_constant_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energies</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/layer.html#Layer.get_magnetic_optical_constant_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.layer.Layer.get_magnetic_optical_constant_batch" title="Link to this definition"></a></dt>
+<dd><p>Get magnetic optical constant for multiple energies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">complexfloating</span></code>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.parameter">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.DerivedParameter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.parameter.</span></span><span class="sig-name descname"><span class="pre">DerivedParameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#DerivedParameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.DerivedParameter" title="Link to this definition"></a></dt>
+<dd><p>Parameter with automatic update functionality.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.DerivedParameter.update_func">
+<span class="sig-name descname"><span class="pre">update_func</span></span><a class="headerlink" href="#rxrmask.core.parameter.DerivedParameter.update_func" title="Link to this definition"></a></dt>
+<dd><p>Function to calculate new value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.DerivedParameter.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#DerivedParameter.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.DerivedParameter.get" title="Link to this definition"></a></dt>
+<dd><p>Get parameter value from internal storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>)</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parameter value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.DerivedParameter.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#DerivedParameter.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.DerivedParameter.update" title="Link to this definition"></a></dt>
+<dd><p>Update parameter value using update function.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.parameter.</span></span><span class="sig-name descname"><span class="pre">Parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#Parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.Parameter" title="Link to this definition"></a></dt>
+<dd><p>Parameter with value, constraints, and fitting capability.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.value">
+<span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.value" title="Link to this definition"></a></dt>
+<dd><p>Parameter value</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.id" title="Link to this definition"></a></dt>
+<dd><p>Unique identifier</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.name" title="Link to this definition"></a></dt>
+<dd><p>Human-readable name, also used to save/load</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.min_value">
+<span class="sig-name descname"><span class="pre">min_value</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.min_value" title="Link to this definition"></a></dt>
+<dd><p>Minimum value constraint</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.max_value">
+<span class="sig-name descname"><span class="pre">max_value</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.max_value" title="Link to this definition"></a></dt>
+<dd><p>Maximum value constraint</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><a class="headerlink" href="#rxrmask.core.parameter.Parameter.fit" title="Link to this definition"></a></dt>
+<dd><p>Enable for fitting/optimization</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#Parameter.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.Parameter.get" title="Link to this definition"></a></dt>
+<dd><p>Get parameter value from internal storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>)</span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parameter value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.Parameter.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#Parameter.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.Parameter.set" title="Link to this definition"></a></dt>
+<dd><p>Set parameter value with type validation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">T</span></code>)</span>) – New parameter value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.parameter.</span></span><span class="sig-name descname"><span class="pre">ParametersContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters=&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_parameters=&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer" title="Link to this definition"></a></dt>
+<dd><p>Container for managing parameter collections and fitting workflows.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.parameters" title="Link to this definition"></a></dt>
+<dd><p>List of regular parameters</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.derived_parameters">
+<span class="sig-name descname"><span class="pre">derived_parameters</span></span><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.derived_parameters" title="Link to this definition"></a></dt>
+<dd><p>List of auto-updating parameters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.get_fit_vector">
+<span class="sig-name descname"><span class="pre">get_fit_vector</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.get_fit_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.get_fit_vector" title="Link to this definition"></a></dt>
+<dd><p>Extract values of parameters marked for fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.load" title="Link to this definition"></a></dt>
+<dd><p>Load parameters from JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.new_parameter">
+<span class="sig-name descname"><span class="pre">new_parameter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.new_parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.new_parameter" title="Link to this definition"></a></dt>
+<dd><p>Create and register a new parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Parameter name</p></li>
+<li><p><strong>value</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></span>) – Initial value</p></li>
+<li><p><strong>fit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Enable for optimization</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#rxrmask.core.parameter.Parameter" title="rxrmask.core.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Created Parameter object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.register_derived">
+<span class="sig-name descname"><span class="pre">register_derived</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.register_derived"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.register_derived" title="Link to this definition"></a></dt>
+<dd><p>Register a derived parameter with update function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Parameter name</p></li>
+<li><p><strong>update_func</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[], <code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]</span>) – Function to calculate value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#rxrmask.core.parameter.DerivedParameter" title="rxrmask.core.parameter.DerivedParameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DerivedParameter</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Created DerivedParameter object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.save" title="Link to this definition"></a></dt>
+<dd><p>Save parameters to JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.set_fit_vector">
+<span class="sig-name descname"><span class="pre">set_fit_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.set_fit_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.set_fit_vector" title="Link to this definition"></a></dt>
+<dd><p>Update fitting parameters from vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.parameter.ParametersContainer.update_derived">
+<span class="sig-name descname"><span class="pre">update_derived</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/parameter.html#ParametersContainer.update_derived"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.parameter.ParametersContainer.update_derived" title="Link to this definition"></a></dt>
+<dd><p>Update all derived parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.structure">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.structure.</span></span><span class="sig-name descname"><span class="pre">Structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_compounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params_container</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/structure.html#Structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.structure.Structure" title="Link to this definition"></a></dt>
+<dd><p>Complete multilayer structure for X-ray reflectometry.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.name" title="Link to this definition"></a></dt>
+<dd><p>Structure name</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.params_container">
+<span class="sig-name descname"><span class="pre">params_container</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.params_container" title="Link to this definition"></a></dt>
+<dd><p>Container for parameters</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.n_compounds">
+<span class="sig-name descname"><span class="pre">n_compounds</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.n_compounds" title="Link to this definition"></a></dt>
+<dd><p>Number of compounds</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.n_layers">
+<span class="sig-name descname"><span class="pre">n_layers</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.n_layers" title="Link to this definition"></a></dt>
+<dd><p>Number of discretized layers</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.layers">
+<span class="sig-name descname"><span class="pre">layers</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.layers" title="Link to this definition"></a></dt>
+<dd><p>Discretized layer objects</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.compounds">
+<span class="sig-name descname"><span class="pre">compounds</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.compounds" title="Link to this definition"></a></dt>
+<dd><p>Compound objects</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.element_data">
+<span class="sig-name descname"><span class="pre">element_data</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.element_data" title="Link to this definition"></a></dt>
+<dd><p>Cached element data for optimization</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.atoms">
+<span class="sig-name descname"><span class="pre">atoms</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.atoms" title="Link to this definition"></a></dt>
+<dd><p>Atom objects cache</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.step">
+<span class="sig-name descname"><span class="pre">step</span></span><a class="headerlink" href="#rxrmask.core.structure.Structure.step" title="Link to this definition"></a></dt>
+<dd><p>Discretization step size in Angstroms</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.add_compound">
+<span class="sig-name descname"><span class="pre">add_compound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compound</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/structure.html#Structure.add_compound"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.structure.Structure.add_compound" title="Link to this definition"></a></dt>
+<dd><p>Add compound at specified index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.create_layers">
+<span class="sig-name descname"><span class="pre">create_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/structure.html#Structure.create_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.structure.Structure.create_layers" title="Link to this definition"></a></dt>
+<dd><p>Create discretized layers from compounds with specified step size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.update_layers">
+<span class="sig-name descname"><span class="pre">update_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/structure.html#Structure.update_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.structure.Structure.update_layers" title="Link to this definition"></a></dt>
+<dd><p>Update layer parameters based on current element data and density profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rxrmask.core.structure.Structure.validate_compounds">
+<span class="sig-name descname"><span class="pre">validate_compounds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rxrmask/core/structure.html#Structure.validate_compounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.structure.Structure.validate_compounds" title="Link to this definition"></a></dt>
+<dd><p>Validate that all compounds are defined and link roughness if needed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-rxrmask.core.reflectivitydata">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.EnergyScanData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.reflectivitydata.</span></span><span class="sig-name descname"><span class="pre">EnergyScanData</span></span><a class="reference internal" href="../_modules/rxrmask/core/reflectivitydata.html#EnergyScanData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.reflectivitydata.EnergyScanData" title="Link to this definition"></a></dt>
+<dd><p>Class for storing energy scan data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.EnergyScanData.energy_range">
+<span class="sig-name descname"><span class="pre">energy_range</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.EnergyScanData.energy_range" title="Link to this definition"></a></dt>
+<dd><p>The range of energies for the scan.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.EnergyScanData.qz">
+<span class="sig-name descname"><span class="pre">qz</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.EnergyScanData.qz" title="Link to this definition"></a></dt>
+<dd><p>The momentum transfer vector.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.EnergyScanData.R_s">
+<span class="sig-name descname"><span class="pre">R_s</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.EnergyScanData.R_s" title="Link to this definition"></a></dt>
+<dd><p>The s-polarized reflectivity data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.EnergyScanData.R_p">
+<span class="sig-name descname"><span class="pre">R_p</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.EnergyScanData.R_p" title="Link to this definition"></a></dt>
+<dd><p>The p-polarized reflectivity data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.ReflectivityData">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rxrmask.core.reflectivitydata.</span></span><span class="sig-name descname"><span class="pre">ReflectivityData</span></span><a class="reference internal" href="../_modules/rxrmask/core/reflectivitydata.html#ReflectivityData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rxrmask.core.reflectivitydata.ReflectivityData" title="Link to this definition"></a></dt>
+<dd><p>Class for storing reflectivity data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.ReflectivityData.qz">
+<span class="sig-name descname"><span class="pre">qz</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.ReflectivityData.qz" title="Link to this definition"></a></dt>
+<dd><p>The momentum transfer vector.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.ReflectivityData.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.ReflectivityData.energy" title="Link to this definition"></a></dt>
+<dd><p>The energy of the incident beam.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.ReflectivityData.R_s">
+<span class="sig-name descname"><span class="pre">R_s</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.ReflectivityData.R_s" title="Link to this definition"></a></dt>
+<dd><p>The s-polarized reflectivity data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rxrmask.core.reflectivitydata.ReflectivityData.R_p">
+<span class="sig-name descname"><span class="pre">R_p</span></span><a class="headerlink" href="#rxrmask.core.reflectivitydata.ReflectivityData.R_p" title="Link to this definition"></a></dt>
+<dd><p>The p-polarized reflectivity data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="backends.html" class="btn btn-neutral float-left" title="Backends Package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="materials.html" class="btn btn-neutral float-right" title="Materials Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nicolas Aguilera G.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
