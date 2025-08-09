@@ -174,16 +174,16 @@ def create_compound(
     com.linked_prev_roughness = linked_prev_roughness
 
     for detail in compound_details:
-        frac = detail.stochiometric_fraction / total_mass
+        frac_i = detail.stochiometric_fraction / total_mass
         base_name = f"{name}-{detail.name}"
 
         detail.molar_density = parameters_container.register_derived(
             f"{base_name}-molar_density",
-            lambda: com.density.get() * frac,
+            lambda frac=frac_i: com.density.get() * frac,
         )
         detail.molar_magnetic_density = parameters_container.register_derived(
             f"{base_name}-molar_magnetic_density",
-            lambda: com.magnetic_density.get() * frac,
+            lambda frac=frac_i: com.magnetic_density.get() * frac,
         )
         detail.roughness = com.roughness
         detail.thickness = com.thickness
