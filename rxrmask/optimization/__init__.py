@@ -5,6 +5,7 @@ from .optimization import (
     NelderMeadOptimizer,
     LBFGSOptimizer,
     DifferentialEvolutionOptimizer,
+    LeastSquaresOptimizer,
 )
 
 from .rxr import RXRModel, RXRFitter
@@ -14,6 +15,7 @@ __all__ = [
     'NelderMeadOptimizer',
     'LBFGSOptimizer',
     'DifferentialEvolutionOptimizer',
+    'LeastSquaresOptimizer',
     'RXRModel',
     'RXRFitter',
 ]

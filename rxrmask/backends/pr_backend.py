@@ -159,7 +159,6 @@ def reflectivity(
         eps, eps_mag, thicknesses, indices, compound_map
     )
 
-    print("Number of segments:", len(indices))
     wavelength = HC_WAVELENGTH_CONV / E_eV  # wavelength of incoming x-ray
 
     theta_deg = np.arcsin(qz / E_eV / QZ_SCALE) * 180 / np.pi
