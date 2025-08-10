@@ -6,9 +6,11 @@
 
 # from dask.distributed import Client
 
+
 def test():
     """Test function to verify backend module loading."""
     print("Udkm1Dsim backend module loaded successfully.")
+
 
 # def _compound_to_ud(compound: Compound) -> list[ud.AmorphousLayer]:
 #     ud_layers = []
@@ -40,14 +42,14 @@ def test():
 
 # def _to_ud_structure(stack: Structure) -> ud.Structure:
 #     ud_stack = ud.Structure(stack.name)
-    
+
 #     for comp in reversed(stack.compounds):
 #         if not isinstance(comp, Compound):
 #             raise TypeError("Expected a Compound instance in the stack.")
 
 #         sub_structure = ud.Structure(comp.name)
 #         layers = _compound_to_ud(comp)
-        
+
 #         for layer in layers:
 #             sub_structure.add_sub_structure(layer)
 

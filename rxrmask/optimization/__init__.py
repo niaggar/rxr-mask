@@ -11,11 +11,11 @@ from .optimization import (
 from .rxr import RXRModel, RXRFitter
 
 __all__ = [
-    'Optimizer',
-    'NelderMeadOptimizer',
-    'LBFGSOptimizer',
-    'DifferentialEvolutionOptimizer',
-    'LeastSquaresOptimizer',
-    'RXRModel',
-    'RXRFitter',
+    "Optimizer",
+    "NelderMeadOptimizer",
+    "LBFGSOptimizer",
+    "DifferentialEvolutionOptimizer",
+    "LeastSquaresOptimizer",
+    "RXRModel",
+    "RXRFitter",
 ]

@@ -1,10 +1,8 @@
-"""Atomic species for X-ray reflectometry calculations."""
-
+import rxrmask
 from rxrmask.core.formfactor import FormFactorModel
 
 from dataclasses import dataclass
 import pathlib
-import rxrmask
 
 
 @dataclass
@@ -43,19 +41,12 @@ class Atom:
             NameError: If atom symbol not found in database
         """
         if len(self.name) >= 2:
-            if (
-                self.name[0].isalpha() and self.name[0].upper() == "X"
-                and self.name[1:].isdigit()
-            ):
-                print(
-                    f"Warning: Atom name '{self.name}' is a placeholder. Atomic mass set to 0.0."
-                )
+            if self.name[0].isalpha() and self.name[0].upper() == "X" and self.name[1:].isdigit():
+                print(f"Warning: Atom name '{self.name}' is a placeholder. Atomic mass set to 0.0.")
                 return 0.0
 
         mass = None
-        data_path = (
-            pathlib.Path(rxrmask.__file__).parent / "materials" / "atomic_mass.txt"
-        )
+        data_path = pathlib.Path(rxrmask.__file__).parent / "materials" / "atomic_mass.txt"
 
         with open(data_path, "r") as file:
             lines = file.readlines()

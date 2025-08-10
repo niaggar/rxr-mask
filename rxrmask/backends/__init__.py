@@ -13,19 +13,20 @@ from .reflectivitybackend import ReflectivityBackend
 
 try:
     from .udkm_backend import test as udkm_test
+
     _udkm_available = True
 except ImportError:
     _udkm_available = False
 
 __all__ = [
-    'reflectivity_pr',
-    'reflectivity_parallel_pr',
-    'energy_scan_pr',
-    'energy_scan_parallel_pr',
-    'PRReflectivityBackend',
-    'ReflectivityBackend',
-    'PRParallelReflectivityBackend',
+    "reflectivity_pr",
+    "reflectivity_parallel_pr",
+    "energy_scan_pr",
+    "energy_scan_parallel_pr",
+    "PRReflectivityBackend",
+    "ReflectivityBackend",
+    "PRParallelReflectivityBackend",
 ]
 
 if _udkm_available:
-    __all__.append('udkm_test')
+    __all__.append("udkm_test")

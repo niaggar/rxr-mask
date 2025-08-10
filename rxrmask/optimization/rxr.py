@@ -2,14 +2,14 @@ from rxrmask.backends.reflectivitybackend import ReflectivityBackend
 from rxrmask.core.parameter import Parameter, ParametersContainer
 from rxrmask.core.structure import Structure
 from rxrmask.core.reflectivitydata import EnergyScanData, ReflectivityData
+from rxrmask.optimization.optimization import Optimizer
 
 import numpy as np
 
-from rxrmask.optimization.optimization import Optimizer
 
 class RXRModel:
     """Model for reflectivity calculations.
-    
+
     Attributes:
         structure: The structure to be modeled.
         parameters_container: The container for model parameters.
@@ -17,6 +17,7 @@ class RXRModel:
         R_scale: The scale factor for reflectivity.
         R_offset: The offset for reflectivity.
     """
+
     structure: Structure
     parameters_container: ParametersContainer
     backend: ReflectivityBackend
@@ -32,30 +33,30 @@ class RXRModel:
     def set_reflectivity_backend(self, backend: ReflectivityBackend) -> None:
         """Set the computational backend for the structure."""
         self.backend = backend
-    
+
     def compute_reflectivity(self, q, e: float) -> ReflectivityData:
         """Compute the reflectivity using the selected backend."""
-        if not hasattr(self, 'backend'):
+        if not hasattr(self, "backend"):
             raise ValueError("Reflectivity backend is not set.")
 
         r_data = self.backend.compute_reflectivity(self.structure, q, e)
         r_data = self.apply_scaling(r_data)
         return r_data
-    
+
     def compute_energy_scan(self, e, theta: float) -> EnergyScanData:
         """Compute the energy scan reflectivity using the selected backend."""
-        if not hasattr(self, 'backend'):
+        if not hasattr(self, "backend"):
             raise ValueError("Reflectivity backend is not set.")
 
         r_data = self.backend.compute_energy_scan(self.structure, e, theta)
         r_data = self.apply_scaling(r_data)
         return r_data
-    
+
     def apply_scaling(self, r_data):
         """Apply scaling to the reflectivity data."""
         scale = self.R_scale.get()
         offset = self.R_offset.get()
-        
+
         r_data.R_s = np.log(r_data.R_s * scale + offset)
         r_data.R_p = np.log(r_data.R_p * scale + offset)
         return r_data
@@ -69,6 +70,7 @@ class RXRFitter:
         experiment: The experimental reflectivity data.
         optimizer: The optimization algorithm to be used.
     """
+
     model: RXRModel
     experiment: ReflectivityData
     optimizer: Optimizer
@@ -85,14 +87,14 @@ class RXRFitter:
     def loss_function(self, fit_params):
         """Compute the loss between the experimental and simulated reflectivity data."""
         self.model.parameters_container.set_fit_vector(fit_params)
-        
+
         qz = self.experiment.qz
         energy = self.experiment.energy
         simulated = self.model.compute_reflectivity(qz, energy)
 
         if len(simulated.R_s) > 1:
-            return np.sum((self.experiment.R_s - simulated.R_s)**2)
+            return np.sum((self.experiment.R_s - simulated.R_s) ** 2)
         if len(simulated.R_p) > 1:
-            return np.sum((self.experiment.R_p - simulated.R_p)**2)
+            return np.sum((self.experiment.R_p - simulated.R_p) ** 2)
 
         raise ValueError("Simulated reflectivity data is empty or has invalid shape.")

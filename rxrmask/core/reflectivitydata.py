@@ -10,17 +10,18 @@ class ReflectivityData:
         R_s: The s-polarized reflectivity data.
         R_p: The p-polarized reflectivity data.
     """
-    
+
     qz: np.ndarray
     energy: float
     R_s: np.ndarray
     R_p: np.ndarray
-    
+
     def __init__(self):
         self.energy = 0.0
         self.qz = np.array([])
         self.R_s = np.array([])
         self.R_p = np.array([])
+
 
 class EnergyScanData:
     """Class for storing energy scan data.
@@ -31,6 +32,7 @@ class EnergyScanData:
         R_s: The s-polarized reflectivity data.
         R_p: The p-polarized reflectivity data.
     """
+
     energy_range: np.ndarray
     qz: float
     R_s: np.ndarray

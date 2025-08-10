@@ -1,6 +1,5 @@
-from rxrmask.core.layer import Layer
-from typing import List
 import numpy as np
+from typing import List
 
 
 def compute_adaptive_layer_segmentation(
@@ -22,7 +21,7 @@ def compute_adaptive_layer_segmentation(
     """
     if als is False:
         return list(range(len(index_of_refraction)))
-    
+
     indices = []
     idx_a = 0
 
@@ -31,7 +30,7 @@ def compute_adaptive_layer_segmentation(
         eps_b = index_of_refraction[idx_b]
         q_a = magnetic_optical_constants[idx_a]
         q_b = magnetic_optical_constants[idx_b]
-        
+
         delta_eps = abs(eps_a - eps_b)
         delta_q = abs(q_a - q_b)
 

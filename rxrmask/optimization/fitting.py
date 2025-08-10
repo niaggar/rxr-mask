@@ -1,39 +1,43 @@
-from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Tuple, Optional, Literal
 import numpy as np
 from scipy import optimize
 
-# ---- Types from your lib we import at call sites (no runtime import here) ----
 from rxrmask.backends import ReflectivityBackend
-from rxrmask.core import Structure, ParametersContainer, ReflectivityData, EnergyScanData
+from rxrmask.core import (
+    Structure,
+    ParametersContainer,
+    ReflectivityData,
+    EnergyScanData,
+)
 
 RScale = Literal["x", "log10", "ln", "qz4"]
 Objective = Literal["chi2", "l1", "l2", "atan"]
 
 # -------------------- Scan descriptors (measured data) --------------------
 
+
 @dataclass
 class ReflectivityScan:
     name: str
     energy_eV: float
     pol: Literal["s", "p"]  # which polarization to use from the simulation
-    qz: np.ndarray          # measured qz grid
-    R: np.ndarray           # measured reflectivity (same length as qz)
+    qz: np.ndarray  # measured qz grid
+    R: np.ndarray  # measured reflectivity (same length as qz)
     Rsmooth: Optional[np.ndarray] = None
     bounds: List[Tuple[float, float]] = None
     weights: List[float] = None
-    # per-scan knobs (can be tied to ParametersContainer if you prefer)
     background_shift: float = 0.0
     scale_factor: float = 1.0
+
 
 @dataclass
 class EnergyScan:
     name: str
     theta_deg: float
     pol: Literal["s", "p"]
-    E_eV: np.ndarray        # measured energy grid
-    R: np.ndarray           # measured reflectivity (same length as E_eV)
+    E_eV: np.ndarray  # measured energy grid
+    R: np.ndarray  # measured reflectivity (same length as E_eV)
     Rsmooth: Optional[np.ndarray] = None
     bounds: List[Tuple[float, float]] = None
     weights: List[float] = None
@@ -41,17 +45,24 @@ class EnergyScan:
     background_shift: float = 0.0
     scale_factor: float = 1.0
 
+
 # -------------------- Transforms & regularization --------------------
+
 
 @dataclass
 class FitTransform:
     r_scale: RScale = "x"
     eps: float = 1e-30  # to avoid log(0)
 
-    def apply_R(self, R: np.ndarray, *, qz: Optional[np.ndarray] = None,
-                theta_deg: Optional[float] = None,
-                E_eV: Optional[np.ndarray] = None,
-                qz_const: Optional[float] = None) -> np.ndarray:
+    def apply_R(
+        self,
+        R: np.ndarray,
+        *,
+        qz: Optional[np.ndarray] = None,
+        theta_deg: Optional[float] = None,
+        E_eV: Optional[np.ndarray] = None,
+        qz_const: Optional[float] = None,
+    ) -> np.ndarray:
         if self.r_scale == "x":
             return R
         if self.r_scale == "log10":
@@ -71,9 +82,11 @@ class FitTransform:
             return R * (qz**4)
         raise ValueError(self.r_scale)
 
+
 @dataclass
 class TVRegularizer:
     weight: float = 0.0
+
     def penalty(self, Rs: np.ndarray, Rt: np.ndarray) -> float:
         if self.weight == 0.0:
             return 0.0
@@ -83,7 +96,9 @@ class TVRegularizer:
         tv_t = np.abs(np.diff(Rt)).mean()
         return self.weight * abs(tv_s - tv_t)
 
+
 # -------------------- Param binding to your ParametersContainer --------------------
+
 
 @dataclass
 class ParamSpec:
@@ -93,8 +108,8 @@ class ParamSpec:
     lower: float
     upper: float
 
-def params_from_container(container, structure,
-                          post_set: Optional[Callable[[], None]] = None) -> List[ParamSpec]:
+
+def params_from_container(container, structure, post_set: Optional[Callable[[], None]] = None) -> List[ParamSpec]:
     """
     Build ParamSpec list from your ParametersContainer.
     - Uses Parameter.fit flag to select.
@@ -106,7 +121,7 @@ def params_from_container(container, structure,
         if not getattr(p, "fit", False):
             continue
         lo = p.min_value if p.min_value is not None else -np.inf
-        hi = p.max_value if p.max_value is not None else  np.inf
+        hi = p.max_value if p.max_value is not None else np.inf
 
         def make_setter(prm):
             def setter(v: float):
@@ -119,26 +134,32 @@ def params_from_container(container, structure,
                     structure.update_layers()
                 if post_set is not None:
                     post_set()
+
             return setter
 
-        specs.append(ParamSpec(
-            name=p.name,
-            get=lambda prm=p: float(prm.get()),
-            set=make_setter(p),
-            lower=float(lo),
-            upper=float(hi),
-        ))
+        specs.append(
+            ParamSpec(
+                name=p.name,
+                get=lambda prm=p: float(prm.get()),
+                set=make_setter(p),
+                lower=float(lo),
+                upper=float(hi),
+            )
+        )
     return specs
+
 
 # -------------------- Utility --------------------
 
-def _mask_by_bounds(x: np.ndarray, bounds: List[Tuple[float,float]]) -> np.ndarray:
+
+def _mask_by_bounds(x: np.ndarray, bounds: List[Tuple[float, float]]) -> np.ndarray:
     if not bounds:
         return np.ones_like(x, dtype=bool)
     mask = np.zeros_like(x, dtype=bool)
     for lo, hi in bounds:
         mask |= (x >= lo) & (x < hi)
     return mask
+
 
 def _objective(diff: np.ndarray, ysim: np.ndarray, kind: Objective) -> float:
     if diff.size == 0:
@@ -154,7 +175,9 @@ def _objective(diff: np.ndarray, ysim: np.ndarray, kind: Objective) -> float:
         return float(np.sum(np.arctan(diff**2)))
     raise ValueError(kind)
 
+
 # -------------------- Cost/residuals (backend-agnostic) --------------------
+
 
 @dataclass
 class FitContext:
@@ -167,10 +190,14 @@ class FitContext:
     s_min: float = 0.1  # not used here; your backend already encapsulates precision/ALS
     # You can add hooks here (e.g., callback before/after sim)
 
-def scalar_cost(x: np.ndarray, params: List[ParamSpec],
-                ctx: FitContext,
-                ref_scans: List[ReflectivityScan],
-                en_scans: List[EnergyScan]) -> float:
+
+def scalar_cost(
+    x: np.ndarray,
+    params: List[ParamSpec],
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+) -> float:
     # apply params
     for val, spec in zip(x, params):
         spec.set(float(val))
@@ -180,7 +207,7 @@ def scalar_cost(x: np.ndarray, params: List[ParamSpec],
     # Reflectivity scans (fixed E, varying qz)
     for sc in ref_scans:
         # simulate
-        sim: "ReflectivityData" = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
+        sim = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
         Rsim = sim.R_s if sc.pol == "s" else sim.R_p
         # shift/scale, clip
         Rsim = np.clip(sc.background_shift + sc.scale_factor * Rsim, 0.0, None)
@@ -209,19 +236,38 @@ def scalar_cost(x: np.ndarray, params: List[ParamSpec],
         Rdat = sc.R[mask]
         Rsmooth = (sc.Rsmooth if sc.Rsmooth is not None else sc.R)[mask]
 
-        Rt = ctx.transform.apply_R(Rsim[mask], theta_deg=sc.theta_deg, E_eV=E_use, qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const))
-        Rd = ctx.transform.apply_R(Rdat, theta_deg=sc.theta_deg, E_eV=E_use, qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const))
-        Rs = ctx.transform.apply_R(Rsmooth, theta_deg=sc.theta_deg, E_eV=E_use, qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const))
+        Rt = ctx.transform.apply_R(
+            Rsim[mask],
+            theta_deg=sc.theta_deg,
+            E_eV=E_use,
+            qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const),
+        )
+        Rd = ctx.transform.apply_R(
+            Rdat,
+            theta_deg=sc.theta_deg,
+            E_eV=E_use,
+            qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const),
+        )
+        Rs = ctx.transform.apply_R(
+            Rsmooth,
+            theta_deg=sc.theta_deg,
+            E_eV=E_use,
+            qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const),
+        )
 
         total += _objective(Rd - Rt, Rt, ctx.objective)
         total += ctx.tv.penalty(Rs, Rt)
 
     return total
 
-def vector_residuals(x: np.ndarray, params: List[ParamSpec],
-                     ctx: FitContext,
-                     ref_scans: List[ReflectivityScan],
-                     en_scans: List[EnergyScan]) -> np.ndarray:
+
+def vector_residuals(
+    x: np.ndarray,
+    params: List[ParamSpec],
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+) -> np.ndarray:
     for val, spec in zip(x, params):
         spec.set(float(val))
 
@@ -249,39 +295,84 @@ def vector_residuals(x: np.ndarray, params: List[ParamSpec],
         E_use = sc.E_eV[mask]
         Rdat = sc.R[mask]
 
-        Rt = ctx.transform.apply_R(Rsim[mask], theta_deg=sc.theta_deg, E_eV=E_use, qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const))
-        Rd = ctx.transform.apply_R(Rdat, theta_deg=sc.theta_deg, E_eV=E_use, qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const))
+        Rt = ctx.transform.apply_R(
+            Rsim[mask],
+            theta_deg=sc.theta_deg,
+            E_eV=E_use,
+            qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const),
+        )
+        Rd = ctx.transform.apply_R(
+            Rdat,
+            theta_deg=sc.theta_deg,
+            E_eV=E_use,
+            qz_const=(sim.qz if hasattr(sim, "qz") else sc.qz_const),
+        )
         res.append(Rd - Rt)
 
     return np.concatenate(res) if res else np.zeros(0)
 
+
 # -------------------- Optimizer wrappers --------------------
 
-def fit_differential_evolution(params: List[ParamSpec], ctx: FitContext,
-                               ref_scans: List[ReflectivityScan],
-                               en_scans: List[EnergyScan],
-                               *, strategy="best1bin", maxiter=200, popsize=20, tol=1e-6,
-                               mutation=(0.5, 1.0), recombination=0.7,
-                               polish=True, seed=None, updating="deferred"):
+
+def fit_differential_evolution(
+    params: List[ParamSpec],
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+    *,
+    strategy="best1bin",
+    maxiter=200,
+    popsize=20,
+    tol=1e-6,
+    mutation=(0.5, 1.0),
+    recombination=0.7,
+    polish=True,
+    seed=None,
+    updating="deferred",
+):
     bounds = [(p.lower, p.upper) for p in params]
     ret = optimize.differential_evolution(
         lambda x: scalar_cost(x, params, ctx, ref_scans, en_scans),
-        bounds=bounds, strategy=strategy, maxiter=maxiter, popsize=popsize,
-        tol=tol, mutation=mutation, recombination=recombination,
-        polish=polish, seed=seed, updating=updating, disp=False
+        bounds=bounds,
+        strategy=strategy,
+        maxiter=maxiter,
+        popsize=popsize,
+        tol=tol,
+        mutation=mutation,
+        recombination=recombination,
+        polish=polish,
+        seed=seed,
+        updating=updating,
+        disp=False,
     )
     return ret.x, ret.fun
 
-def fit_least_squares(x0: np.ndarray, params: List[ParamSpec], ctx: FitContext,
-                      ref_scans: List[ReflectivityScan],
-                      en_scans: List[EnergyScan],
-                      *, method="trf", ftol=1e-10, xtol=1e-10, gtol=1e-10, max_nfev=None):
+
+def fit_least_squares(
+    x0: np.ndarray,
+    params: List[ParamSpec],
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+    *,
+    method="trf",
+    ftol=1e-10,
+    xtol=1e-10,
+    gtol=1e-10,
+    max_nfev=None,
+):
     lb = np.array([p.lower for p in params], dtype=float)
     ub = np.array([p.upper for p in params], dtype=float)
     res = optimize.least_squares(
         lambda x: vector_residuals(x, params, ctx, ref_scans, en_scans),
-        x0=np.asarray(x0, dtype=float), bounds=(lb, ub),
-        method=method, ftol=ftol, xtol=xtol, gtol=gtol, max_nfev=max_nfev
+        x0=np.asarray(x0, dtype=float),
+        bounds=(lb, ub),
+        method=method,
+        ftol=ftol,
+        xtol=xtol,
+        gtol=gtol,
+        max_nfev=max_nfev,
     )
     cov = None
     if res.jac is not None and res.jac.size:

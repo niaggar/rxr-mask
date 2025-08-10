@@ -19,9 +19,10 @@ HC_WAVELENGTH_CONV = H_CONST * C_CONST * 1e10  # Pre-calculated h*c conversion f
 
 class PRReflectivityBackend(ReflectivityBackend):
     """Reflectivity backend using Python Reflectivity library."""
+
     als: bool = True
     precision: float = 1e-6
-    
+
     def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
         return reflectivity(structure, qz, energy, self.precision, self.als)
 
@@ -31,24 +32,36 @@ class PRReflectivityBackend(ReflectivityBackend):
 
 class PRParallelReflectivityBackend(ReflectivityBackend):
     """Parallel Reflectivity backend using Python Reflectivity library."""
+
     als: bool = True
     precision: float = 1e-6
     n_jobs: int = -1
     use_threads: bool = False
     verbose: int = 0
-    
+
     def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
         return reflectivity_parallel(
-            structure, qz, energy, self.precision, self.n_jobs, self.use_threads, self.verbose, self.als
+            structure,
+            qz,
+            energy,
+            self.precision,
+            self.n_jobs,
+            self.use_threads,
+            self.verbose,
+            self.als,
         )
 
     def compute_energy_scan(self, structure, energy_range, theta) -> EnergyScanData:
         return energy_scan_parallel(
-            structure, energy_range, theta, self.precision, self.n_jobs, self.verbose, self.als, self.use_threads
+            structure,
+            energy_range,
+            theta,
+            self.precision,
+            self.n_jobs,
+            self.verbose,
+            self.als,
+            self.use_threads,
         )
-
-
-
 
 
 def _print_structure_info(structure):
@@ -63,9 +76,7 @@ def _print_structure_info(structure):
             epsg = layer.epsg()
         except AttributeError:
             pass
-        print(
-            f"Layer {i}: d={d:.2f} Å, sigma={sigma}, eps={eps}, mag={mag}, epsg={epsg}"
-        )
+        print(f"Layer {i}: d={d:.2f} Å, sigma={sigma}, eps={eps}, mag={mag}, epsg={epsg}")
 
 
 def _compound_lookup_table(stack: Structure) -> list[tuple[float, Compound]]:
@@ -123,54 +134,43 @@ def reflectivity(
     als: bool = True,
 ) -> ReflectivityData:
     """Compute reflectivity using Python Reflectivity backend.
-    
+
     Args:
         stack: Structure containing layers
         qz: Momentum transfer array
         E_eV: X-ray energy in eV
         precision: Precision for adaptive layer segmentation
         als: Enable adaptive layer segmentation
-    
+
     Returns:
         ReflectivityData
     """
     if stack.n_layers == 0:
-        raise ValueError(
-            "Stack has no layers. Please create layers before computing reflectivity."
-        )
+        raise ValueError("Stack has no layers. Please create layers before computing reflectivity.")
 
     compound_map = _compound_lookup_table(stack)
 
-    index_of_refraction = np.array(
-        [layer.get_index_of_refraction(E_eV) for layer in stack.layers]
-    )
-    magnetic_optical_constants = np.array(
-        [layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers]
-    )
+    index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
+    magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
     thicknesses = np.array([layer.thickness for layer in stack.layers])
 
     eps = index_of_refraction**2
     eps_mag = -1 * eps * magnetic_optical_constants
 
-    indices = compute_adaptive_layer_segmentation(
-        index_of_refraction, magnetic_optical_constants, precision, als=als
-    )
-    structure = _to_pr_structure_from_segments(
-        eps, eps_mag, thicknesses, indices, compound_map
-    )
+    indices = compute_adaptive_layer_segmentation(index_of_refraction, magnetic_optical_constants, precision, als=als)
+    structure = _to_pr_structure_from_segments(eps, eps_mag, thicknesses, indices, compound_map)
 
     wavelength = HC_WAVELENGTH_CONV / E_eV  # wavelength of incoming x-ray
 
     theta_deg = np.arcsin(qz / E_eV / QZ_SCALE) * 180 / np.pi
-    R_sigma, R_pi = pr.Reflectivity(
-        structure, theta_deg, wavelength, MagneticCutoff=1e-20
-    )
-    
+    R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
+
     res = ReflectivityData()
     res.qz = qz
     res.R_s = R_sigma
     res.R_p = R_pi
     return res
+
 
 def _worker_thread(structure, qz_i: float, E_eV: float):
     wavelength = HC_WAVELENGTH_CONV / E_eV
@@ -190,7 +190,7 @@ def reflectivity_parallel(
     als: bool = True,
 ) -> ReflectivityData:
     """Compute reflectivity in parallel using Python Reflectivity backend.
-    
+
     Args:
         stack: Structure containing layers
         qz: Momentum transfer array
@@ -200,23 +200,17 @@ def reflectivity_parallel(
         use_threads: Use threading backend
         verbose: Verbosity level
         als: Enable adaptive layer segmentation
-    
+
     Returns:
         ReflectivityData
     """
     if stack.n_layers == 0:
-        raise ValueError(
-            "Stack has no layers. Please create layers before computing reflectivity."
-        )
+        raise ValueError("Stack has no layers. Please create layers before computing reflectivity.")
 
     if use_threads:
         compound_map = _compound_lookup_table(stack)
-        index_of_refraction = np.array(
-            [layer.get_index_of_refraction(E_eV) for layer in stack.layers]
-        )
-        magnetic_optical_constants = np.array(
-            [layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers]
-        )
+        index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
+        magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
         thicknesses = np.array([layer.thickness for layer in stack.layers])
 
         eps = index_of_refraction**2
@@ -227,9 +221,7 @@ def reflectivity_parallel(
             precision,
             als=als,
         )
-        structure = _to_pr_structure_from_segments(
-            eps, eps_mag, thicknesses, indices, compound_map
-        )
+        structure = _to_pr_structure_from_segments(eps, eps_mag, thicknesses, indices, compound_map)
 
         tasks = [delayed(_worker_thread)(structure, qzi, E_eV) for qzi in qz]
         backend = "threading"
@@ -273,21 +265,19 @@ def energy_scan(
     als: bool = True,
 ) -> EnergyScanData:
     """Compute energy scan reflectivity using Python Reflectivity backend.
-    
+
     Args:
         stack: Structure containing layers
         E_eVs: List of X-ray energies in eV
         theta_deg: Incident angle in degrees
         precision: Precision for adaptive layer segmentation
         als: Enable adaptive layer segmentation
-        
+
     Returns:
         EnergyScanData
     """
     if stack.n_layers == 0:
-        raise ValueError(
-            "Stack has no layers. Please create layers before computing reflectivity."
-        )
+        raise ValueError("Stack has no layers. Please create layers before computing reflectivity.")
 
     compound_map = _compound_lookup_table(stack)
 
@@ -296,20 +286,11 @@ def energy_scan(
     structures_energies = []
 
     index_of_refraction_energies = get_index_of_refraction_energies(stack, e_array)
-    magnetic_optical_constants_energies = get_magnetic_optical_constants_energies(
-        stack, e_array
-    )
+    magnetic_optical_constants_energies = get_magnetic_optical_constants_energies(stack, e_array)
     thicknesses = np.array([layer.thickness for layer in stack.layers])
 
-    eps = np.array(
-        [index_of_refraction_energies[i, :] ** 2 for i in range(len(e_array))]
-    )
-    eps_mag = np.array(
-        [
-            -1 * eps[i] * magnetic_optical_constants_energies[i, :]
-            for i in range(len(e_array))
-        ]
-    )
+    eps = np.array([index_of_refraction_energies[i, :] ** 2 for i in range(len(e_array))])
+    eps_mag = np.array([-1 * eps[i] * magnetic_optical_constants_energies[i, :] for i in range(len(e_array))])
 
     indices_energies = [
         compute_adaptive_layer_segmentation(
@@ -321,9 +302,7 @@ def energy_scan(
         for i in range(len(e_array))
     ]
     structures_energies = [
-        _to_pr_structure_from_segments(
-            eps[i, :], eps_mag[i, :], thicknesses, indices_energies[i], compound_map
-        )
+        _to_pr_structure_from_segments(eps[i, :], eps_mag[i, :], thicknesses, indices_energies[i], compound_map)
         for i in range(len(e_array))
     ]
 
@@ -331,9 +310,7 @@ def energy_scan(
     R_pi_all = []
     for i, structure in enumerate(structures_energies):
         wavelength = wavelength_energies[i]
-        R_sigma, R_pi = pr.Reflectivity(
-            structure, theta_deg, wavelength, MagneticCutoff=1e-20
-        )
+        R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
         R_sigma_all.append(R_sigma)
         R_pi_all.append(R_pi)
 
@@ -348,39 +325,38 @@ def _energy_scan_thread(structure, wavelength, theta_deg):
     R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
     return R_sigma, R_pi
 
+
 def _energy_scan_worker(stack, E_eV, theta_deg, precision, als):
     compound_map = _compound_lookup_table(stack)
 
-    index_of_refraction = np.array(
-        [layer.get_index_of_refraction(E_eV) for layer in stack.layers]
-    )
-    magnetic_optical_constants = np.array(
-        [layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers]
-    )
+    index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
+    magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
     thicknesses = np.array([layer.thickness for layer in stack.layers])
 
     eps = index_of_refraction**2
     eps_mag = -1 * eps * magnetic_optical_constants
 
-    indices = compute_adaptive_layer_segmentation(
-        index_of_refraction, magnetic_optical_constants, precision, als=als
-    )
-    structure = _to_pr_structure_from_segments(
-        eps, eps_mag, thicknesses, indices, compound_map
-    )
+    indices = compute_adaptive_layer_segmentation(index_of_refraction, magnetic_optical_constants, precision, als=als)
+    structure = _to_pr_structure_from_segments(eps, eps_mag, thicknesses, indices, compound_map)
 
     wavelength = HC_WAVELENGTH_CONV / E_eV  # wavelength of incoming x-ray
-    R_sigma, R_pi = pr.Reflectivity(
-        structure, theta_deg, wavelength, MagneticCutoff=1e-20
-    )
+    R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
 
     return R_sigma, R_pi
 
+
 def energy_scan_parallel(
-    stack, E_eVs, theta_deg, precision=1e-6, n_jobs=-1, verbose=0, als=True, use_threads=False
+    stack,
+    E_eVs,
+    theta_deg,
+    precision=1e-6,
+    n_jobs=-1,
+    verbose=0,
+    als=True,
+    use_threads=False,
 ) -> EnergyScanData:
     """Compute energy scan reflectivity in parallel using Python Reflectivity backend.
-    
+
     Args:
         stack: Structure containing layers
         E_eVs: List of X-ray energies in eV
@@ -390,7 +366,7 @@ def energy_scan_parallel(
         use_threads: Use threading backend
         verbose: Verbosity level
         als: Enable adaptive layer segmentation
-        
+
     Returns:
         EnergyScanData
     """
@@ -406,31 +382,23 @@ def energy_scan_parallel(
         eps_mag = -1 * eps * mag_constants
 
         indices_energies = [
-            compute_adaptive_layer_segmentation(index_energies[i], mag_constants[i], precision, als=als)
-            for i in range(len(e_array))
+            compute_adaptive_layer_segmentation(index_energies[i], mag_constants[i], precision, als=als) for i in range(len(e_array))
         ]
 
         structures = [
-            _to_pr_structure_from_segments(
-                eps[i], eps_mag[i], thicknesses, indices_energies[i], compound_map
-            )
-            for i in range(len(e_array))
+            _to_pr_structure_from_segments(eps[i], eps_mag[i], thicknesses, indices_energies[i], compound_map) for i in range(len(e_array))
         ]
 
         wavelengths = HC_WAVELENGTH_CONV / e_array
 
         with parallel_backend("threading", n_jobs=n_jobs):
             results = Parallel(verbose=verbose)(
-                delayed(_energy_scan_thread)(structures[i], wavelengths[i], theta_deg)
-                for i in range(len(e_array))
+                delayed(_energy_scan_thread)(structures[i], wavelengths[i], theta_deg) for i in range(len(e_array))
             )
 
     else:
         with parallel_backend("loky", n_jobs=n_jobs):
-            results = Parallel(verbose=verbose)(
-                delayed(_energy_scan_worker)(stack, E, theta_deg, precision, als)
-                for E in e_array
-            )
+            results = Parallel(verbose=verbose)(delayed(_energy_scan_worker)(stack, E, theta_deg, precision, als) for E in e_array)
 
     R_sigma_all, R_pi_all = zip(*results)
     res = EnergyScanData()

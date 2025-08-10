@@ -1,5 +1,5 @@
 from rxrmask.core import Compound, AtomLayer, Layer
-from rxrmask.core.parameter import ParametersContainer
+from rxrmask.core.parameter import Parameter, ParametersContainer
 from rxrmask.utils import get_density_profile_from_element_data
 
 from dataclasses import dataclass, field
@@ -65,7 +65,7 @@ class Structure:
                 for j, detail in enumerate(current_compound.compound_details):
                     detail.prev_roughness = prev_compound.compound_details[j].roughness
 
-    def create_layers(self, step: float = 0.1) -> None:
+    def create_layers(self, step: float = 0.1, track_params=False) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
         self.element_data, self.atoms = self._create_element_data()
@@ -81,13 +81,22 @@ class Structure:
                 molar_density = dens[element_name][i] if element_name in dens else 0.0
                 molar_magnetic_density = m_dens[element_name][i] if element_name in m_dens else 0.0
 
-                molar_density_param = self.params_container.new_parameter(f"layer_{i}_{element_name}_density", molar_density)
-                molar_magnetic_density_param = self.params_container.new_parameter(f"layer_{i}_{element_name}_mag_density", molar_magnetic_density)
+                temp_name = f"layer_{i}_{element_name}"
+                m_dens_param = None
+                m_magnetic_density_param = None
+                if track_params:
+                    m_dens_param = self.params_container.new_parameter(f"{temp_name}_density", molar_density, fit=True)
+                    m_magnetic_density_param = self.params_container.new_parameter(
+                        f"{temp_name}_mag_density", molar_magnetic_density, fit=True
+                    )
+                else:
+                    m_dens_param = Parameter(id=0, name=f"{temp_name}_density", value=molar_density, fit=False)
+                    m_magnetic_density_param = Parameter(id=0, name=f"{temp_name}_mag_density", value=molar_magnetic_density, fit=False)
 
                 element_layer = AtomLayer(
                     atom=atom,
-                    molar_density=molar_density_param,
-                    molar_magnetic_density=molar_magnetic_density_param,
+                    molar_density=m_dens_param,
+                    molar_magnetic_density=m_magnetic_density_param,
                 )
                 elements.append(element_layer)
 
@@ -100,7 +109,7 @@ class Structure:
     def update_layers(self) -> None:
         """Update layer parameters based on current element data and density profile."""
         z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
-        
+
         if len(z) != len(self.layers) + 1:
             raise ValueError("Inconsistent current layer count with density profile.")
 
