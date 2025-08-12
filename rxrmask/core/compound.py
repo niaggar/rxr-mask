@@ -25,11 +25,11 @@ class CompoundDetails:
     name: str
     stochiometric_fraction: float
     atom: Atom
-    thickness: Parameter[float]  # in Angstrom
-    roughness: Parameter[float]  # in Angstrom
-    prev_roughness: Parameter[float]  # in Angstrom
-    molar_density: Parameter[float]  # in mol/cm^3
-    molar_magnetic_density: Parameter[float]  # in mol/cm^3
+    thickness: Parameter  # in Angstrom
+    roughness: Parameter  # in Angstrom
+    prev_roughness: Parameter  # in Angstrom
+    molar_density: Parameter  # in mol/cm^3
+    molar_magnetic_density: Parameter  # in mol/cm^3
 
     def __init__(self):
         self.name = ""
@@ -57,12 +57,12 @@ class Compound:
     name: str
     formula: str
 
-    thickness: Parameter[float]  # in Angstrom
-    roughness: Parameter[float]  # in Angstrom
-    prev_roughness: Parameter[float]  # in Angstrom
+    thickness: Parameter  # in Angstrom
+    roughness: Parameter  # in Angstrom
+    prev_roughness: Parameter  # in Angstrom
     linked_prev_roughness: bool
-    density: Parameter[float]  # in g/cm^3
-    magnetic_density: Parameter[float]  # in g/cm^3
+    density: Parameter  # in g/cm^3
+    magnetic_density: Parameter  # in g/cm^3
 
     magnetic: bool = False
     magnetic_direction: Literal["x", "y", "z", "0"] = "0"

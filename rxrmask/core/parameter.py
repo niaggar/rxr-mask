@@ -1,32 +1,37 @@
 from dataclasses import dataclass, field
-from typing import TypeVar, Generic, Any, Callable, Optional
+from typing import Any, Callable, Optional
 import json
-
-T = TypeVar("T")
 
 
 @dataclass
-class Parameter(Generic[T]):
+class Parameter:
     """Parameter with value, constraints, and fitting capability.
 
     Attributes:
         value: Parameter value
         id: Unique identifier
         name: Human-readable name, also used to save/load
-        min_value: Minimum value constraint
-        max_value: Maximum value constraint
+        lower: Minimum value constraint
+        upper: Maximum value constraint
         fit: Enable for fitting/optimization
     """
 
-    value: T
+    value: float
     id: int = 0
     name: str = ""
 
-    min_value: T | None = None
-    max_value: T | None = None
+    lower: float | None = None
+    upper: float | None = None
     fit: bool = False
 
-    def get(self) -> T:
+    def __post_init__(self):
+        factor = 0.2
+        if self.lower is not None:
+            self.lower = self.value * (1 - factor) if self.value != 0.0 else 0.0
+        if self.upper is not None:
+            self.upper = self.value * (1 + factor)
+
+    def get(self) -> float:
         """Get parameter value from internal storage.
 
         Returns:
@@ -34,7 +39,7 @@ class Parameter(Generic[T]):
         """
         return self.value
 
-    def set(self, value: T) -> None:
+    def set(self, value: float) -> None:
         """Set parameter value with type validation.
 
         Args:
@@ -48,14 +53,14 @@ class Parameter(Generic[T]):
 
 
 @dataclass
-class DerivedParameter(Parameter[T]):
+class DerivedParameter(Parameter):
     """Parameter with automatic update functionality.
 
     Attributes:
         update_func: Function to calculate new value
     """
 
-    update_func: Optional[Callable[[], T]] = None
+    update_func: Optional[Callable[[], float]] = None
 
     def update(self):
         """Update parameter value using update function."""
@@ -63,18 +68,21 @@ class DerivedParameter(Parameter[T]):
             raise RuntimeError("No update function defined for DerivedParameter.")
         self.value = self.update_func()
 
-    def get(self) -> T:
+    def get(self) -> float:
         self.update()
         return self.value
 
-    def convert_to_parameter(self) -> Parameter[T]:
+    def set(self, value: float) -> None:
+        print(f"Warning: Cannot set value for DerivedParameter '{self.name}'. It is auto-updating.")
+
+    def convert_to_parameter(self) -> Parameter:
         """Convert to regular Parameter."""
         return Parameter(
             id=self.id,
             name=self.name,
             value=self.get(),
-            min_value=self.min_value,
-            max_value=self.max_value,
+            lower=self.lower,
+            upper=self.upper,
             fit=self.fit,
         )
 
@@ -88,8 +96,8 @@ class ParametersContainer:
         derived_parameters: List of auto-updating parameters
     """
 
-    parameters: list[Parameter[Any]] = field(default_factory=list)
-    derived_parameters: list[DerivedParameter[Any]] = field(default_factory=list)
+    parameters: list[Parameter] = field(default_factory=list)
+    derived_parameters: list[DerivedParameter] = field(default_factory=list)
 
     def new_parameter(self, name: str, value: Any, fit: bool = False) -> Parameter:
         """Create and register a new parameter.
@@ -118,7 +126,7 @@ class ParametersContainer:
             Created DerivedParameter object
         """
         id = len(self.derived_parameters)
-        p = DerivedParameter(id=id, name=name, value=None, fit=False, update_func=update_func)
+        p = DerivedParameter(id=id, name=name, value=0.0, fit=False, update_func=update_func)
         self.derived_parameters.append(p)
         return p
 
@@ -151,8 +159,8 @@ class ParametersContainer:
                     "id": p.id,
                     "name": p.name,
                     "value": p.get(),
-                    "min_value": p.min_value,
-                    "max_value": p.max_value,
+                    "min_value": p.lower,
+                    "max_value": p.upper,
                     "fit": p.fit,
                 }
             )
@@ -170,8 +178,8 @@ class ParametersContainer:
                 id=entry["id"],
                 name=entry["name"],
                 value=entry["value"],
-                min_value=entry.get("min_value"),
-                max_value=entry.get("max_value"),
+                lower=entry.get("min_value"),
+                upper=entry.get("max_value"),
                 fit=entry.get("fit", False),
             )
             self.parameters.append(param)

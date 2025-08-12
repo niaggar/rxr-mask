@@ -25,8 +25,8 @@ class AtomLayer:
     """
 
     atom: Atom
-    molar_density: Parameter[float]  # in mol/cm^3
-    molar_magnetic_density: Parameter[float] | None = None  # in mol/cm^3
+    molar_density: Parameter  # in mol/cm^3
+    molar_magnetic_density: Parameter | None = None  # in mol/cm^3
 
     def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
         """Get atomic form factors f1 and f2 at specific energy.

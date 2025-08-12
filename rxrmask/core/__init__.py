@@ -6,7 +6,8 @@ from .compound import CompoundDetails, Compound, create_compound
 from .layer import AtomLayer, Layer
 from .structure import Structure
 from .parameter import Parameter, DerivedParameter, ParametersContainer
-from .reflectivitydata import ReflectivityData, EnergyScanData
+from .reflectivitydata import SimReflectivityData, SimEnergyScanData, EnergyScan, ReflectivityScan
+from .loaddata import load_reflectivity_scans, load_energy_scans
 
 __all__ = [
     "Atom",
@@ -23,6 +24,10 @@ __all__ = [
     "Parameter",
     "DerivedParameter",
     "ParametersContainer",
-    "ReflectivityData",
-    "EnergyScanData",
+    "SimReflectivityData",
+    "SimEnergyScanData",
+    "EnergyScan",
+    "ReflectivityScan",
+    "load_reflectivity_scans",
+    "load_energy_scans",
 ]

@@ -26,7 +26,7 @@ comp = create_compound(
     roughness=0.0,
 )
 
-struc = Structure(name=f"Test Structure", n_compounds=1, params_container=parameters_container)
+struc = Structure(name="Test Structure", n_compounds=1, params_container=parameters_container)
 struc.add_compound(0, comp)
 struc.validate_compounds()
 struc.create_layers(step=0.1)

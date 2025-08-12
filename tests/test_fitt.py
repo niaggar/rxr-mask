@@ -1,9 +1,6 @@
 # %%
 import numpy as np
 import time
-
-
-# %%
 from rxrmask.core import (
     Atom,
     Structure,
@@ -13,6 +10,8 @@ from rxrmask.core import (
     FormFactorVacancy,
     SimReflectivityData,
     create_compound,
+    load_energy_scans,
+    load_reflectivity_scans,
 )
 from rxrmask.utils import (
     plot_reflectivity,
@@ -33,7 +32,6 @@ from rxrmask.optimization import (
     LeastSquaresOptimizer,
 )
 
-# %%
 def set_compound_params(structure: Structure, fit: bool):
     for compound in structure.compounds:
         compound.thickness.fit = fit
@@ -41,8 +39,6 @@ def set_compound_params(structure: Structure, fit: bool):
         compound.prev_roughness.fit = fit
         compound.density.fit = fit
         compound.magnetic_density.fit = fit
-
-
 # %%
 mn_ff = FormFactorLocalDB(element="Mn", is_magnetic=False)
 o_ff = FormFactorLocalDB(element="O", is_magnetic=False)
@@ -91,11 +87,8 @@ x2_atom = Atom(
     name="X2",
     ff=c_ff,
 )
-
-
 # %%
 parameters_container = ParametersContainer()
-
 comp_SrTiO3 = create_compound(
     parameters_container=parameters_container,
     name="SrTiO3",
@@ -140,97 +133,22 @@ struc.create_layers(step=0.1)
 model = RXRModel(structure=struc, parameters_container=parameters_container)
 set_compound_params(model.structure, fit=True)
 
-
-# %%
-init_params = model.parameters_container.get_fit_vector()
-print(f"Initial parameters: {init_params}")
-for param in model.parameters_container.parameters:
-    if param.fit:
-        print(f"{param.name}: {param.value}")
-
-# %%
-# # EXAPLE DATA TO FIT
-#
-# ---
-#     Initial parameters: [50.0, 5.12, 0.0, 0.0, 0.0, 10.0, 6.52, 0.0, 4.0, 0.0, 10.0, 5.0, 0.0, 4.0, 1.0, 0.0]
-#     SrTiO3-thickness: 50.0
-#     SrTiO3-density: 5.12
-#     SrTiO3-magnetic_density: 0.0
-#     SrTiO3-roughness: 0.0
-#     SrTiO3-prev_roughness: 0.0
-#     LaMnO3-thickness: 10.0
-#     LaMnO3-density: 6.52
-#     LaMnO3-magnetic_density: 0.0
-#     LaMnO3-roughness: 4.0
-#     LaMnO3-prev_roughness: 0.0
-#     CO2-thickness: 10.0
-#     CO2-density: 5.0
-#     CO2-magnetic_density: 0.0
-#     CO2-roughness: 4.0
-#     R_scale: 1.0
-#     R_offset: 0.0
-
-# %%
-backend = PRReflectivityBackend()
-model.set_reflectivity_backend(backend)
-
-E_eV = 600
-Theta = np.linspace(0.1, 89.1, num=1001)
-qz = np.sin(Theta * np.pi / 180) * (E_eV * 0.001013546143)
-
-initial_ref = model.compute_reflectivity(qz, E_eV)
-plot_reflectivity(initial_ref.qz, initial_ref.R_s, initial_ref.R_p, initial_ref.energy, "")
-
-
 # %%
 
-# In[9]:
+reflectivty_data = load_reflectivity_scans(
+    path="/Users/niaggar25/Downloads/Experimental RXR data/B076_AScans.dat",
+    initial_name="test_data",
+)
+energy_data = load_energy_scans(
+    path="/Users/niaggar25/Downloads/Experimental RXR data/B074_EScans.dat",
+    initial_name="test_data",
+)
 
-
-file_path = "./test_data.txt"
-data = np.loadtxt(file_path)
-qz, R_Sgo, R_Pgo = data.T
-
-experimental_data = SimReflectivityData()
-experimental_data.energy = 600
-experimental_data.qz = qz
-experimental_data.R_s = R_Sgo
-experimental_data.R_p = R_Pgo
-
-plot_reflectivity(experimental_data.qz, experimental_data.R_s, experimental_data.R_p, experimental_data.energy, "")
-
-
-# In[12]:
-
-
-set_compound_params(model.structure, fit=True)
-comp_SrTiO3.thickness.fit = False
-
-optimizer = LeastSquaresOptimizer()
-fitter = RXRFitter(model, experimental_data, optimizer)
-
-
-init_params = model.parameters_container.get_fit_vector()
-print(f"Initial parameters: {init_params}")
-for param in model.parameters_container.parameters:
-    if param.fit:
-        print(f"{param.name}: {param.value}")
-
-start_time = time.time()
-result = fitter.fit(init_params, [])
-end_time = time.time()
-
-print(f"Fitting time: {end_time - start_time:.2f} seconds")
-print(f"Fitting result: {result}")
-print(f"Fitted parameters: {model.parameters_container.get_fit_vector()}")
-
-
-final_ref = model.compute_reflectivity(qz, E_eV)
-plot_reflectivity(final_ref.qz, final_ref.R_s, final_ref.R_p, final_ref.energy, "")
-
-
-# In[13]:
-
-
-plot_reflectivity(experimental_data.qz, experimental_data.R_s, final_ref.R_s, final_ref.energy, "")
-plot_reflectivity(experimental_data.qz, experimental_data.R_p, final_ref.R_p, final_ref.energy, "")
+i = 10
+plot_reflectivity(
+    reflectivty_data[i].qz,
+    np.log(reflectivty_data[i].R),
+    np.log(reflectivty_data[i].R),
+    reflectivty_data[i].energy_eV,
+    reflectivty_data[i].pol,
+)

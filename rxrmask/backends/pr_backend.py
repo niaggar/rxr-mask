@@ -2,7 +2,7 @@ from rxrmask.utils import compute_adaptive_layer_segmentation
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure
 from rxrmask.backends.reflectivitybackend import ReflectivityBackend
-from rxrmask.core.reflectivitydata import ReflectivityData, EnergyScanData
+from rxrmask.core.reflectivitydata import SimReflectivityData, SimEnergyScanData
 
 
 import numpy as np
@@ -23,10 +23,10 @@ class PRReflectivityBackend(ReflectivityBackend):
     als: bool = True
     precision: float = 1e-6
 
-    def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
+    def compute_reflectivity(self, structure, qz, energy) -> SimReflectivityData:
         return reflectivity(structure, qz, energy, self.precision, self.als)
 
-    def compute_energy_scan(self, structure, energy_range, theta) -> EnergyScanData:
+    def compute_energy_scan(self, structure, energy_range, theta) -> SimEnergyScanData:
         return energy_scan(structure, energy_range, theta, self.precision, self.als)
 
 
@@ -39,7 +39,7 @@ class PRParallelReflectivityBackend(ReflectivityBackend):
     use_threads: bool = False
     verbose: int = 0
 
-    def compute_reflectivity(self, structure, qz, energy) -> ReflectivityData:
+    def compute_reflectivity(self, structure, qz, energy) -> SimReflectivityData:
         return reflectivity_parallel(
             structure,
             qz,
@@ -51,7 +51,7 @@ class PRParallelReflectivityBackend(ReflectivityBackend):
             self.als,
         )
 
-    def compute_energy_scan(self, structure, energy_range, theta) -> EnergyScanData:
+    def compute_energy_scan(self, structure, energy_range, theta) -> SimEnergyScanData:
         return energy_scan_parallel(
             structure,
             energy_range,
@@ -132,7 +132,7 @@ def reflectivity(
     E_eV: float,
     precision: float = 1e-6,
     als: bool = True,
-) -> ReflectivityData:
+) -> SimReflectivityData:
     """Compute reflectivity using Python Reflectivity backend.
 
     Args:
@@ -165,7 +165,7 @@ def reflectivity(
     theta_deg = np.arcsin(qz / E_eV / QZ_SCALE) * 180 / np.pi
     R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
 
-    res = ReflectivityData()
+    res = SimReflectivityData()
     res.qz = qz
     res.R_s = R_sigma
     res.R_p = R_pi
@@ -188,7 +188,7 @@ def reflectivity_parallel(
     use_threads: bool = False,
     verbose: int = 0,
     als: bool = True,
-) -> ReflectivityData:
+) -> SimReflectivityData:
     """Compute reflectivity in parallel using Python Reflectivity backend.
 
     Args:
@@ -232,7 +232,7 @@ def reflectivity_parallel(
     with parallel_backend(backend, n_jobs=n_jobs):
         results = Parallel(verbose=verbose)(tasks)
 
-    res = ReflectivityData()
+    res = SimReflectivityData()
     res.qz, res.R_s, res.R_p = zip(*results)
     return res
 
@@ -263,7 +263,7 @@ def energy_scan(
     theta_deg: float,
     precision: float = 1e-6,
     als: bool = True,
-) -> EnergyScanData:
+) -> SimEnergyScanData:
     """Compute energy scan reflectivity using Python Reflectivity backend.
 
     Args:
@@ -302,8 +302,7 @@ def energy_scan(
         for i in range(len(e_array))
     ]
     structures_energies = [
-        _to_pr_structure_from_segments(eps[i, :], eps_mag[i, :], thicknesses, indices_energies[i], compound_map)
-        for i in range(len(e_array))
+        _to_pr_structure_from_segments(eps[i, :], eps_mag[i, :], thicknesses, indices_energies[i], compound_map) for i in range(len(e_array))
     ]
 
     R_sigma_all = []
@@ -314,7 +313,7 @@ def energy_scan(
         R_sigma_all.append(R_sigma)
         R_pi_all.append(R_pi)
 
-    res = EnergyScanData()
+    res = SimEnergyScanData()
     res.energy_range = e_array
     res.R_s = np.array(R_sigma_all)
     res.R_p = np.array(R_pi_all)
@@ -354,7 +353,7 @@ def energy_scan_parallel(
     verbose=0,
     als=True,
     use_threads=False,
-) -> EnergyScanData:
+) -> SimEnergyScanData:
     """Compute energy scan reflectivity in parallel using Python Reflectivity backend.
 
     Args:
@@ -381,27 +380,21 @@ def energy_scan_parallel(
         eps = index_energies**2
         eps_mag = -1 * eps * mag_constants
 
-        indices_energies = [
-            compute_adaptive_layer_segmentation(index_energies[i], mag_constants[i], precision, als=als) for i in range(len(e_array))
-        ]
+        indices_energies = [compute_adaptive_layer_segmentation(index_energies[i], mag_constants[i], precision, als=als) for i in range(len(e_array))]
 
-        structures = [
-            _to_pr_structure_from_segments(eps[i], eps_mag[i], thicknesses, indices_energies[i], compound_map) for i in range(len(e_array))
-        ]
+        structures = [_to_pr_structure_from_segments(eps[i], eps_mag[i], thicknesses, indices_energies[i], compound_map) for i in range(len(e_array))]
 
         wavelengths = HC_WAVELENGTH_CONV / e_array
 
         with parallel_backend("threading", n_jobs=n_jobs):
-            results = Parallel(verbose=verbose)(
-                delayed(_energy_scan_thread)(structures[i], wavelengths[i], theta_deg) for i in range(len(e_array))
-            )
+            results = Parallel(verbose=verbose)(delayed(_energy_scan_thread)(structures[i], wavelengths[i], theta_deg) for i in range(len(e_array)))
 
     else:
         with parallel_backend("loky", n_jobs=n_jobs):
             results = Parallel(verbose=verbose)(delayed(_energy_scan_worker)(stack, E, theta_deg, precision, als) for E in e_array)
 
     R_sigma_all, R_pi_all = zip(*results)
-    res = EnergyScanData()
+    res = SimEnergyScanData()
     res.energy_range = e_array
     res.R_s = np.array(R_sigma_all)
     res.R_p = np.array(R_pi_all)

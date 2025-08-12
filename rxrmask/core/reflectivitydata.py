@@ -1,7 +1,9 @@
 import numpy as np
+from typing import List, Tuple, Literal
+from dataclasses import dataclass
 
 
-class ReflectivityData:
+class SimReflectivityData:
     """Class for storing reflectivity data.
 
     Attributes:
@@ -23,7 +25,7 @@ class ReflectivityData:
         self.R_p = np.array([])
 
 
-class EnergyScanData:
+class SimEnergyScanData:
     """Class for storing energy scan data.
 
     Attributes:
@@ -43,3 +45,29 @@ class EnergyScanData:
         self.qz = 0.0
         self.R_s = np.array([])
         self.R_p = np.array([])
+
+
+@dataclass
+class ReflectivityScan:
+    name: str
+    energy_eV: float
+    pol: Literal["s", "p"]
+    qz: np.ndarray
+    R: np.ndarray
+    bounds: List[Tuple[float, float]]
+    weights: List[float]
+    background_shift: float = 0.0
+    scale_factor: float = 1.0
+
+
+@dataclass
+class EnergyScan:
+    name: str
+    theta_deg: float
+    pol: Literal["s", "p"]
+    E_eV: np.ndarray
+    R: np.ndarray
+    bounds: List[Tuple[float, float]]
+    weights: List[float]
+    background_shift: float = 0.0
+    scale_factor: float = 1.0

@@ -1,7 +1,7 @@
 from rxrmask.backends.reflectivitybackend import ReflectivityBackend
 from rxrmask.core.parameter import Parameter, ParametersContainer
 from rxrmask.core.structure import Structure
-from rxrmask.core.reflectivitydata import EnergyScanData, ReflectivityData
+from rxrmask.core.reflectivitydata import SimEnergyScanData, SimReflectivityData
 from rxrmask.optimization.optimization import Optimizer
 
 import numpy as np
@@ -21,8 +21,8 @@ class RXRModel:
     structure: Structure
     parameters_container: ParametersContainer
     backend: ReflectivityBackend
-    R_scale: Parameter[float]
-    R_offset: Parameter[float]
+    R_scale: Parameter
+    R_offset: Parameter
 
     def __init__(self, structure: Structure, parameters_container: ParametersContainer):
         self.structure = structure
@@ -34,7 +34,7 @@ class RXRModel:
         """Set the computational backend for the structure."""
         self.backend = backend
 
-    def compute_reflectivity(self, q, e: float) -> ReflectivityData:
+    def compute_reflectivity(self, q, e: float) -> SimReflectivityData:
         """Compute the reflectivity using the selected backend."""
         if not hasattr(self, "backend"):
             raise ValueError("Reflectivity backend is not set.")
@@ -43,7 +43,7 @@ class RXRModel:
         r_data = self.apply_scaling(r_data)
         return r_data
 
-    def compute_energy_scan(self, e, theta: float) -> EnergyScanData:
+    def compute_energy_scan(self, e, theta: float) -> SimEnergyScanData:
         """Compute the energy scan reflectivity using the selected backend."""
         if not hasattr(self, "backend"):
             raise ValueError("Reflectivity backend is not set.")
@@ -72,10 +72,10 @@ class RXRFitter:
     """
 
     model: RXRModel
-    experiment: ReflectivityData
+    experiment: SimReflectivityData
     optimizer: Optimizer
 
-    def __init__(self, model: RXRModel, experiment: ReflectivityData, optimizer: Optimizer):
+    def __init__(self, model: RXRModel, experiment: SimReflectivityData, optimizer: Optimizer):
         self.model = model
         self.experiment = experiment
         self.optimizer = optimizer

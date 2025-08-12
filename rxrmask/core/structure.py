@@ -65,7 +65,7 @@ class Structure:
                 for j, detail in enumerate(current_compound.compound_details):
                     detail.prev_roughness = prev_compound.compound_details[j].roughness
 
-    def create_layers(self, step: float = 0.1, track_params=False) -> None:
+    def create_layers(self, step: float = 0.1, track_layers_params=False) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
         self.element_data, self.atoms = self._create_element_data()
@@ -84,14 +84,22 @@ class Structure:
                 temp_name = f"layer_{i}_{element_name}"
                 m_dens_param = None
                 m_magnetic_density_param = None
-                if track_params:
+                if track_layers_params:
                     m_dens_param = self.params_container.new_parameter(f"{temp_name}_density", molar_density, fit=True)
-                    m_magnetic_density_param = self.params_container.new_parameter(
-                        f"{temp_name}_mag_density", molar_magnetic_density, fit=True
-                    )
+                    m_magnetic_density_param = self.params_container.new_parameter(f"{temp_name}_mag_density", molar_magnetic_density, fit=True)
                 else:
-                    m_dens_param = Parameter(id=0, name=f"{temp_name}_density", value=molar_density, fit=False)
-                    m_magnetic_density_param = Parameter(id=0, name=f"{temp_name}_mag_density", value=molar_magnetic_density, fit=False)
+                    m_dens_param = Parameter(
+                        id=0,
+                        name=f"{temp_name}_density",
+                        value=molar_density,
+                        fit=False,
+                    )
+                    m_magnetic_density_param = Parameter(
+                        id=0,
+                        name=f"{temp_name}_mag_density",
+                        value=molar_magnetic_density,
+                        fit=False,
+                    )
 
                 element_layer = AtomLayer(
                     atom=atom,
