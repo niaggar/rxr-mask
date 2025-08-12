@@ -1,5 +1,5 @@
 from rxrmask.core.atom import Atom, find_atom
-from rxrmask.core.parameter import Parameter, ParametersContainer
+from rxrmask.core.parameter import Parameter, ParametersContainer, DependentParameter
 
 from dataclasses import dataclass, field
 from typing import Literal
@@ -25,11 +25,12 @@ class CompoundDetails:
     name: str
     stochiometric_fraction: float
     atom: Atom
-    thickness: Parameter  # in Angstrom
-    roughness: Parameter  # in Angstrom
-    prev_roughness: Parameter  # in Angstrom
-    molar_density: Parameter  # in mol/cm^3
-    molar_magnetic_density: Parameter  # in mol/cm^3
+
+    thickness: DependentParameter  # in Angstrom
+    roughness: DependentParameter  # in Angstrom
+    prev_roughness: DependentParameter  # in Angstrom
+    molar_density: DependentParameter  # in mol/cm^3
+    molar_magnetic_density: DependentParameter  # in mol/cm^3
 
     def __init__(self):
         self.name = ""
@@ -59,7 +60,7 @@ class Compound:
 
     thickness: Parameter  # in Angstrom
     roughness: Parameter  # in Angstrom
-    prev_roughness: Parameter  # in Angstrom
+    prev_roughness: DependentParameter  # in Angstrom
     linked_prev_roughness: bool
     density: Parameter  # in g/cm^3
     magnetic_density: Parameter  # in g/cm^3
@@ -170,24 +171,78 @@ def create_compound(
     com.density = parameters_container.new_parameter(f"{name}-density", density)
     com.magnetic_density = parameters_container.new_parameter(f"{name}-magnetic_density", magetic_density)
     com.roughness = parameters_container.new_parameter(f"{name}-roughness", roughness)
-    com.prev_roughness = parameters_container.new_parameter(f"{name}-prev_roughness", prev_roughness)
+    com.prev_roughness = DependentParameter(
+        id=0,
+        name=f"{name}-prev_roughness",
+        value=prev_roughness,
+        fit=False,
+        independent=not linked_prev_roughness,
+        lower=None,
+        upper=None,
+    )
     com.linked_prev_roughness = linked_prev_roughness
+
+    parameters_container.register_param(com.prev_roughness)
 
     for detail in compound_details:
         frac_i = detail.stochiometric_fraction / total_mass
         base_name = f"{name}-{detail.name}"
+        detail.molar_density = DependentParameter(
+            id=0,
+            name=f"{base_name}-molar_density",
+            value=com.density.get() * frac_i,
+            fit=False,
+            independent=True,
+            update_func=lambda frac=frac_i: com.density.get() * frac,
+            lower=None,
+            upper=None,
+        )
+        detail.molar_magnetic_density = DependentParameter(
+            id=0,
+            name=f"{base_name}-molar_magnetic_density",
+            value=com.magnetic_density.get() * frac_i,
+            fit=False,
+            independent=True,
+            update_func=lambda frac=frac_i: com.magnetic_density.get() * frac,
+            lower=None,
+            upper=None,
+        )
+        detail.thickness = DependentParameter(
+            id=0,
+            name=f"{base_name}-thickness",
+            value=thickness,
+            fit=False,
+            independent=False,
+            depends_on=com.thickness,
+            lower=None,
+            upper=None,
+        )
+        detail.roughness = DependentParameter(
+            id=0,
+            name=f"{base_name}-roughness",
+            value=roughness,
+            fit=False,
+            independent=False,
+            depends_on=com.roughness,
+            lower=None,
+            upper=None,
+        )
+        detail.prev_roughness = DependentParameter(
+            id=0,
+            name=f"{base_name}-prev_roughness",
+            value=prev_roughness,
+            fit=False,
+            independent=False,
+            depends_on=com.prev_roughness,
+            lower=None,
+            upper=None,
+        )
 
-        detail.molar_density = parameters_container.register_derived(
-            f"{base_name}-molar_density",
-            lambda frac=frac_i: com.density.get() * frac,
-        )
-        detail.molar_magnetic_density = parameters_container.register_derived(
-            f"{base_name}-molar_magnetic_density",
-            lambda frac=frac_i: com.magnetic_density.get() * frac,
-        )
-        detail.roughness = com.roughness
-        detail.thickness = com.thickness
-        detail.prev_roughness = com.prev_roughness
+        parameters_container.register_param(detail.molar_density)
+        parameters_container.register_param(detail.molar_magnetic_density)
+        parameters_container.register_param(detail.thickness)
+        parameters_container.register_param(detail.roughness)
+        parameters_container.register_param(detail.prev_roughness)
 
     com.compound_details = compound_details
     return com

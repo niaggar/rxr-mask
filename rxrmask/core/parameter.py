@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
-import json
 
 
 @dataclass
@@ -17,12 +16,11 @@ class Parameter:
     """
 
     value: float
-    id: int = 0
-    name: str = ""
-
-    lower: float | None = None
-    upper: float | None = None
-    fit: bool = False
+    id: int
+    name: str
+    lower: float | None
+    upper: float | None
+    fit: bool
 
     def __post_init__(self):
         factor = 0.2
@@ -45,10 +43,6 @@ class Parameter:
         Args:
             value: New parameter value
         """
-        if value is None:
-            raise ValueError("Parameter value cannot be None.")
-        if not isinstance(value, (int, float, str, complex)):
-            raise TypeError("Parameter value must be an int, float, str, or complex number.")
         self.value = value
 
 
@@ -75,16 +69,40 @@ class DerivedParameter(Parameter):
     def set(self, value: float) -> None:
         print(f"Warning: Cannot set value for DerivedParameter '{self.name}'. It is auto-updating.")
 
-    def convert_to_parameter(self) -> Parameter:
-        """Convert to regular Parameter."""
-        return Parameter(
-            id=self.id,
-            name=self.name,
-            value=self.get(),
-            lower=self.lower,
-            upper=self.upper,
-            fit=self.fit,
-        )
+
+@dataclass
+class DependentParameter(Parameter):
+    """Parameter that depends on another parameter.
+
+    Attributes:
+        independent: If True, this parameter can be set independently
+        depends_on: The parameter this one depends on
+        update_func: Function to calculate value if independent
+        value: Initial value, can be updated by the update function
+    """
+
+    independent: bool = False
+    depends_on: Parameter | None = None
+    update_func: Optional[Callable[[], float]] = None
+
+    def get(self) -> float:
+        """Get value from the dependent parameter."""
+        if self.independent and self.update_func is not None:
+            self.value = self.update_func()
+            return self.value
+        elif self.independent and self.update_func is None:
+            return self.value
+        elif not self.independent and self.depends_on is not None:
+            return self.depends_on.get()
+        else:
+            raise RuntimeError("DependentParameter is not independent and has no valid dependency.")
+
+    def set(self, value: float) -> None:
+        """Set value for the dependent parameter."""
+        if self.independent:
+            self.value = value
+        else:
+            print(f"Warning: Cannot set value for DependentParameter '{self.name}'. It depends on another parameter.")
 
 
 @dataclass
@@ -111,7 +129,7 @@ class ParametersContainer:
             Created Parameter object
         """
         id = len(self.parameters)
-        param = Parameter(id=id, name=name, value=value, fit=fit)
+        param = Parameter(id=id, name=name, value=value, fit=fit, lower=None, upper=None)
         self.parameters.append(param)
         return param
 
@@ -126,9 +144,15 @@ class ParametersContainer:
             Created DerivedParameter object
         """
         id = len(self.derived_parameters)
-        p = DerivedParameter(id=id, name=name, value=0.0, fit=False, update_func=update_func)
+        p = DerivedParameter(id=id, name=name, value=0.0, fit=False, update_func=update_func, lower=None, upper=None)
         self.derived_parameters.append(p)
         return p
+
+    def register_param(self, param: Parameter):
+        """Register an existing parameter object."""
+        id = len(self.parameters)
+        param.id = id
+        self.parameters.append(param)
 
     def update_derived(self):
         """Update all derived parameters."""
@@ -149,37 +173,3 @@ class ParametersContainer:
         if i != len(values):
             raise ValueError("Mismatch between fit parameters and values vector.")
         self.update_derived()
-
-    def save(self, path: str) -> None:
-        """Save parameters to JSON file."""
-        data = []
-        for p in self.parameters:
-            data.append(
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "value": p.get(),
-                    "min_value": p.lower,
-                    "max_value": p.upper,
-                    "fit": p.fit,
-                }
-            )
-        with open(path, "w") as f:
-            json.dump(data, f, indent=4)
-
-    def load(self, path: str) -> None:
-        """Load parameters from JSON file."""
-        with open(path, "r") as f:
-            data = json.load(f)
-
-        self.parameters.clear()
-        for entry in data:
-            param = Parameter(
-                id=entry["id"],
-                name=entry["name"],
-                value=entry["value"],
-                lower=entry.get("min_value"),
-                upper=entry.get("max_value"),
-                fit=entry.get("fit", False),
-            )
-            self.parameters.append(param)

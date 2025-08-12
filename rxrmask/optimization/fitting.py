@@ -1,14 +1,10 @@
 from dataclasses import dataclass
 from typing import Dict, List, Tuple, Literal
 import numpy as np
-from scipy import optimize
 
 from rxrmask.backends import ReflectivityBackend
 from rxrmask.core import (
     Structure,
-    ParametersContainer,
-    SimReflectivityData,
-    SimEnergyScanData,
     EnergyScan,
     ReflectivityScan,
     Parameter,
@@ -16,9 +12,6 @@ from rxrmask.core import (
 
 RScale = Literal["x", "log10", "ln", "qz4"]
 Objective = Literal["chi2", "l1", "l2", "atan"]
-
-
-# -------------------- Transforms & regularization --------------------
 
 
 @dataclass
@@ -54,7 +47,13 @@ class TVRegularizer:
         return self.weight * abs(tv_s - tv_t)
 
 
-# -------------------- Utility --------------------
+@dataclass
+class FitContext:
+    backend: ReflectivityBackend
+    structure: Structure
+    transform: FitTransform
+    tv: TVRegularizer
+    objective: Objective
 
 
 def _mask_by_bounds(x: np.ndarray, bounds: List[Tuple[float, float]]) -> np.ndarray:
@@ -82,19 +81,6 @@ def _objective(diff: np.ndarray, ysim: np.ndarray, kind: Objective) -> float:
         return float(np.sum(np.arctan(diff**2)))
 
 
-# -------------------- Cost/residuals (backend-agnostic) --------------------
-
-
-@dataclass
-class FitContext:
-    backend: ReflectivityBackend
-    structure: Structure
-    rtx_table: Dict[str, np.ndarray] | None  # e.g., orbital FF tables if you have them; else None
-    transform: FitTransform
-    tv: TVRegularizer
-    objective: Objective
-
-
 def scalar_cost(
     x: np.ndarray,
     params: List[Parameter],
@@ -116,14 +102,14 @@ def scalar_cost(
 
         mask = _mask_by_bounds(sc.qz, sc.bounds or [])
         Rdat = sc.R[mask]
-        Rsmooth = sc.R[mask]
+        # Rsmooth = sc.R[mask]
 
         Rt = ctx.transform.apply_R(Rsim[mask])
         Rd = ctx.transform.apply_R(Rdat)
-        Rs = ctx.transform.apply_R(Rsmooth)
+        # Rs = ctx.transform.apply_R(Rsmooth)
 
         total += _objective(Rd - Rt, Rt, ctx.objective)
-        total += ctx.tv.penalty(Rs, Rt)
+        # total += ctx.tv.penalty(Rs, Rt)
 
     # Energy scans (fixed theta, varying E)
     for sc in en_scans:
@@ -133,14 +119,14 @@ def scalar_cost(
 
         mask = _mask_by_bounds(sc.E_eV, sc.bounds or [])
         Rdat = sc.R[mask]
-        Rsmooth = sc.R[mask]
+        # Rsmooth = sc.R[mask]
 
         Rt = ctx.transform.apply_R(Rsim[mask])
         Rd = ctx.transform.apply_R(Rdat)
-        Rs = ctx.transform.apply_R(Rsmooth)
+        # Rs = ctx.transform.apply_R(Rsmooth)
 
         total += _objective(Rd - Rt, Rt, ctx.objective)
-        total += ctx.tv.penalty(Rs, Rt)
+        # total += ctx.tv.penalty(Rs, Rt)
 
     return total
 
@@ -182,69 +168,3 @@ def vector_residuals(
         res.append(Rd - Rt)
 
     return np.concatenate(res) if res else np.zeros(0)
-
-
-# -------------------- Optimizer wrappers --------------------
-
-
-def fit_differential_evolution(
-    params: List[Parameter],
-    ctx: FitContext,
-    ref_scans: List[ReflectivityScan],
-    en_scans: List[EnergyScan],
-    strategy="best1bin",
-    maxiter=200,
-    popsize=20,
-    tol=1e-6,
-    mutation=(0.5, 1.0),
-    recombination=0.7,
-    polish=True,
-    updating="deferred",
-):
-    bounds = [(p.lower, p.upper) for p in params]
-    ret = optimize.differential_evolution(
-        lambda x: scalar_cost(x, params, ctx, ref_scans, en_scans),
-        bounds=bounds,
-        strategy=strategy,
-        maxiter=maxiter,
-        popsize=popsize,
-        tol=tol,
-        mutation=mutation,
-        recombination=recombination,
-        polish=polish,
-        updating=updating,
-        disp=False,
-    )
-    return ret.x, ret.fun
-
-
-def fit_least_squares(
-    x0: np.ndarray,
-    params: List[Parameter],
-    ctx: FitContext,
-    ref_scans: List[ReflectivityScan],
-    en_scans: List[EnergyScan],
-    *,
-    method="trf",
-    ftol=1e-10,
-    xtol=1e-10,
-    gtol=1e-10,
-    max_nfev=None,
-):
-    lb = np.array([p.lower for p in params], dtype=float)
-    ub = np.array([p.upper for p in params], dtype=float)
-    res = optimize.least_squares(
-        lambda x: vector_residuals(x, params, ctx, ref_scans, en_scans),
-        x0=np.asarray(x0, dtype=float),
-        bounds=(lb, ub),
-        method=method,
-        ftol=ftol,
-        xtol=xtol,
-        gtol=gtol,
-        max_nfev=max_nfev,
-    )
-
-    print(f"Least squares optimization result: {res.message}, cost: {res.cost}")
-    print(res)
-
-    return res.x, float(res.cost)

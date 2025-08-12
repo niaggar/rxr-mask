@@ -23,14 +23,6 @@ from rxrmask.backends import (
     PRReflectivityBackend,
     PRParallelReflectivityBackend,
 )
-from rxrmask.optimization import (
-    RXRModel,
-    RXRFitter,
-    NelderMeadOptimizer,
-    LBFGSOptimizer,
-    DifferentialEvolutionOptimizer,
-    LeastSquaresOptimizer,
-)
 
 def set_compound_params(structure: Structure, fit: bool):
     for compound in structure.compounds:

@@ -77,9 +77,6 @@ def load_reflectivity_scans(path: str, initial_name: str) -> List[ReflectivitySc
     return scans
 
 
-# ------------------------
-# Energy scans (fixed θ)
-# ------------------------
 def load_energy_scans(path: str, initial_name: str) -> List[EnergyScan]:
     scans: List[EnergyScan] = []
     cur_scan: Optional[int] = None

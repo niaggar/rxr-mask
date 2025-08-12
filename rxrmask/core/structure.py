@@ -47,6 +47,8 @@ class Structure:
 
         self.compounds[index] = compound
 
+
+
     def validate_compounds(self):
         """Validate that all compounds are defined and link roughness if needed."""
         for compound in self.compounds:
@@ -57,13 +59,19 @@ class Structure:
             current_compound = self.compounds[i]
             if current_compound.linked_prev_roughness:
                 prev_compound = self.compounds[i - 1]
-                current_compound.prev_roughness = prev_compound.roughness
+                current_compound.prev_roughness.fit = False
+                current_compound.prev_roughness.independent = False
+                current_compound.prev_roughness.depends_on = prev_compound.roughness
 
                 if len(current_compound.compound_details) != len(prev_compound.compound_details):
                     raise ValueError(f"Compound {i} has different number of elements than compound {i-1}.")
 
                 for j, detail in enumerate(current_compound.compound_details):
-                    detail.prev_roughness = prev_compound.compound_details[j].roughness
+                    detail.prev_roughness.fit = False
+                    detail.prev_roughness.independent = False
+                    detail.prev_roughness.depends_on = prev_compound.compound_details[j].roughness
+
+
 
     def create_layers(self, step: float = 0.1, track_layers_params=False) -> None:
         """Create discretized layers from compounds with specified step size."""
@@ -93,12 +101,16 @@ class Structure:
                         name=f"{temp_name}_density",
                         value=molar_density,
                         fit=False,
+                        lower=None,
+                        upper=None,
                     )
                     m_magnetic_density_param = Parameter(
                         id=0,
                         name=f"{temp_name}_mag_density",
                         value=molar_magnetic_density,
                         fit=False,
+                        lower=None,
+                        upper=None,
                     )
 
                 element_layer = AtomLayer(

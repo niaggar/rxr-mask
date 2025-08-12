@@ -1,21 +1,24 @@
 """Core X-ray reflectometry calculation modules."""
 
 from .optimization import (
-    Optimizer,
-    NelderMeadOptimizer,
-    LBFGSOptimizer,
-    DifferentialEvolutionOptimizer,
-    LeastSquaresOptimizer,
+    fit_differential_evolution,
+    fit_least_squares,
 )
 
-from .rxr import RXRModel, RXRFitter
+from .fitting import (
+    FitTransform,
+    TVRegularizer,
+    FitContext,
+    scalar_cost,
+    vector_residuals,
+)
 
 __all__ = [
-    "Optimizer",
-    "NelderMeadOptimizer",
-    "LBFGSOptimizer",
-    "DifferentialEvolutionOptimizer",
-    "LeastSquaresOptimizer",
-    "RXRModel",
-    "RXRFitter",
+    "fit_differential_evolution",
+    "fit_least_squares",
+    "FitTransform",
+    "TVRegularizer",
+    "FitContext",
+    "scalar_cost",
+    "vector_residuals",
 ]
