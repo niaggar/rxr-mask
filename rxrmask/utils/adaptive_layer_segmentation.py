@@ -38,9 +38,6 @@ def compute_adaptive_layer_segmentation(
             indices.append(idx_b)
             idx_a = idx_b
 
-    print(als)
-    print(indices)
-
     if indices[-1] != len(index_of_refraction) - 1:
         indices.append(len(index_of_refraction) - 1)
 

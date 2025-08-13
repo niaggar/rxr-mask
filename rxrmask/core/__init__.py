@@ -1,7 +1,7 @@
 """Core X-ray reflectometry calculation modules."""
 
 from .atom import Atom, find_atom
-from .formfactor import FormFactorModel, FormFactorLocalDB, FormFactorVacancy
+from .formfactor import FormFactorModel, FormFactorLocalDB, FormFactorVacancy, FormFactorFile
 from .compound import CompoundDetails, Compound, create_compound
 from .layer import (
     AtomLayer,
@@ -21,6 +21,7 @@ __all__ = [
     "FormFactorModel",
     "FormFactorLocalDB",
     "FormFactorVacancy",
+    "FormFactorFile",
     "CompoundDetails",
     "Compound",
     "create_compound",

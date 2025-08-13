@@ -131,7 +131,8 @@ def _to_pr_structure_from_segments(
         compound = _find_compound_at_z(z, compound_map)
         structure[idx].setmag(compound.magnetic_direction)
         structure[idx].seteps([eps_segment, eps_segment, eps_segment, eps_mag_segment])
-        structure[idx].setd(thickness_segment)
+        if idx != 0:
+            structure[idx].setd(thickness_segment)
 
         j = i + 1
         idx += 1

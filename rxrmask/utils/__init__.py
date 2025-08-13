@@ -7,6 +7,7 @@ from .plot import (
     plot_energy_scan,
     plot_slab_model,
     plot_density_profile,
+    plot_density_profile_atoms_layers,
     plot_formfactor_object,
 )
 
@@ -18,4 +19,5 @@ __all__ = [
     "plot_slab_model",
     "plot_density_profile",
     "plot_formfactor_object",
+    "plot_density_profile_atoms_layers",
 ]

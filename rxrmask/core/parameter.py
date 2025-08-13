@@ -24,10 +24,13 @@ class Parameter:
 
     def __post_init__(self):
         factor = 0.2
-        if self.lower is not None:
+
+        if self.lower is None:
             self.lower = self.value * (1 - factor) if self.value != 0.0 else 0.0
-        if self.upper is not None:
+        if self.upper is None:
             self.upper = self.value * (1 + factor)
+            if self.upper == 0.0:
+                self.upper = factor
 
     def get(self) -> float:
         """Get parameter value from internal storage.
@@ -87,10 +90,10 @@ class DependentParameter(Parameter):
 
     def get(self) -> float:
         """Get value from the dependent parameter."""
-        if self.independent and self.update_func is not None:
-            self.value = self.update_func()
+        if self.independent:
             return self.value
-        elif self.independent and self.update_func is None:
+        elif not self.independent and self.update_func is not None:
+            self.value = self.update_func()
             return self.value
         elif not self.independent and self.depends_on is not None:
             return self.depends_on.get()
@@ -103,6 +106,7 @@ class DependentParameter(Parameter):
             self.value = value
         else:
             print(f"Warning: Cannot set value for DependentParameter '{self.name}'. It depends on another parameter.")
+            self.value = value
 
 
 @dataclass

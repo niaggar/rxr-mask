@@ -118,3 +118,48 @@ class FormFactorLocalDB(FormFactorModel):
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         return self.ff_data
+
+
+@dataclass
+class FormFactorFile(FormFactorModel):
+    """Form factor model using a file as the data source."""
+
+    def __init__(self, path: str):
+        self.ff_path = path
+        self.read_data()
+
+    def read_data(self):
+        if self.ff_path is None:
+            raise ValueError("Path must be specified to read form factor data.")
+        
+        file = pathlib.Path(self.ff_path)
+        if not file.exists():
+            raise FileNotFoundError(f"Form factor data file '{self.ff_path}' does not exist.")
+
+        self.ff_data = np.loadtxt(file, comments="#", dtype=np.float64)
+
+        if self.ff_data.shape[1] > 3:
+            self.ff_data = self.ff_data[:, :3]
+
+    def get_formfactors(self, energy_eV: float, *kwargs) -> tuple[float, float]:
+        if self.ff_data is None:
+            raise ValueError("Form factor data has not been loaded.")
+
+        energies = self.ff_data[:, 0]
+        f1 = np.interp(energy_eV, energies, self.ff_data[:, 1])
+        f2 = np.interp(energy_eV, energies, self.ff_data[:, 2])
+        return float(f1), float(f2)
+
+    def get_formfactors_energies(self, energies: npt.NDArray[np.float64], *kwargs) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+        if self.ff_data is None:
+            raise ValueError("Form factor data has not been loaded.")
+
+        f1 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 1])
+        f2 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 2])
+        return f1, f2
+
+    def get_all_formfactors(self, *kwargs) -> npt.NDArray[np.float64]:
+        if self.ff_data is None:
+            raise ValueError("Form factor data has not been loaded.")
+        return self.ff_data
+    

@@ -3,12 +3,14 @@ from matplotlib.patches import Rectangle
 from matplotlib import cm
 from matplotlib import pyplot as plt
 
+from rxrmask.core import AtomLayer
+
 
 def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
     """Plot X-ray reflectivity curves for both polarizations."""
     plt.figure(figsize=(8, 6))
-    plt.plot(qz, R_phi, label=r"$\sigma$-pol")
-    plt.plot(qz, R_pi, "--", label=r"$\pi$-pol")
+    plt.semilogy(qz, R_phi, label=r"$\sigma$-pol")
+    plt.semilogy(qz, R_pi, "--", label=r"$\pi$-pol")
     plt.xlabel(r"$q_z$ (Å$^{-1}$)")
     plt.ylabel(r"Reflectivity")
     plt.title(rf"Reflectivity for {model_name} at {energy_eV} eV")
@@ -20,7 +22,7 @@ def plot_reflectivity(qz, R_phi, R_pi, energy_eV, model_name):
 
 def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
     """Plot energy scan reflectivity at fixed angle."""
-    plt.figure(figsize=(8, 6), dpi=300)
+    plt.figure(figsize=(8, 6))
     plt.plot(e_pr, R_phi_pr, label=r"$\sigma$-pol")
     plt.plot(e_pr, R_pi_pr, "--", label=r"$\pi$-pol")
     plt.xlabel("Energy (eV)")
@@ -34,9 +36,25 @@ def plot_energy_scan(e_pr, R_phi_pr, R_pi_pr, theta_deg, model_name):
 
 def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile", x_move=0.0, min_x=0.0):
     """Plot atomic density profiles as function of depth."""
-    plt.figure(figsize=figsize, dpi=300)
+    plt.figure(figsize=figsize)
     for name, profile in dens.items():
         plt.plot(z + x_move, profile, "-", label=name)
+    plt.xlabel("Depth $z$ (Å)")
+    plt.title(title)
+    plt.grid(True)
+    plt.ylabel("Density $\\rho(z)$ (mol/cm³)")
+    plt.ylim(bottom=0)
+    plt.xlim(left=min_x)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+def plot_density_profile_atoms_layers(atoms_layers: list[AtomLayer], figsize=(10, 4), title="Density Profile", x_move=0.0, min_x=0.0):
+    """Plot atomic density profiles as function of depth for AtomLayer objects."""
+    plt.figure(figsize=figsize)
+    for layer in atoms_layers:
+        z = layer.z_deepness + x_move
+        plt.plot(z, layer.molar_density, "-", label=layer.atom.name)
     plt.xlabel("Depth $z$ (Å)")
     plt.title(title)
     plt.grid(True)
@@ -57,7 +75,7 @@ def plot_slab_model(structure, figsize=(10, 4), cmap_name="tab10"):
     x0 = np.concatenate([[0], np.cumsum(thicknesses)])
     cmap = cm.get_cmap(cmap_name, structure.n_compounds)
 
-    fig, ax = plt.subplots(figsize=figsize, dpi=300)
+    fig, ax = plt.subplots(figsize=figsize)
     for i, comp in enumerate(structure.compounds):
         rect = Rectangle(
             (x0[i], 0),
@@ -105,10 +123,6 @@ def plot_formfactor_object(ff, title=None):
     plt.ylabel("Form Factor")
     if title:
         plt.title(title)
-    else:
-        label = ff.element or "Unknown"
-        label += " (Magnetic)" if ff.is_magnetic else ""
-        plt.title(f"Form Factor - {label}")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()

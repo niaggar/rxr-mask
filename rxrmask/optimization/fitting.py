@@ -16,6 +16,8 @@ Objective = Literal["chi2", "l1", "l2", "atan"]
 
 @dataclass
 class FitTransform:
+    sim_scale: Parameter
+    sim_offset: Parameter
     r_scale: RScale = "x"
 
     def apply_R(
@@ -29,6 +31,9 @@ class FitTransform:
         if self.r_scale == "ln":
             return np.log(R)
         raise ValueError(self.r_scale)
+
+    def apply_correction(self, R: np.ndarray) -> np.ndarray:
+        return self.sim_scale.get() * R + self.sim_offset.get()
 
 
 @dataclass
@@ -71,8 +76,7 @@ def _objective(diff: np.ndarray, ysim: np.ndarray, kind: Objective) -> float:
     if diff.size == 0:
         return 0.0
     if kind == "chi2":
-        denom = np.clip(np.abs(ysim), 1e-20, None)
-        return float(np.sum((diff**2) / denom))
+        return float(np.sum((diff**2) / np.abs(ysim)))
     if kind == "l1":
         return float(np.sum(np.abs(diff)))
     if kind == "l2":
@@ -88,46 +92,89 @@ def scalar_cost(
     ref_scans: List[ReflectivityScan],
     en_scans: List[EnergyScan],
 ) -> float:
-    # apply params
     for val, spec in zip(x, params):
         spec.set(float(val))
+    ctx.structure.update_layers()
 
     total = 0.0
-
     # Reflectivity scans (fixed E, varying qz)
     for sc in ref_scans:
         sim_theta = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
         Rsim = sim_theta.R_s if sc.pol == "s" else sim_theta.R_p
-        Rsim = np.clip(sc.background_shift + sc.scale_factor * Rsim, 0.0, None)
-
-        mask = _mask_by_bounds(sc.qz, sc.bounds or [])
-        Rdat = sc.R[mask]
+        # mask = _mask_by_bounds(sc.qz, sc.bounds or [])
+        Rdat = sc.R
         # Rsmooth = sc.R[mask]
 
-        Rt = ctx.transform.apply_R(Rsim[mask])
-        Rd = ctx.transform.apply_R(Rdat)
+        Rsim = ctx.transform.apply_correction(Rsim)
+        Rt = ctx.transform.apply_R(Rsim)
         # Rs = ctx.transform.apply_R(Rsmooth)
 
-        total += _objective(Rd - Rt, Rt, ctx.objective)
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
         # total += ctx.tv.penalty(Rs, Rt)
 
     # Energy scans (fixed theta, varying E)
     for sc in en_scans:
         sim_energy = ctx.backend.compute_energy_scan(ctx.structure, sc.E_eV, sc.theta_deg)
         Rsim = sim_energy.R_s if sc.pol == "s" else sim_energy.R_p
-        Rsim = np.clip(sc.background_shift + sc.scale_factor * Rsim, 0.0, None)
+        # mask = _mask_by_bounds(sc.E_eV, sc.bounds or [])
+        Rdat = sc.R
+        # Rsmooth = sc.R[mask]
 
+        Rsim = ctx.transform.apply_correction(Rsim)
+        Rt = ctx.transform.apply_R(Rsim)
+        # Rs = ctx.transform.apply_R(Rsmooth)
+
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
+        # total += ctx.tv.penalty(Rs, Rt)
+
+    print(f"Total cost: {total:.6f}")
+    return total
+
+def scalar_cost_layers(
+    x: np.ndarray,
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+) -> float:
+
+    i = 0
+    for layer in ctx.structure.atoms_layers:
+        len_den = len(layer.molar_density)
+        layer.molar_density = np.array(x[i:i+len_den])
+        i += len_den
+
+    total = 0.0
+    # Reflectivity scans (fixed E, varying qz)
+    for sc in ref_scans:
+        sim_theta = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
+        Rsim = sim_theta.R_s if sc.pol == "s" else sim_theta.R_p
+        mask = _mask_by_bounds(sc.qz, sc.bounds or [])
+        Rdat = sc.R[mask]
+        # Rsmooth = sc.R[mask]
+        
+        Rsim = ctx.transform.apply_correction(Rsim)
+        Rt = ctx.transform.apply_R(Rsim[mask])
+        # Rs = ctx.transform.apply_R(Rsmooth)
+
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
+        # total += ctx.tv.penalty(Rs, Rt)
+
+    # Energy scans (fixed theta, varying E)
+    for sc in en_scans:
+        sim_energy = ctx.backend.compute_energy_scan(ctx.structure, sc.E_eV, sc.theta_deg)
+        Rsim = sim_energy.R_s if sc.pol == "s" else sim_energy.R_p
         mask = _mask_by_bounds(sc.E_eV, sc.bounds or [])
         Rdat = sc.R[mask]
         # Rsmooth = sc.R[mask]
 
+        Rsim = ctx.transform.apply_correction(Rsim)
         Rt = ctx.transform.apply_R(Rsim[mask])
-        Rd = ctx.transform.apply_R(Rdat)
         # Rs = ctx.transform.apply_R(Rsmooth)
 
-        total += _objective(Rd - Rt, Rt, ctx.objective)
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
         # total += ctx.tv.penalty(Rs, Rt)
 
+    print(f"Total cost: {total:.6f}")
     return total
 
 
@@ -142,29 +189,25 @@ def vector_residuals(
         spec.set(float(val))
 
     res = []
-
+    ctx.structure.update_layers()
     for sc in ref_scans:
         sim = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
         Rsim = sim.R_s if sc.pol == "s" else sim.R_p
-        Rsim = np.clip(sc.background_shift + sc.scale_factor * Rsim, 0.0, None)
-
         mask = _mask_by_bounds(sc.qz, sc.bounds or [])
         Rdat = sc.R[mask]
 
         Rt = ctx.transform.apply_R(Rsim[mask])
-        Rd = ctx.transform.apply_R(Rdat)
-        res.append(Rd - Rt)
+        res.append(Rdat - Rt)
 
     for sc in en_scans:
         sim = ctx.backend.compute_energy_scan(ctx.structure, sc.E_eV, sc.theta_deg)
         Rsim = sim.R_s if sc.pol == "s" else sim.R_p
-        Rsim = np.clip(sc.background_shift + sc.scale_factor * Rsim, 0.0, None)
-
         mask = _mask_by_bounds(sc.E_eV, sc.bounds or [])
         Rdat = sc.R[mask]
 
         Rt = ctx.transform.apply_R(Rsim[mask])
-        Rd = ctx.transform.apply_R(Rdat)
-        res.append(Rd - Rt)
+        res.append(Rdat - Rt)
+
+    # print(f"Total cost: {sum(res):.6f} (objective={ctx.objective})")
 
     return np.concatenate(res) if res else np.zeros(0)
