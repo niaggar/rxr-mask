@@ -1,7 +1,18 @@
+from dataclasses import dataclass
+from multiprocessing.pool import ThreadPool
+
+from sympy import print_tree
+
 from rxrmask.utils import compute_adaptive_layer_segmentation
 from rxrmask.core.compound import Compound
 from rxrmask.core.structure import Structure
-from rxrmask.backends.reflectivitybackend import ReflectivityBackend
+from rxrmask.core.layer import (
+    get_magnetic_optical_constant_batch,
+    get_magnetic_optical_constant,
+    get_index_of_refraction_batch,
+    get_index_of_refraction,
+)
+from rxrmask.backends.backend import ReflectivityBackend
 from rxrmask.core.reflectivitydata import SimReflectivityData, SimEnergyScanData
 
 
@@ -17,6 +28,7 @@ HC_EV_ANGSTROM = 12398.41984  # hc constant [eV·Å]
 HC_WAVELENGTH_CONV = H_CONST * C_CONST * 1e10  # Pre-calculated h*c conversion for wavelength (eV·Å)
 
 
+@dataclass
 class PRReflectivityBackend(ReflectivityBackend):
     """Reflectivity backend using Python Reflectivity library."""
 
@@ -30,6 +42,7 @@ class PRReflectivityBackend(ReflectivityBackend):
         return energy_scan(structure, energy_range, theta, self.precision, self.als)
 
 
+@dataclass
 class PRParallelReflectivityBackend(ReflectivityBackend):
     """Parallel Reflectivity backend using Python Reflectivity library."""
 
@@ -48,7 +61,7 @@ class PRParallelReflectivityBackend(ReflectivityBackend):
             self.n_jobs,
             self.use_threads,
             self.verbose,
-            self.als,
+            als=self.als,
         )
 
     def compute_energy_scan(self, structure, energy_range, theta) -> SimEnergyScanData:
@@ -150,9 +163,9 @@ def reflectivity(
 
     compound_map = _compound_lookup_table(stack)
 
-    index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
-    magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
-    thicknesses = np.array([layer.thickness for layer in stack.layers])
+    index_of_refraction = get_index_of_refraction(stack.atoms_layers, E_eV)
+    magnetic_optical_constants = get_magnetic_optical_constant(stack.atoms_layers, E_eV)
+    thicknesses = stack.thicknesses
 
     eps = index_of_refraction**2
     eps_mag = -1 * eps * magnetic_optical_constants
@@ -176,7 +189,12 @@ def _worker_thread(structure, qz_i: float, E_eV: float):
     wavelength = HC_WAVELENGTH_CONV / E_eV
     theta = np.arcsin(qz_i / E_eV / QZ_SCALE) * 180 / np.pi
     R_sigma, R_pi = pr.Reflectivity(structure, theta, wavelength, MagneticCutoff=1e-20)
-    return qz_i, R_sigma, R_pi
+
+    res = SimReflectivityData()
+    res.qz = np.array([qz_i])
+    res.R_s = np.array([R_sigma])
+    res.R_p = np.array([R_pi])
+    return res
 
 
 def reflectivity_parallel(
@@ -204,14 +222,15 @@ def reflectivity_parallel(
     Returns:
         ReflectivityData
     """
+
     if stack.n_layers == 0:
         raise ValueError("Stack has no layers. Please create layers before computing reflectivity.")
 
     if use_threads:
         compound_map = _compound_lookup_table(stack)
-        index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
-        magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
-        thicknesses = np.array([layer.thickness for layer in stack.layers])
+        index_of_refraction = get_index_of_refraction(stack.atoms_layers, E_eV)
+        magnetic_optical_constants = get_magnetic_optical_constant(stack.atoms_layers, E_eV)
+        thicknesses = stack.thicknesses
 
         eps = index_of_refraction**2
         eps_mag = -1 * eps * magnetic_optical_constants
@@ -226,35 +245,20 @@ def reflectivity_parallel(
         tasks = [delayed(_worker_thread)(structure, qzi, E_eV) for qzi in qz]
         backend = "threading"
     else:
-        tasks = [delayed(reflectivity)(stack, qzi, E_eV, precision) for qzi in qz]
+        tasks = [delayed(reflectivity)(stack, qzi, E_eV, precision, als=als) for qzi in qz]
         backend = "loky"
 
     with parallel_backend(backend, n_jobs=n_jobs):
         results = Parallel(verbose=verbose)(tasks)
 
     res = SimReflectivityData()
-    res.qz, res.R_s, res.R_p = zip(*results)
+    for rsim in results:
+        if isinstance(rsim, SimReflectivityData):
+            res.qz = np.append(res.qz, rsim.qz)
+            res.R_s = np.append(res.R_s, rsim.R_s)
+            res.R_p = np.append(res.R_p, rsim.R_p)
+
     return res
-
-
-def get_index_of_refraction_energies(stack: Structure, energies: np.ndarray):
-    index_energies = np.zeros((len(energies), len(stack.layers)), dtype=np.complex128)
-
-    for i, layer in enumerate(stack.layers):
-        index_layer = layer.get_index_of_refraction_batch(energies)
-        index_energies[:, i] = index_layer
-
-    return index_energies
-
-
-def get_magnetic_optical_constants_energies(stack: Structure, energies: np.ndarray):
-    mag_constants = np.zeros((len(energies), len(stack.layers)), dtype=np.complex128)
-
-    for i, layer in enumerate(stack.layers):
-        mag_layer = layer.get_magnetic_optical_constant_batch(energies)
-        mag_constants[:, i] = mag_layer
-
-    return mag_constants
 
 
 def energy_scan(
@@ -283,11 +287,9 @@ def energy_scan(
 
     e_array = np.array(E_eVs)
     wavelength_energies = HC_WAVELENGTH_CONV / e_array
-    structures_energies = []
-
-    index_of_refraction_energies = get_index_of_refraction_energies(stack, e_array)
-    magnetic_optical_constants_energies = get_magnetic_optical_constants_energies(stack, e_array)
-    thicknesses = np.array([layer.thickness for layer in stack.layers])
+    index_of_refraction_energies = get_index_of_refraction_batch(stack.atoms_layers, e_array)
+    magnetic_optical_constants_energies = get_magnetic_optical_constant_batch(stack.atoms_layers, e_array)
+    thicknesses = stack.thicknesses
 
     eps = np.array([index_of_refraction_energies[i, :] ** 2 for i in range(len(e_array))])
     eps_mag = np.array([-1 * eps[i] * magnetic_optical_constants_energies[i, :] for i in range(len(e_array))])
@@ -327,10 +329,9 @@ def _energy_scan_thread(structure, wavelength, theta_deg):
 
 def _energy_scan_worker(stack, E_eV, theta_deg, precision, als):
     compound_map = _compound_lookup_table(stack)
-
-    index_of_refraction = np.array([layer.get_index_of_refraction(E_eV) for layer in stack.layers])
-    magnetic_optical_constants = np.array([layer.get_magnetic_optical_constant(E_eV) for layer in stack.layers])
-    thicknesses = np.array([layer.thickness for layer in stack.layers])
+    index_of_refraction = get_index_of_refraction(stack.atoms_layers, E_eV)
+    magnetic_optical_constants = get_magnetic_optical_constant(stack.atoms_layers, E_eV)
+    thicknesses = stack.thicknesses
 
     eps = index_of_refraction**2
     eps_mag = -1 * eps * magnetic_optical_constants
@@ -373,9 +374,9 @@ def energy_scan_parallel(
 
     if use_threads:
         compound_map = _compound_lookup_table(stack)
-        index_energies = get_index_of_refraction_energies(stack, e_array)
-        mag_constants = get_magnetic_optical_constants_energies(stack, e_array)
-        thicknesses = np.array([layer.thickness for layer in stack.layers])
+        index_energies = get_index_of_refraction_batch(stack.atoms_layers, e_array)
+        mag_constants = get_magnetic_optical_constant_batch(stack.atoms_layers, e_array)
+        thicknesses = stack.thicknesses
 
         eps = index_energies**2
         eps_mag = -1 * eps * mag_constants

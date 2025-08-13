@@ -19,7 +19,7 @@ def compute_adaptive_layer_segmentation(
     Returns:
         Layer boundary indices for segmentation
     """
-    if als is False:
+    if not als:
         return list(range(len(index_of_refraction)))
 
     indices = []
@@ -37,6 +37,9 @@ def compute_adaptive_layer_segmentation(
         if delta_eps > precision or delta_q > precision:
             indices.append(idx_b)
             idx_a = idx_b
+
+    print(als)
+    print(indices)
 
     if indices[-1] != len(index_of_refraction) - 1:
         indices.append(len(index_of_refraction) - 1)

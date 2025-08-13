@@ -25,10 +25,11 @@ class AtomLayer:
     """
 
     atom: Atom
-    molar_density: Parameter  # in mol/cm^3
-    molar_magnetic_density: Parameter | None = None  # in mol/cm^3
+    z_deepness: np.ndarray
+    molar_density: np.ndarray  # in mol/cm^3
+    molar_magnetic_density: np.ndarray  # in mol/cm^3
 
-    def get_f1f2(self, energy_eV: float, *args) -> tuple[float, float]:
+    def get_f1f2(self, energy_eV: float, *kwargs) -> tuple[float, float]:
         """Get atomic form factors f1 and f2 at specific energy.
 
         Args:
@@ -37,9 +38,9 @@ class AtomLayer:
         Returns:
             (f1, f2) form factor components
         """
-        return self.atom.ff.get_formfactors(energy_eV, *args)
+        return self.atom.ff.get_formfactors(energy_eV, *kwargs)
 
-    def get_q1q2(self, energy_eV: float, *args) -> tuple[float, float]:
+    def get_q1q2(self, energy_eV: float, *kwargs) -> tuple[float, float]:
         """Get magnetic form factors q1 and q2 at specific energy.
 
         Args:
@@ -50,9 +51,9 @@ class AtomLayer:
         """
         if self.atom.ffm is None:
             return 0.0, 0.0
-        return self.atom.ffm.get_formfactors(energy_eV, *args)
+        return self.atom.ffm.get_formfactors(energy_eV, *kwargs)
 
-    def get_f1f2_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    def get_f1f2_energies(self, energies: npt.NDArray[np.float64], *kwargs) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get atomic form factors for multiple energies.
 
         Args:
@@ -61,9 +62,9 @@ class AtomLayer:
         Returns:
             (f1, f2) form factor arrays.
         """
-        return self.atom.ff.get_formfactors_energies(energies, *args)
+        return self.atom.ff.get_formfactors_energies(energies, *kwargs)
 
-    def get_q1q2_energies(self, energies: npt.NDArray[np.float64], *args) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    def get_q1q2_energies(self, energies: npt.NDArray[np.float64], *kwargs) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Get magnetic form factors for multiple energies.
 
         Args:
@@ -74,115 +75,98 @@ class AtomLayer:
         """
         if self.atom.ffm is None:
             return (np.zeros(len(energies)), np.zeros(len(energies)))
-        return self.atom.ffm.get_formfactors_energies(energies, *args)
+        return self.atom.ffm.get_formfactors_energies(energies, *kwargs)
 
 
-@dataclass
-class Layer:
-    """Layer in multilayer structure with atomic composition.
+def get_index_of_refraction(layers: list[AtomLayer], energy_eV: float, *kwargs) -> npt.NDArray[np.complexfloating]:
+    k0 = energy_eV * pihc
+    constant = pireav / (k0**2)
+    f1_layer = np.zeros(len(layers[0].z_deepness), dtype=np.float64)
+    f2_layer = np.zeros(len(layers[0].z_deepness), dtype=np.float64)
 
-    Attributes:
-        id: Layer identifier
-        thickness: Layer thickness in Angstroms
-        elements: List of atomic species in the layer
-    """
+    for layer in layers:
+        if not np.any(layer.molar_density > 0):
+            continue
 
-    id: str
-    thickness: float  # in Angstroms
-    elements: list[AtomLayer] = field(default_factory=list)
+        f1, f2 = layer.get_f1f2(energy_eV, *kwargs)
 
-    def get_index_of_refraction(self, energy_eV: float, *args) -> complex:
-        """Get complex refractive index for given energy."""
-        f1_layer = 0.0
-        f2_layer = 0.0
-        for l in self.elements:
-            molar_density = l.molar_density.get()
-            if molar_density == 0.0:
-                continue
-            f1, f2 = l.get_f1f2(energy_eV, *args)
+        f1_layer += f1 * layer.molar_density
+        f2_layer += f2 * layer.molar_density
 
-            f1_layer += f1 * molar_density
-            f2_layer += f2 * molar_density
+    delta = constant * f1_layer
+    beta = constant * f2_layer
+    n_complex = 1 - delta + 1j * beta
 
-        k0 = energy_eV * pihc
-        constant = pireav / (k0**2)
+    return n_complex
 
-        delta = constant * f1_layer
-        beta = constant * f2_layer
-        n_complex = 1 - delta + 1j * beta
 
-        return n_complex
+def get_magnetic_optical_constant(layers: list[AtomLayer], energy_eV: float, *kwargs) -> npt.NDArray[np.complexfloating]:
+    k0 = energy_eV * pihc
+    constant = pireav / (k0**2)
+    q1_layer = np.zeros(len(layers[0].z_deepness), dtype=np.float64)
+    q2_layer = np.zeros(len(layers[0].z_deepness), dtype=np.float64)
 
-    def get_magnetic_optical_constant(self, energy_eV: float, *args) -> complex:
-        """Get magnetic optical constant for given energy."""
-        q1_layer = 0.0
-        q2_layer = 0.0
-        for l in self.elements:
-            molar_magnetic_density = l.molar_magnetic_density.get() if l.molar_magnetic_density else 0.0
-            if molar_magnetic_density == 0.0:
-                continue
-            q1, q2 = l.get_q1q2(energy_eV, *args)
+    for layer in layers:
+        if not np.any(layer.molar_magnetic_density > 0):
+            continue
 
-            q1_layer += q1 * molar_magnetic_density
-            q2_layer += q2 * molar_magnetic_density
+        q1, q2 = layer.get_q1q2(energy_eV, *kwargs)
 
-        k0 = energy_eV * pihc
-        constant = pireav / (k0**2)
+        q1_layer += q1 * layer.molar_magnetic_density
+        q2_layer += q2 * layer.molar_magnetic_density
 
-        delta_m = constant * q1_layer
-        beta_m = constant * q2_layer
+    delta_m = constant * q1_layer
+    beta_m = constant * q2_layer
 
-        q_complex = 2 * (delta_m + 1j * beta_m)
-        return q_complex
+    q_complex = 2 * (delta_m + 1j * beta_m)
+    return q_complex
 
-    def get_index_of_refraction_batch(self, energies: npt.NDArray[np.float64], *args) -> npt.NDArray[np.complexfloating]:
-        """Get complex refractive index for multiple energies."""
-        delta = np.zeros(len(energies), dtype=np.float64)
-        beta = np.zeros(len(energies), dtype=np.float64)
 
-        k0 = energies * pihc
-        constant = pireav / (k0**2)
+def get_index_of_refraction_batch(layers: list[AtomLayer], energies: npt.NDArray[np.float64], *kwargs) -> npt.NDArray[np.complexfloating]:
+    m = len(energies)
+    k0 = energies * pihc  # (m,)
+    constant = pireav / (k0**2)  # (m,)
+    const_col = constant[:, None]  # (m, 1)
 
-        for l in self.elements:
-            molar_density = l.molar_density.get()
-            if molar_density == 0.0:
-                continue
+    n_slices = len(layers[0].z_deepness)
+    f1_tot = np.zeros((m, n_slices), dtype=np.float64)
+    f2_tot = np.zeros((m, n_slices), dtype=np.float64)
 
-            formFactors = l.get_f1f2_energies(energies, *args)
-            delta += constant * formFactors[0] * molar_density
-            beta += constant * formFactors[1] * molar_density
+    for layer in layers:
+        rho = layer.molar_density
+        if not np.any(rho > 0):
+            continue
 
-        n_complex = 1 - delta + 1j * beta
-        return n_complex
+        f1_s, f2_s = layer.get_f1f2_energies(energies, *kwargs)
+        f1_s = np.asarray(f1_s, dtype=np.float64).reshape(m, 1)  # (m,1)
+        f2_s = np.asarray(f2_s, dtype=np.float64).reshape(m, 1)  # (m,1)
+        f1_tot += const_col * f1_s * rho[np.newaxis, :]
+        f2_tot += const_col * f2_s * rho[np.newaxis, :]
 
-    def get_magnetic_optical_constant_batch(self, energies: npt.NDArray[np.float64], *args) -> npt.NDArray[np.complexfloating]:
-        """Get magnetic optical constant for multiple energies."""
-        delta_m = np.zeros(len(energies), dtype=np.float64)
-        beta_m = np.zeros(len(energies), dtype=np.float64)
+    n_complex = (1.0 - f1_tot) + 1j * f2_tot  # (m, n)
+    return n_complex
 
-        k0 = energies * pihc
-        constant = pireav / (k0**2)
 
-        for l in self.elements:
-            molar_magnetic_density = l.molar_magnetic_density.get() if l.molar_magnetic_density else 0.0
-            if molar_magnetic_density == 0.0:
-                continue
+def get_magnetic_optical_constant_batch(layers: list[AtomLayer], energies: npt.NDArray[np.float64], *kwargs) -> npt.NDArray[np.complexfloating]:
+    m = len(energies)
+    k0 = energies * pihc  # (m,)
+    constant = pireav / (k0**2)  # (m,)
+    const_col = constant[:, None]  # (m, 1)
 
-            formFactors = l.get_q1q2_energies(energies, *args)
-            delta_m += constant * formFactors[0] * molar_magnetic_density
-            beta_m += constant * formFactors[1] * molar_magnetic_density
+    n_slices = len(layers[0].z_deepness)
+    q1_tot = np.zeros((m, n_slices), dtype=np.float64)
+    q2_tot = np.zeros((m, n_slices), dtype=np.float64)
 
-        q_complex = 2 * (delta_m + 1j * beta_m)
-        return q_complex
+    for layer in layers:
+        rho_m = layer.molar_magnetic_density
+        if not np.any(rho_m > 0):
+            continue
 
-    def print_details(self):
-        print(f"Layer ID: {self.id}")
-        print(f"  Thickness: {self.thickness} Angstroms")
-        for element in self.elements:
-            atom = element.atom
-            print(
-                f"  Element: {atom.name}, "
-                f"Molar Density: {element.molar_density.get()} mol/cm³, "
-                f"Magnetic Density: {element.molar_magnetic_density.get() if element.molar_magnetic_density else 'N/A'} mol/cm³, "
-                f"Is Magnetic: {'Yes' if element.molar_magnetic_density else 'No'}"
-            )
+        q1_s, q2_s = layer.get_q1q2_energies(energies, *kwargs)
+        q1_s = np.asarray(q1_s, dtype=np.float64).reshape(m, 1)  # (m,1)
+        q2_s = np.asarray(q2_s, dtype=np.float64).reshape(m, 1)  # (m,1)
+        q1_tot += const_col * q1_s * rho_m[np.newaxis, :]
+        q2_tot += const_col * q2_s * rho_m[np.newaxis, :]
+
+    q_complex = 2 * (q1_tot + 1j * q2_tot)  # (m, n)
+    return q_complex

@@ -1,6 +1,9 @@
+from dataclasses import dataclass
+
 from rxrmask.core.reflectivitydata import SimReflectivityData, SimEnergyScanData
 
 
+@dataclass
 class ReflectivityBackend:
     """Base class for reflectivity backends."""
 

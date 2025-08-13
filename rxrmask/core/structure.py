@@ -1,4 +1,6 @@
-from rxrmask.core import Compound, AtomLayer, Layer
+import numpy as np
+
+from rxrmask.core import Compound, AtomLayer
 from rxrmask.core.parameter import Parameter, ParametersContainer
 from rxrmask.utils import get_density_profile_from_element_data
 
@@ -22,10 +24,11 @@ class Structure:
     """
 
     name: str
+    thicknesses: np.ndarray
     params_container: ParametersContainer
     n_compounds: int = 0
     n_layers: int = 0
-    layers: list[Layer] = field(default_factory=list)
+    atoms_layers: list[AtomLayer] = field(default_factory=list)
     compounds: list[Compound] = field(default_factory=list)
 
     element_data: dict | None = None
@@ -37,17 +40,13 @@ class Structure:
         self.n_compounds = n_compounds
         self.compounds = [None] * n_compounds  # type: ignore
         self.params_container = params_container
+        self.thicknesses = np.zeros(0, dtype=float)
 
     def add_compound(self, index: int, compound: Compound) -> None:
         """Add compound at specified index."""
         if index < 0 or index >= self.n_compounds:
             raise IndexError("Index out of range for compounds.")
-        if not isinstance(compound, Compound):
-            raise TypeError("Expected a Compound instance.")
-
         self.compounds[index] = compound
-
-
 
     def validate_compounds(self):
         """Validate that all compounds are defined and link roughness if needed."""
@@ -71,8 +70,6 @@ class Structure:
                     detail.prev_roughness.independent = False
                     detail.prev_roughness.depends_on = prev_compound.compound_details[j].roughness
 
-
-
     def create_layers(self, step: float = 0.1, track_layers_params=False) -> None:
         """Create discretized layers from compounds with specified step size."""
         self.step = step
@@ -81,75 +78,45 @@ class Structure:
         z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
 
         layers = []
+        thicknesses = []
         for i in range(1, len(z)):
             thickness = z[i] - z[i - 1]
+            thicknesses.append(thickness)
+        self.thicknesses = np.array(thicknesses, dtype=float)
 
-            elements = []
-            for element_name, atom in self.atoms.items():
-                molar_density = dens[element_name][i] if element_name in dens else 0.0
-                molar_magnetic_density = m_dens[element_name][i] if element_name in m_dens else 0.0
+        for element_name, atom in self.atoms.items():
+            molar_densities = dens[element_name] if element_name in dens else [0.0] * len(z)
+            molar_magnetic_densities = m_dens[element_name] if element_name in m_dens else [0.0] * len(z)
 
-                temp_name = f"layer_{i}_{element_name}"
-                m_dens_param = None
-                m_magnetic_density_param = None
-                if track_layers_params:
-                    m_dens_param = self.params_container.new_parameter(f"{temp_name}_density", molar_density, fit=True)
-                    m_magnetic_density_param = self.params_container.new_parameter(f"{temp_name}_mag_density", molar_magnetic_density, fit=True)
-                else:
-                    m_dens_param = Parameter(
-                        id=0,
-                        name=f"{temp_name}_density",
-                        value=molar_density,
-                        fit=False,
-                        lower=None,
-                        upper=None,
-                    )
-                    m_magnetic_density_param = Parameter(
-                        id=0,
-                        name=f"{temp_name}_mag_density",
-                        value=molar_magnetic_density,
-                        fit=False,
-                        lower=None,
-                        upper=None,
-                    )
+            element_layer = AtomLayer(
+                atom=atom,
+                molar_density=np.array(molar_densities)[1:],
+                molar_magnetic_density=(np.array(molar_magnetic_densities) if np.any(molar_magnetic_densities) else np.zeros(len(molar_densities)))[
+                    1:
+                ],
+                z_deepness=np.array(z[1:], dtype=float),
+            )
+            layers.append(element_layer)
 
-                element_layer = AtomLayer(
-                    atom=atom,
-                    molar_density=m_dens_param,
-                    molar_magnetic_density=m_magnetic_density_param,
-                )
-                elements.append(element_layer)
-
-            layer = Layer(id=f"Layer_{i}", thickness=thickness, elements=elements)
-            layers.append(layer)
-
-        self.layers = layers
-        self.n_layers = len(layers)
+        self.atoms_layers = layers
+        self.n_layers = len(z) - 1
 
     def update_layers(self) -> None:
         """Update layer parameters based on current element data and density profile."""
         z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
 
-        if len(z) != len(self.layers) + 1:
-            raise ValueError("Inconsistent current layer count with density profile.")
+        for element_name, atom in self.atoms.items():
+            molar_densities = dens[element_name] if element_name in dens else [0.0] * len(z)
+            molar_magnetic_densities = m_dens[element_name] if element_name in m_dens else [0.0] * len(z)
 
-        for i in range(1, len(z)):
-            layer_idx = i - 1
-            if layer_idx >= len(self.layers):
-                break
-
-            layer = self.layers[layer_idx]
-            for element_layer in layer.elements:
-                atom_name = element_layer.atom.name
-
-                if atom_name in dens:
-                    new_density = dens[atom_name][i]
-                    element_layer.molar_density.set(new_density)
-
-                if atom_name in m_dens:
-                    new_mag_density = m_dens[atom_name][i]
-                    if element_layer.molar_magnetic_density is not None:
-                        element_layer.molar_magnetic_density.set(new_mag_density)
+            for layer in self.atoms_layers:
+                if layer.atom.name == atom.name:
+                    layer.molar_density = np.array(molar_densities)[1:]
+                    layer.molar_magnetic_density = (
+                        np.array(molar_magnetic_densities) if np.any(molar_magnetic_densities) else np.zeros(len(molar_densities))
+                    )[1:]
+                    layer.z_deepness = np.array(z[1:], dtype=float)
+                    break
 
     def _create_element_data(self):
         """Create element data structure from compounds for density calculations."""

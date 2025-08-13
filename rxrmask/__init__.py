@@ -8,7 +8,7 @@ __version__ = "0.2.0"
 from . import core
 from . import backends
 from . import utils
-from .core import Atom, Structure, Compound, Layer, FormFactorLocalDB
+from .core import Atom, Structure, Compound, FormFactorLocalDB
 
 __all__ = [
     "__version__",
@@ -18,6 +18,5 @@ __all__ = [
     "Atom",
     "Structure",
     "Compound",
-    "Layer",
     "FormFactorLocalDB",
 ]

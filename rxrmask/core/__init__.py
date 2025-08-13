@@ -3,7 +3,13 @@
 from .atom import Atom, find_atom
 from .formfactor import FormFactorModel, FormFactorLocalDB, FormFactorVacancy
 from .compound import CompoundDetails, Compound, create_compound
-from .layer import AtomLayer, Layer
+from .layer import (
+    AtomLayer,
+    get_index_of_refraction,
+    get_index_of_refraction_batch,
+    get_magnetic_optical_constant,
+    get_magnetic_optical_constant_batch,
+)
 from .structure import Structure
 from .parameter import Parameter, DerivedParameter, ParametersContainer, DependentParameter
 from .reflectivitydata import SimReflectivityData, SimEnergyScanData, EnergyScan, ReflectivityScan
@@ -19,7 +25,10 @@ __all__ = [
     "Compound",
     "create_compound",
     "AtomLayer",
-    "Layer",
+    "get_index_of_refraction",
+    "get_index_of_refraction_batch",
+    "get_magnetic_optical_constant",
+    "get_magnetic_optical_constant_batch",
     "Structure",
     "Parameter",
     "DependentParameter",
