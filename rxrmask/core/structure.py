@@ -105,7 +105,7 @@ class Structure:
         """Update layer parameters based on current element data and density profile."""
         z, dens, m_dens = get_density_profile_from_element_data(self.element_data, self.step)
 
-        for element_name, atom in self.atoms.items(): # type: ignore
+        for element_name, atom in self.atoms.items():  # type: ignore
             molar_densities = dens[element_name] if element_name in dens else [0.0] * len(z)
             molar_magnetic_densities = m_dens[element_name] if element_name in m_dens else [0.0] * len(z)
 

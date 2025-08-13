@@ -130,6 +130,7 @@ def scalar_cost(
     print(f"Total cost: {total:.6f}")
     return total
 
+
 def scalar_cost_layers(
     x: np.ndarray,
     ctx: FitContext,
@@ -140,7 +141,7 @@ def scalar_cost_layers(
     i = 0
     for layer in ctx.structure.atoms_layers:
         len_den = len(layer.molar_density)
-        layer.molar_density = np.array(x[i:i+len_den])
+        layer.molar_density = np.array(x[i : i + len_den])
         i += len_den
 
     total = 0.0
@@ -151,7 +152,7 @@ def scalar_cost_layers(
         mask = _mask_by_bounds(sc.qz, sc.bounds or [])
         Rdat = sc.R[mask]
         # Rsmooth = sc.R[mask]
-        
+
         Rsim = ctx.transform.apply_correction(Rsim)
         Rt = ctx.transform.apply_R(Rsim[mask])
         # Rs = ctx.transform.apply_R(Rsmooth)

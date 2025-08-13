@@ -131,7 +131,7 @@ class FormFactorFile(FormFactorModel):
     def read_data(self):
         if self.ff_path is None:
             raise ValueError("Path must be specified to read form factor data.")
-        
+
         file = pathlib.Path(self.ff_path)
         if not file.exists():
             raise FileNotFoundError(f"Form factor data file '{self.ff_path}' does not exist.")
@@ -162,4 +162,3 @@ class FormFactorFile(FormFactorModel):
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
         return self.ff_data
-    

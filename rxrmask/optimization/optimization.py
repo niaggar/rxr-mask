@@ -34,7 +34,7 @@ def fit_differential_evolution(
         rscan.R = ctx.transform.apply_R(rscan.R)
     for escan in en_scans:
         escan.R = ctx.transform.apply_R(escan.R)
-    
+
     bounds = [(p.lower, p.upper) for p in params]
     ret = optimize.differential_evolution(
         lambda x: scalar_cost(x, params, ctx, ref_scans, en_scans),
@@ -51,7 +51,7 @@ def fit_differential_evolution(
         updating=updating,
         disp=False,
     )
-    
+
     # ret = optimize.differential_evolution(
     #     _objective,
     #     bounds=bounds,
@@ -106,7 +106,6 @@ def fit_least_squares(
     )
 
     return res.x, float(res.cost)
-
 
 
 def fit_differential_evolution_layers(

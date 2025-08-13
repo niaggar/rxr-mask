@@ -49,6 +49,7 @@ def plot_density_profile(z, dens, figsize=(10, 4), title="Density Profile", x_mo
     plt.tight_layout()
     plt.show()
 
+
 def plot_density_profile_atoms_layers(atoms_layers: list[AtomLayer], figsize=(10, 4), title="Density Profile", x_move=0.0, min_x=0.0):
     """Plot atomic density profiles as function of depth for AtomLayer objects."""
     plt.figure(figsize=figsize)
