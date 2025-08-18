@@ -13,7 +13,8 @@ class FormFactorModel:
     Attributes:
         ff_path: Path to form factor data file
     """
-
+    scale: float = field(default=1.0)
+    offset: float = field(default=0.0)
     ff_path: Optional[str] = field(default=None)
 
     def get_formfactors(self, energy_eV: float, *kwkwargs) -> tuple[float, float]:
@@ -75,7 +76,8 @@ class FormFactorLocalDB(FormFactorModel):
     is_magnetic: bool = field(default=False)
     ff_data: Optional[npt.NDArray[np.float64]] = field(default=None)
 
-    def __init__(self, element: str, is_magnetic: bool = False):
+    def __init__(self, element: str, is_magnetic: bool = False, scale: float = 1.0, offset: float = 0.0):
+        super().__init__(scale=scale, offset=offset)
         self.element = element
         self.is_magnetic = is_magnetic
         self.read_data()
@@ -97,21 +99,25 @@ class FormFactorLocalDB(FormFactorModel):
         if self.ff_data.shape[1] != 3:
             raise ValueError(f"Form factor file for '{self.element}' must have exactly 3 columns: E, f1, f2")
 
+        self.ff_data[:, 1] = self.ff_data[:, 1] * self.scale
+        self.ff_data[:, 2] = self.ff_data[:, 2] * self.scale
+
+
     def get_formfactors(self, energy_eV: float, *kwargs) -> tuple[float, float]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
 
         energies = self.ff_data[:, 0]
-        f1 = np.interp(energy_eV, energies, self.ff_data[:, 1])
-        f2 = np.interp(energy_eV, energies, self.ff_data[:, 2])
+        f1 = np.interp(energy_eV + self.offset, energies, self.ff_data[:, 1])
+        f2 = np.interp(energy_eV + self.offset, energies, self.ff_data[:, 2])
         return float(f1), float(f2)
 
     def get_formfactors_energies(self, energies: npt.NDArray[np.float64], *kwargs) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         if self.ff_data is None:
             raise ValueError("Form factor data has not been loaded.")
 
-        f1 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 1])
-        f2 = np.interp(energies, self.ff_data[:, 0], self.ff_data[:, 2])
+        f1 = np.interp(energies + self.offset, self.ff_data[:, 0], self.ff_data[:, 1])
+        f2 = np.interp(energies + self.offset, self.ff_data[:, 0], self.ff_data[:, 2])
         return f1, f2
 
     def get_all_formfactors(self, *kwargs) -> npt.NDArray[np.float64]:

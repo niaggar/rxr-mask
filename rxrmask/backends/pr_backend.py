@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from multiprocessing.pool import ThreadPool
 
@@ -159,6 +160,8 @@ def reflectivity(
     Returns:
         ReflectivityData
     """
+    init_time1 = time.perf_counter()
+
     if stack.n_layers == 0:
         raise ValueError("Stack has no layers. Please create layers before computing reflectivity.")
 
@@ -174,8 +177,12 @@ def reflectivity(
     indices = compute_adaptive_layer_segmentation(index_of_refraction, magnetic_optical_constants, precision, als=als)
     structure = _to_pr_structure_from_segments(eps, eps_mag, thicknesses, indices, compound_map)
 
-    wavelength = HC_WAVELENGTH_CONV / E_eV  # wavelength of incoming x-ray
+    time_creation = time.perf_counter()
+    print(f"Creation of structure took {time_creation - init_time1:.5f} seconds")
 
+    init_time2 = time.perf_counter()
+
+    wavelength = HC_WAVELENGTH_CONV / E_eV  # wavelength of incoming x-ray
     theta_deg = np.arcsin(qz / E_eV / QZ_SCALE) * 180 / np.pi
     R_sigma, R_pi = pr.Reflectivity(structure, theta_deg, wavelength, MagneticCutoff=1e-20)
 
@@ -183,6 +190,9 @@ def reflectivity(
     res.qz = qz
     res.R_s = R_sigma
     res.R_p = R_pi
+
+    time_reflectivity = time.perf_counter()
+    print(f"Reflectivity calculation took {time_reflectivity - init_time2:.5f} seconds")
     return res
 
 

@@ -192,7 +192,7 @@ def create_compound(
             name=f"{base_name}-molar_density",
             value=com.density.get() * frac_i,
             fit=False,
-            independent=True,
+            independent=False,
             update_func=lambda frac=frac_i: com.density.get() * frac,
             lower=None,
             upper=None,
