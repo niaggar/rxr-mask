@@ -2,6 +2,7 @@
 
 from .optimization import (
     fit_differential_evolution,
+    fit_differential_evolution_by_layers,
 )
 
 from .fitting import (
@@ -13,6 +14,7 @@ from .fitting import (
 
 __all__ = [
     "fit_differential_evolution",
+    "fit_differential_evolution_by_layers",
     "FitTransform",
     "TVRegularizer",
     "FitContext",

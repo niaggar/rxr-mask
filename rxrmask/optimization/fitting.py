@@ -127,5 +127,70 @@ def scalar_cost(
         total += _objective(Rdat - Rt, Rt, ctx.objective)
         # total += ctx.tv.penalty(Rs, Rt)
 
+
+    return total
+
+
+
+
+def scalar_cost_by_layers(
+    x: np.ndarray,
+    layers_to_update: List[bool],
+    ctx: FitContext,
+    ref_scans: List[ReflectivityScan],
+    en_scans: List[EnergyScan],
+    number_of_trues: int,
+) -> float:
+
+    i = 0
+    for j, ele in enumerate(ctx.structure.atoms_layers):
+        new_layer_params = x[i : i + number_of_trues]
+        ele.molar_density[layers_to_update] = new_layer_params
+        i += number_of_trues
+
+    total = 0.0
+
+    # Reflectivity scans (fixed E, varying qz)
+    for sc in ref_scans:
+        sim_theta = ctx.backend.compute_reflectivity(ctx.structure, sc.qz, sc.energy_eV)
+        Rsim = sim_theta.R_s if sc.pol == "s" else sim_theta.R_p
+        # mask = _mask_by_bounds(sc.qz, sc.bounds or [])
+        Rdat = sc.R
+        # Rsmooth = sc.R[mask]
+
+        Rsim = ctx.transform.apply_correction(Rsim)
+        Rt = ctx.transform.apply_R(Rsim)
+        # Rs = ctx.transform.apply_R(Rsmooth)
+
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
+        # total += ctx.tv.penalty(Rs, Rt)
+
+    # Energy scans (fixed theta, varying E)
+    for sc in en_scans:
+        sim_energy = ctx.backend.compute_energy_scan(ctx.structure, sc.E_eV, sc.theta_deg)
+        Rsim = sim_energy.R_s if sc.pol == "s" else sim_energy.R_p
+        # mask = _mask_by_bounds(sc.E_eV, sc.bounds or [])
+        Rdat = sc.R
+        # Rsmooth = sc.R[mask]
+
+        Rsim = ctx.transform.apply_correction(Rsim)
+        Rt = ctx.transform.apply_R(Rsim)
+        # Rs = ctx.transform.apply_R(Rsmooth)
+
+        total += _objective(Rdat - Rt, Rt, ctx.objective)
+        # total += ctx.tv.penalty(Rs, Rt)
+
     # print(f"Total cost: {total:.6f}")
     return total
+
+
+def replace_masked(arr, mask, values):
+    arr = np.asarray(arr)
+    mask = np.asarray(mask, dtype=bool)
+    values = np.asarray(values, dtype=arr.dtype)
+    if mask.shape != arr.shape:
+        raise ValueError("mask y arr deben tener la misma forma")
+    if mask.sum() != len(values) and values.ndim != 0:
+        raise ValueError("len(values) debe coincidir con #True en mask")
+    arr[mask] = values
+    return arr
