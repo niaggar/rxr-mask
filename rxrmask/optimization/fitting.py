@@ -127,5 +127,5 @@ def scalar_cost(
         total += _objective(Rdat - Rt, Rt, ctx.objective)
         # total += ctx.tv.penalty(Rs, Rt)
 
-    print(f"Total cost: {total:.6f}")
+    # print(f"Total cost: {total:.6f}")
     return total

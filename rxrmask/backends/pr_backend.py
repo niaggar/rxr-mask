@@ -178,7 +178,7 @@ def reflectivity(
     structure = _to_pr_structure_from_segments(eps, eps_mag, thicknesses, indices, compound_map)
 
     time_creation = time.perf_counter()
-    print(f"Creation of structure took {time_creation - init_time1:.5f} seconds")
+    # print(f"Creation of structure took {time_creation - init_time1:.5f} seconds")
 
     init_time2 = time.perf_counter()
 
@@ -192,7 +192,7 @@ def reflectivity(
     res.R_p = R_pi
 
     time_reflectivity = time.perf_counter()
-    print(f"Reflectivity calculation took {time_reflectivity - init_time2:.5f} seconds")
+    # print(f"Reflectivity calculation took {time_reflectivity - init_time2:.5f} seconds")
     return res
 
 

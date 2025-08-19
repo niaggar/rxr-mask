@@ -48,6 +48,24 @@ class Parameter:
         """
         self.value = value
 
+    def set_bounds(self, lower: float, upper: float) -> None:
+        """Set bounds for the parameter.
+
+        Args:
+            lower: Minimum value constraint
+            upper: Maximum value constraint
+        """
+        if lower == upper:
+            print("Warning: Lower and upper bounds are equal; parameter will be fixed.")
+            self.lower, self.upper = lower, upper
+            return
+
+        if lower >= upper:
+            raise ValueError("Lower bound must be less than upper bound.")
+
+        self.lower = lower
+        self.upper = upper
+
 
 @dataclass
 class DerivedParameter(Parameter):

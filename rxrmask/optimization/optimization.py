@@ -15,15 +15,14 @@ from .fitting import (
 
 
 def fit_differential_evolution(
-    x0: np.ndarray,
     params: List[Parameter],
     ctx: FitContext,
     ref_scans: List[ReflectivityScan],
     en_scans: List[EnergyScan],
-    strategy="best1bin",
-    maxiter=20,
-    popsize=2,
-    tol=1,
+    strategy="currenttobest1bin",
+    maxiter=50,
+    popsize=15,
+    tol=1e-06,
     mutation=(0.5, 1.0),
     recombination=0.7,
     polish=False,
@@ -37,21 +36,20 @@ def fit_differential_evolution(
     bounds = [(float(p.lower), float(p.upper)) for p in params]
     ret = optimize.differential_evolution(
         scalar_cost,
-        # bounds,
+        bounds,
         args=[params, ctx, ref_scans, en_scans],
         strategy=strategy,
         maxiter=maxiter,
         popsize=popsize,
         tol=tol,
-        atol=1e-6,
+        atol=0,
         mutation=mutation,
         recombination=recombination,
         polish=polish,
-        init="sobol",
+        init="latinhypercube",
         updating=updating,
         disp=True,
         callback=None,
-        x0=x0,
     )
 
     # ret = optimize.differential_evolution(
